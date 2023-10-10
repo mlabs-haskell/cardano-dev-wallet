@@ -9,8 +9,8 @@
     {
       "matches": ["<all_urls>"],
       "run_at": "document_idle",
-      "js": ["./contentScript/index.js"],
-      "css": ["./style.css"]
+      "js": ["./content-script/index.js"],
+      "css": ["./content-script/index.css"]
     }
   ],
   "background": {
