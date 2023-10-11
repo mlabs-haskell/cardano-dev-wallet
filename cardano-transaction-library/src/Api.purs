@@ -1,6 +1,9 @@
 module Api
-  ( finalize
+  ( config
+  , contract
+  , finalize
   , initialize
+  , run
   )
   where
 
