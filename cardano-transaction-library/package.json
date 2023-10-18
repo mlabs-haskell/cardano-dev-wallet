@@ -1,27 +1,31 @@
 {
   "name": "ctl-api",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "index.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "BROWSER_RUNTIME=1 webpack-dev-server",
-    "build": "spago bundle-module -m Api --to output.js",
-    "export": "BROWSER_RUNTIME=1 webpack --mode=production"
+    "build": "spago build"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@emurgo/cardano-message-signing-browser": "^1.0.1",
+    "@emurgo/cardano-message-signing-nodejs": "^1.0.1",
     "@emurgo/cardano-serialization-lib-browser": "^11.5.0",
+    "@mlabs-haskell/cardano-serialization-lib-gc-browser": "^1.0.6",
+    "@mlabs-haskell/cardano-serialization-lib-gc-nodejs": "^1.0.6",
     "@mlabs-haskell/csl-gc-wrapper": "^1.0.1",
     "@mlabs-haskell/json-bigint": "^1.0.0",
+    "@noble/secp256k1": "^2.0.0",
     "big-integer": "^1.6.51",
     "bignumber.js": "^9.1.2",
     "bip39": "^3.1.0",
     "blakejs": "^1.2.1",
+    "crypto": "^1.0.1",
     "jssha": "^3.3.1",
     "node-polyfill-webpack-plugin": "^1.1.4",
     "reconnecting-websocket": "^4.4.0",

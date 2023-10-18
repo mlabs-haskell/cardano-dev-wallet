@@ -99,8 +99,8 @@ in  upstream
 -------------------------------
 -}
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.14.5-20220224/packages.dhall
-        sha256:67cc3d4f0e8fb72bb1413ba94ddd72a3ceb0783eb725e3b22ad7568b3b581163
+      https://github.com/purescript/package-sets/releases/download/psc-0.15.4-20230105/packages.dhall
+        sha256:3e9fbc9ba03e9a1fcfd895f65e2d50ee2f5e86c4cd273f3d5c841b655a0e1bda
 
 let additions =
       { aeson =
@@ -130,7 +130,6 @@ let additions =
           , "prelude"
           , "quickcheck"
           , "record"
-          , "sequences"
           , "spec"
           , "strings"
           , "tuples"
@@ -140,7 +139,7 @@ let additions =
           , "untagged-union"
           ]
         , repo = "https://github.com/mlabs-haskell/purescript-aeson.git"
-        , version = "bfd8f4dcd0522a076320f9dc710c24817438e02e"
+        , version = "e411566cf5e3adf05ea9ae866705886cfba4bfa6"
         }
       , bignumber =
         { dependencies =
@@ -155,30 +154,7 @@ let additions =
           , "tuples"
           ]
         , repo = "https://github.com/mlabs-haskell/purescript-bignumber"
-        , version = "705923edd892a3397b90d28ce7db9a7181dcd599"
-        }
-      , sequences =
-        { dependencies =
-          [ "arrays"
-          , "assert"
-          , "console"
-          , "effect"
-          , "lazy"
-          , "maybe"
-          , "newtype"
-          , "nonempty"
-          , "partial"
-          , "prelude"
-          , "profunctor"
-          , "psci-support"
-          , "quickcheck"
-          , "quickcheck-laws"
-          , "tuples"
-          , "unfoldable"
-          , "unsafe-coerce"
-          ]
-        , repo = "https://github.com/hdgarrood/purescript-sequences"
-        , version = "v3.0.2"
+        , version = "760d11b41ece31b8cdd3c53349c5c2fd48d3ff89"
         }
       , properties =
         { dependencies = [ "prelude", "console" ]
@@ -237,10 +213,10 @@ let additions =
           , "unordered-collections"
           , "unsafe-coerce"
           ]
-        , repo = "https://github.com/juspay/medea-ps.git"
-        , version = "8b215851959aa8bbf33e6708df6bd683c89d1a5a"
+        , repo = "https://github.com/mlabs-haskell/medea-ps.git"
+        , version = "9a03a7b7b983fc1d21c4e1fef4cf0748b42f3734"
         }
-      , purescript-toppokki =
+      , toppokki =
         { dependencies =
           [ "prelude"
           , "record"
@@ -250,8 +226,8 @@ let additions =
           , "node-buffer"
           , "node-fs-aff"
           ]
-        , repo = "https://github.com/firefrorefiddle/purescript-toppokki"
-        , version = "6983e07bf0aa55ab779bcef12df3df339a2b5bd9"
+        , repo = "https://github.com/mlabs-haskell/purescript-toppokki"
+        , version = "5992e93396a734c980ef61c74df5b6ab46108920"
         }
       , noble-secp256k1 =
         { dependencies =
@@ -265,10 +241,11 @@ let additions =
           ]
         , repo =
             "https://github.com/mlabs-haskell/purescript-noble-secp256k1.git"
-        , version = "710c15c48c5afae5e0623664d982a587ff2bd177"
+        , version = "a3c0f67e9fdb0086016d7aebfad35d09a08b4ecd"
         }
       , cardano-transaction-lib =
-        { dependencies = [ "aeson"
+        { dependencies =
+          [ "aeson"
           , "aff"
           , "aff-promise"
           , "aff-retry"
@@ -305,7 +282,6 @@ let additions =
           , "js-date"
           , "lattice"
           , "lists"
-          , "math"
           , "maybe"
           , "medea"
           , "media-types"
@@ -333,7 +309,7 @@ let additions =
           , "prelude"
           , "profunctor"
           , "profunctor-lenses"
-          , "purescript-toppokki"
+          , "toppokki"
           , "quickcheck"
           , "quickcheck-combinators"
           , "quickcheck-laws"
@@ -353,18 +329,16 @@ let additions =
           , "typelevel"
           , "typelevel-prelude"
           , "uint"
-          , "undefined"
           , "unfoldable"
           , "untagged-union"
           , "variant"
           , "web-html"
-          , "web-storage"]
-        , repo =
-          "https://github.com/Plutonomicon/cardano-transaction-lib.git"
-        , version =
-            "605931759ff35bdd71bb4d933071aced9fb57870"
+          , "web-storage"
+          ]
+        , repo = "https://github.com/Plutonomicon/cardano-transaction-lib.git"
+        , version = "8014c940cf69516c0a00048eec79b2ba95fd94f3"
         }
       }
 
-in  (upstream // additions)
-  with parsing.version = "v7.0.1"
+in upstream // additions
+

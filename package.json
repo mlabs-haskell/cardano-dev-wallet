@@ -1,5 +1,6 @@
 {
   "name": "cardano-wallet",
+  "type": "module",
   "version": "0.0.0",
   "description": "A dev cardano wallet that works in all browsers",
   "author": "MLabs <contact@mlabs.city>",
@@ -21,7 +22,8 @@
     "bundle:chrome:build": "run-s build:chrome",
     "bundle:chrome:zip": "zip -r ./web-extension-chrome-v$npm_package_version.zip ./dist",
     "bundle:chrome:crx": "crx pack ./dist -o ./web-extension-chrome-v$npm_package_version.crx",
-    "compile": "mkdir -p dist && cp -r background content-script popup public/* dist/"
+    "compile": "mkdir -p dist && cp -r background content-script popup public/* dist/ && run-s compile:ps",
+    "compile:ps": "cp -r cardano-transaction-library/output dist/ && BROWSER_RUNTIME=1 node esbuild/bundle.js ./dist/background/background.js ./dist/background/bundle.js"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.15",
@@ -36,6 +38,27 @@
   },
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "esbuild": "0.18.11",
+    "esbuild-plugin-polyfill-node": "^0.3.0",
+    "esbuild-plugin-wasm": "^1.1.0",
+    "@emurgo/cardano-message-signing-browser": "^1.0.1",
+    "@emurgo/cardano-message-signing-nodejs": "^1.0.1",
+    "@emurgo/cardano-serialization-lib-browser": "^11.5.0",
+    "@mlabs-haskell/cardano-serialization-lib-gc-browser": "^1.0.6",
+    "@mlabs-haskell/cardano-serialization-lib-gc-nodejs": "^1.0.6",
+    "@mlabs-haskell/csl-gc-wrapper": "^1.0.1",
+    "@mlabs-haskell/json-bigint": "^1.0.0",
+    "@noble/secp256k1": "^2.0.0",
+    "big-integer": "^1.6.51",
+    "bignumber.js": "^9.1.2",
+    "bip39": "^3.1.0",
+    "blakejs": "^1.2.1",
+    "crypto": "^1.0.1",
+    "jssha": "^3.3.1",
+    "node-polyfill-webpack-plugin": "^1.1.4",
+    "reconnecting-websocket": "^4.4.0",
+    "uniqid": "^5.4.0",
+    "xhr2": "^0.2.1"
   }
 }

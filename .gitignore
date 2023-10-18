@@ -7,3 +7,4 @@ dist
 *.xpi
 output.js
 .psc-ide-port
+output/

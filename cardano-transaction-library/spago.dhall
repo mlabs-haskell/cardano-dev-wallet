@@ -16,7 +16,12 @@ to generate this file without the comments in this block.
   , "cardano-transaction-lib"
   , "console"
   , "effect"
+  , "either"
+  , "exceptions"
   , "functions"
+  , "maybe"
+  , "newtype"
+  , "nullable"
   , "prelude"
   ]
 , packages = ./packages.dhall
