@@ -1,13 +1,14 @@
 module Api
-  ( config
-  , contract
-  , finalize
-  , initialize
-  , main
-  , paymentKeyFromEnvelope
+  ( 
+    -- config
+  -- , contract
+  -- , finalize
+  -- , initialize
+  -- , main
+    paymentKeyFromEnvelope
   , privateKeyFromMnemonic
   , privateKeysToAddress
-  , run
+  -- , run
   , stakeKeyFromEnvelope
   )
   where
@@ -35,21 +36,21 @@ import Effect.Class.Console (log)
 import Effect.Exception (error, throwException)
 import Effect.Unsafe (unsafePerformEffect)
 
-contract :: Contract Unit
-contract = pure unit
+-- contract :: Contract Unit
+-- contract = pure unit
 
-initialize :: Fn1 ContractParams (Promise ContractEnv)
-initialize = mkContractEnvJS
+-- initialize :: Fn1 ContractParams (Promise ContractEnv)
+-- initialize = mkContractEnvJS
 
-finalize :: Fn1 ContractEnv (Promise Unit)
-finalize = stopContractEnvJS
+-- finalize :: Fn1 ContractEnv (Promise Unit)
+-- finalize = stopContractEnvJS
 
-run :: Fn1 ContractEnv (Promise Unit)
-run = mkFn1 \env ->
-  unsafePerformEffect $ fromAff $ runContractInEnv env contract
+-- run :: Fn1 ContractEnv (Promise Unit)
+-- run = mkFn1 \env ->
+--   unsafePerformEffect $ fromAff $ runContractInEnv env contract
 
-config  :: ContractParams
-config = testnetNamiConfig -- use Nami wallet
+-- config  :: ContractParams
+-- config = testnetNamiConfig -- use Nami wallet
 
 privateKeyFromMnemonic :: Fn1 String (Effect Bip32PrivateKey)
 privateKeyFromMnemonic = mkFn1 \s ->
@@ -77,6 +78,6 @@ stakeKeyFromEnvelope = mkFn1 \envelopeString -> do
   envelope <- fromMaybe "Unable to decode text envelope" (decodeTextEnvelope envelopeString)
   fromMaybe "Unknown envelope type" $ privateStakeKeyFromTextEnvelope envelope
 
-main :: Effect Unit
-main = do
-  log "🍝"
+-- main :: Effect Unit
+-- main = do
+--   log "🍝"

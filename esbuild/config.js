@@ -10,7 +10,7 @@ export const buildOptions = ({ entryPoint, outfile }) => ({
   plugins: [
     polyfillNode({
       polyfills: {
-        crypto: true,
+        crypto: false,
         fs: true,
         os: true,
       },
