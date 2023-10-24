@@ -52,8 +52,8 @@ import Effect.Unsafe (unsafePerformEffect)
 -- config  :: ContractParams
 -- config = testnetNamiConfig -- use Nami wallet
 
-privateKeyFromMnemonic :: Fn1 String (Effect Bip32PrivateKey)
-privateKeyFromMnemonic = mkFn1 \s ->
+privateKeyFromMnemonic :: Fn1 String (Bip32PrivateKey)
+privateKeyFromMnemonic = mkFn1 \s -> unsafePerformEffect $
   case bip32PrivateKeyFromMnemonic s of
     Left err -> throwException $ error err
     Right key -> pure key
@@ -62,19 +62,19 @@ fromMaybe :: forall a . String -> Maybe a -> Effect a
 fromMaybe errMsg Nothing = throwException $ error errMsg
 fromMaybe _     (Just a) = pure a
 
-privateKeysToAddress :: Fn3 String (Nullable PrivateStakeKey) Int (Effect Address)
-privateKeysToAddress = mkFn3 \paymentKey stakeKey networkId -> do
+privateKeysToAddress :: Fn3 String (Nullable PrivateStakeKey) Int Address
+privateKeysToAddress = mkFn3 \paymentKey stakeKey networkId -> unsafePerformEffect $ do
   nid <- fromMaybe "Unknown Network Id" $ intToNetworkId networkId
   pk <- fromMaybe "Unable to decode private key" $ privateKeyFromBech32 paymentKey
   pure $ Wallet.Key.privateKeysToAddress (wrap pk) (toMaybe stakeKey) nid
 
-paymentKeyFromEnvelope :: Fn1 String (Effect PrivatePaymentKey)
-paymentKeyFromEnvelope = mkFn1 \envelopeString -> do
+paymentKeyFromEnvelope :: Fn1 String PrivatePaymentKey
+paymentKeyFromEnvelope = mkFn1 \envelopeString -> unsafePerformEffect $ do
   envelope <- fromMaybe "Unable to decode text envelope" $ decodeTextEnvelope envelopeString
   fromMaybe "Unknown envelope type" $ privatePaymentKeyFromTextEnvelope envelope
 
-stakeKeyFromEnvelope :: Fn1 String (Effect PrivateStakeKey)
-stakeKeyFromEnvelope = mkFn1 \envelopeString -> do
+stakeKeyFromEnvelope :: Fn1 String PrivateStakeKey
+stakeKeyFromEnvelope = mkFn1 \envelopeString -> unsafePerformEffect $ do
   envelope <- fromMaybe "Unable to decode text envelope" (decodeTextEnvelope envelopeString)
   fromMaybe "Unknown envelope type" $ privateStakeKeyFromTextEnvelope envelope
 

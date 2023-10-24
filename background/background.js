@@ -19,7 +19,7 @@ import("../output/Api/index.js").then(api => {
         return cb(paymentKey)
 
       case 'stakeKeyFromEnvelope':
-        const stakeKey = await api.stakeFromEnvelope(msg.data)
+        const stakeKey = await api.stakeKeyFromEnvelope(msg.data)
         return cb(stakeKey)
 
       default:
