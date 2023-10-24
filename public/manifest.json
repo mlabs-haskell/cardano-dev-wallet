@@ -17,7 +17,7 @@
     }
   ],
   "background": {
-    "service_worker": "./background/bundle.js",
+    "service_worker": "./background/background.js",
     "type": "module"
   },
   "action": {

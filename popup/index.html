@@ -5,11 +5,25 @@
     <link href="./style.css">
 </head>
 <body id="extension-root">
-    <script type="module" src="./index.js"></script>
+    <script type="module" src="./popup.js"></script>
     <div>
-        <h1>Test extension !</h1>
-        <button>Test
-        </button>
+        <h3>Conversions</h1>
+        <div>
+            <input type="text" id="pk-from-mnemonic" placeholder="Mnemonic to private key"/>
+            <button id="btn-pk-from-mnemonic">Convert</button>
+        </div>
+        <div>
+            <input type="text" id="pk-to-address" placeholder="Private key to address"/>
+            <button id="btn-pk-to-address">Convert</button>
+        </div>
+        <div>
+            <input type="text" id="payment-key-from-envelope" placeholder="Payment key from envelope"/>
+            <button id="btn-payment-key-from-envelope">Convert</button>
+        </div>
+        <div>
+            <input type="text" id="stake-key-from-envelope" placeholder="Stake key from envelope"/>
+            <button id="btn-stake-key-from-envelope">Convert</button>
+        </div>
     </div>
 </body>
 </html>
