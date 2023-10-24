@@ -27,6 +27,6 @@ export const stakePaymentKeyFromEnvelope = async () => {
 }
 
 document.getElementById("btn-pk-from-mnemonic").addEventListener("click", handlePkFromMnemonic)
-document.getElementById("pk-to-address").addEventListener("click", handlePkFromMnemonic)
-document.getElementById("payment-key-from-envelope").addEventListener("click", handlePkFromMnemonic)
-document.getElementById("stake-key-from-envelope").addEventListener("click", handlePkFromMnemonic)
+document.getElementById("pk-to-address").addEventListener("click", handlePkToAddress)
+document.getElementById("payment-key-from-envelope").addEventListener("click", handlePaymentKeyFromEnveloe)
+document.getElementById("stake-key-from-envelope").addEventListener("click", stakePaymentKeyFromEnvelope)

@@ -12,8 +12,6 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-  },
   "devDependencies": {
     "spago": "^0.21.0"
   }
