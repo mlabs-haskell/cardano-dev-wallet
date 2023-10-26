@@ -1,6 +1,4 @@
 const browser = require("webextension-polyfill")
-console.log("popup")
-console.log(document.getElementById("btn-pk-from-mnemonic"))
 
 export const handlePkFromMnemonic = async () => {
   const mnemonic = document.getElementById("pk-from-mnemonic")
@@ -27,6 +25,6 @@ export const stakePaymentKeyFromEnvelope = async () => {
 }
 
 document.getElementById("btn-pk-from-mnemonic").addEventListener("click", handlePkFromMnemonic)
-document.getElementById("pk-to-address").addEventListener("click", handlePkToAddress)
-document.getElementById("payment-key-from-envelope").addEventListener("click", handlePaymentKeyFromEnveloe)
-document.getElementById("stake-key-from-envelope").addEventListener("click", stakePaymentKeyFromEnvelope)
+document.getElementById("btn-pk-to-address").addEventListener("click", handlePkToAddress)
+document.getElementById("btn-payment-key-from-envelope").addEventListener("click", handlePaymentKeyFromEnveloe)
+document.getElementById("btn-stake-key-from-envelope").addEventListener("click", stakePaymentKeyFromEnvelope)
