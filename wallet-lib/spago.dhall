@@ -10,7 +10,7 @@ When creating a new Spago project, you can use
 `spago init --no-comments` or `spago init -C`
 to generate this file without the comments in this block.
 -}
-{ name = "my-project"
+{ name = "wallet-lib"
 , dependencies =
   [ "aff-promise"
   , "cardano-transaction-lib"
