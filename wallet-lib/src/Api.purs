@@ -1,21 +1,19 @@
 module Api
-  ( 
-    -- config
-  -- , contract
-  -- , finalize
-  -- , initialize
-  -- , main
-    paymentKeyFromEnvelope
+  ( config
+  , contract
+  , finalize
+  , initialize
+  , paymentKeyFromEnvelope
   , privateKeyFromMnemonic
   , privateKeysToAddress
-  -- , run
+  , run
   , stakeKeyFromEnvelope
   )
   where
 
 import Prelude
 
-import Contract.Config (ContractParams, PrivatePaymentKey, PrivateStakeKey, testnetNamiConfig)
+import Contract.Config (ContractParams, PrivatePaymentKey, PrivateStakeKey, blockfrostPublicPreviewServerConfig, mkBlockfrostBackendParams, testnetConfig)
 import Contract.JsSdk (mkContractEnvJS, stopContractEnvJS)
 import Contract.Monad (Contract, ContractEnv, runContractInEnv)
 import Contract.TextEnvelope (decodeTextEnvelope)
@@ -36,21 +34,29 @@ import Effect.Class.Console (log)
 import Effect.Exception (error, throwException)
 import Effect.Unsafe (unsafePerformEffect)
 
--- contract :: Contract Unit
--- contract = pure unit
+contract :: Contract Unit
+contract = log "aa"
 
--- initialize :: Fn1 ContractParams (Promise ContractEnv)
--- initialize = mkContractEnvJS
+initialize :: Fn1 ContractParams (Promise ContractEnv)
+initialize = mkContractEnvJS
 
--- finalize :: Fn1 ContractEnv (Promise Unit)
--- finalize = stopContractEnvJS
+finalize :: Fn1 ContractEnv (Promise Unit)
+finalize = stopContractEnvJS
 
--- run :: Fn1 ContractEnv (Promise Unit)
--- run = mkFn1 \env ->
---   unsafePerformEffect $ fromAff $ runContractInEnv env contract
+run :: Fn1 ContractEnv (Promise Unit)
+run = mkFn1 \env ->
+  unsafePerformEffect $ fromAff $ runContractInEnv env contract
 
--- config  :: ContractParams
--- config = testnetNamiConfig -- use Nami wallet
+config  :: ContractParams
+config = testnetConfig {
+    backendParams = blockfrostParams
+  }
+  where
+    blockfrostParams = mkBlockfrostBackendParams {
+        blockfrostConfig: blockfrostPublicPreviewServerConfig
+      , blockfrostApiKey: Nothing
+      , confirmTxDelay: Just (wrap 1000.0)
+    }
 
 privateKeyFromMnemonic :: Fn1 String (Bip32PrivateKey)
 privateKeyFromMnemonic = mkFn1 \s -> unsafePerformEffect $

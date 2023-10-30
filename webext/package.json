@@ -7,12 +7,31 @@
   "license": "MIT",
   "private": true,
   "scripts": {},
+  "dependencies": {
+    "@emurgo/cardano-message-signing-browser": "^1.0.1",
+    "@emurgo/cardano-message-signing-nodejs": "^1.0.1",
+    "@emurgo/cardano-serialization-lib-browser": "^11.5.0",
+    "@mlabs-haskell/cardano-serialization-lib-gc-browser": "^1.0.6",
+    "@mlabs-haskell/cardano-serialization-lib-gc-nodejs": "^1.0.6",
+    "@mlabs-haskell/csl-gc-wrapper": "^1.0.1",
+    "@mlabs-haskell/json-bigint": "^1.0.0",
+    "@noble/secp256k1": "^1.7.0",
+    "big-integer": "^1.6.51",
+    "bignumber.js": "^9.1.2",
+    "bip39": "^3.1.0",
+    "blakejs": "^1.2.1",
+    "jssha": "^3.3.1",
+    "reconnecting-websocket": "^4.4.0",
+    "uniqid": "^5.4.0",
+    "wallet-lib": "file:../wallet-lib",
+    "webextension-polyfill": "^0.10.0",
+    "xhr2": "^0.2.1"
+  },
   "devDependencies": {
     "crx": "^5.0.1",
     "esbuild": "^0.19.5",
     "esbuild-plugin-wasm": "^1.1.0",
     "esbuild-plugins-node-modules-polyfill": "^1.6.1",
-    "wallet-lib": "file:../wallet-lib",
     "web-ext": "^7.8.0",
     "webextension-polyfill": "^0.10.0"
   }
