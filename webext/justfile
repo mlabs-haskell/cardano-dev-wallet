@@ -1,0 +1,80 @@
+NPM_PACKAGE_VERSION := `jq '.version' package.json`
+
+ARTEFACTS_DIR := "artefacts"
+BUILD_DIR	:= "build"
+SRC_DIR := "src"
+WALLET_LIB_SRC_DIR := "../wallet-lib/src"
+SUPPORTED_BROWSERS := "firefox chrome"
+
+@_list:
+	just -ul
+
+clean:
+	rm -rf {{BUILD_DIR}}
+	rm -rf {{ARTEFACTS_DIR}}
+
+_check_browser browser:
+	#!/usr/bin/env bash
+	if echo {{SUPPORTED_BROWSERS}} | grep -qv {{browser}}; then
+		echo "Unsupported browser: {{browser}}"
+		echo "Supported browsers: {{SUPPORTED_BROWSERS}}"
+		exit -1
+	fi
+
+build browser="firefox":
+	#!/usr/bin/env bash
+	set -euo pipefail
+	just -q _check_browser {{browser}}
+
+	echo ">> Building wallet-lib .."
+	just -f ../wallet-lib/justfile build
+
+	mkdir -p {{BUILD_DIR}}
+
+	echo ">> Copying artefacts .."
+	cp -r {{SRC_DIR}}/* {{BUILD_DIR}}
+	echo "Done."
+
+	echo ">> Building WebExt JS files .."
+	node esbuild.js
+	echo "Done."
+
+	echo ">> Copying manifest .."
+	if [ {{browser}} = "firefox" ]; then
+		mv {{BUILD_DIR}}/manifest.firefox.json {{BUILD_DIR}}/manifest.json
+	elif [ {{browser}} = "chrome" ]; then
+		mv {{BUILD_DIR}}/manifest.chrome.json {{BUILD_DIR}}/manifest.json
+	fi
+
+	rm {{BUILD_DIR}}/manifest.*.json
+	echo "Done."
+
+
+run browser="firefox":
+	#!/usr/bin/env bash
+	set -euo pipefail
+	just -q _check_browser {{browser}}
+
+	just build {{browser}}
+
+	if [ {{browser}} = "firefox" ]; then
+		npx web-ext run -s {{BUILD_DIR}} -t firefox-desktop --devtools
+	elif [ {{browser}} = "chrome" ]; then
+		npx web-ext run -s {{BUILD_DIR}} -t chromium --devtools
+	fi
+
+dev browser="firefox":
+	find {{SRC_DIR}} {{WALLET_LIB_SRC_DIR}} | entr just build {{browser}}
+
+bundle browser="firefox":
+	#!/usr/bin/env bash
+	set -euo pipefail
+	just -q _check_browser {{browser}}
+
+	just build {{browser}}
+
+	if [ {{browser}} = "firefox" ]; then
+		npx web-ext build -s {{BUILD_DIR}} -a {{ARTEFACTS_DIR}}
+	elif [ {{browser}} = "chrome" ]; then
+		npx crx pack {{BUILD_DIR}} -o {{ARTEFACTS_DIR}}/web-extension-chrome-v{{NPM_PACKAGE_VERSION}}.crx
+	fi
