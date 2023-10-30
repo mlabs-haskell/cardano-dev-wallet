@@ -9,6 +9,7 @@
   "scripts": {},
   "devDependencies": {
     "crx": "^5.0.1",
+    "esbuild-plugins-node-modules-polyfill": "^1.6.1",
     "wallet-lib": "file:../wallet-lib",
     "web-ext": "^7.8.0",
     "webextension-polyfill": "^0.10.0"
