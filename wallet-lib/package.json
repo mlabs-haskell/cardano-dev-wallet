@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "cardano-transaction-lib": "git://github.com/Plutonomicon/cardano-transaction-lib.git#8014c940cf69516c0a00048eec79b2ba95fd94f3",
     "spago": "^0.21.0"
   }
 }
