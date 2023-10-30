@@ -10,10 +10,16 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": [
+        "<all_urls>"
+      ],
       "run_at": "document_idle",
-      "js": ["./content-script/index.js"],
-      "css": ["./content-script/index.css"]
+      "js": [
+        "./content-script/index.js"
+      ],
+      "css": [
+        "./content-script/index.css"
+      ]
     }
   ],
   "background": {
@@ -24,18 +30,12 @@
     "default_popup": "./popup/index.html",
     "default_title": "Open the popup"
   },
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "addon@example.com",
-      "strict_min_version": "100.0"
-    }
-  },
   "permissions": [],
   "icons": {
-    "72": "icon-72x72.png",
-    "96": "icon-96x96.png",
-    "128": "icon-128x128.png",
-    "144": "icon-144x144.png",
-    "152": "icon-152x152.png"
+    "72": "public/icon-72x72.png",
+    "96": "public/icon-96x96.png",
+    "128": "public/icon-128x128.png",
+    "144": "public/icon-144x144.png",
+    "152": "public/icon-152x152.png"
   }
 }
