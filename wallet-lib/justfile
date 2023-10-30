@@ -1,0 +1,5 @@
+build:
+  spago build
+
+clean:
+  rm -rf output
