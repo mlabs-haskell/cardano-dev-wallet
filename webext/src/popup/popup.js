@@ -6,7 +6,6 @@ console.log(document.getElementById("btn-pk-from-mnemonic"))
 export const handlePkFromMnemonic = async () => {
   const mnemonic = document.getElementById("pk-from-mnemonic")
   const pk = await browser.runtime.sendMessage({ type: 'privateKeyFromMnemonic', data: mnemonic.value })
-  console.log("Popup: ", pk);
   mnemonic.value = pk
 }
 
