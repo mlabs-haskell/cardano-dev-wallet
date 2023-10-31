@@ -24,6 +24,8 @@ esbuild.build({
         process: true,
         crypto: true,
         util: true,
+        os: true,
+        url: true
       }
     }),
     wasmLoader({
