@@ -1,5 +1,16 @@
+@_list:
+	just -ul
+
+setup:
+  npm i
+
 build:
   spago build
 
 clean:
   rm -rf output
+
+clean-all:
+  just clean
+
+  rm -rf node_modules

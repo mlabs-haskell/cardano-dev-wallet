@@ -9,9 +9,21 @@ SUPPORTED_BROWSERS := "firefox chrome"
 @_list:
 	just -ul
 
+setup:
+	npm i
+	just -f ../wallet-lib/justfile setup
+
 clean:
 	rm -rf {{BUILD_DIR}}
 	rm -rf {{ARTEFACTS_DIR}}
+
+	just -f ../wallet-lib/justfile clean
+
+clean-all:
+	just clean
+
+	rm -rf node_modules
+	just -f ../wallet-lib/justfile clean-all
 
 _check_browser browser:
 	#!/usr/bin/env bash
