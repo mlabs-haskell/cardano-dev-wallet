@@ -6,25 +6,30 @@ SRC_DIR := "src"
 WALLET_LIB_SRC_DIR := "../wallet-lib/src"
 SUPPORTED_BROWSERS := "firefox chrome"
 
+# List the available commands
 @_list:
 	just -ul
 
+# Install the dependencies
 setup:
 	npm i
 	just -f ../wallet-lib/justfile setup
 
+# Clean build artefacts
 clean:
 	rm -rf {{BUILD_DIR}}
 	rm -rf {{ARTEFACTS_DIR}}
 
 	just -f ../wallet-lib/justfile clean
 
+# Clean build artefacts and node_modules
 clean-all:
 	just clean
 
 	rm -rf node_modules
 	just -f ../wallet-lib/justfile clean-all
 
+# Check if the provided browser is supported by us
 _check_browser browser:
 	#!/usr/bin/env bash
 	if echo {{SUPPORTED_BROWSERS}} | grep -qv {{browser}}; then
@@ -33,6 +38,7 @@ _check_browser browser:
 		exit -1
 	fi
 
+# Build the project
 build browser="firefox":
 	#!/usr/bin/env bash
 	set -euo pipefail
@@ -62,6 +68,7 @@ build browser="firefox":
 	echo "Done."
 
 
+# Run the project
 run browser="firefox":
 	#!/usr/bin/env bash
 	set -euo pipefail
@@ -75,9 +82,11 @@ run browser="firefox":
 		npx web-ext run -s {{BUILD_DIR}} -t chromium --devtools
 	fi
 
+# Watch the source for changes and rebuild
 dev browser="firefox":
 	find {{SRC_DIR}} {{WALLET_LIB_SRC_DIR}} | entr just build {{browser}}
 
+# Bundle the extension
 bundle browser="firefox":
 	#!/usr/bin/env bash
 	set -euo pipefail

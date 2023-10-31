@@ -1,15 +1,20 @@
+# List the available commands
 @_list:
 	just -ul
 
+# Install the dependencies
 setup:
   npm i
 
+# Build the project
 build:
   spago build
 
+# Clean build artefacts
 clean:
   rm -rf output
 
+# Clean build artefacts and node_modules
 clean-all:
   just clean
 
