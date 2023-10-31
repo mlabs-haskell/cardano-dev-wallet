@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Service Worker Test</title>
+  </head>
+  <body>
+    <script type="module">
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          // The register function takes as argument
+          // the file path to the worker's file
+          .register("/background.js", {type: 'module'})
+          // Gives us registration object
+          .then((reg) => console.log("Service Worker Registered"))
+          .catch((swErr) => {
+            console.log(`Service Worker Installation Error: ${swErr}`),
+              console.log(swErr);
+            console.log(swErr.stack);
+          });
+      });
+    </script>
+  </body>
+</html>

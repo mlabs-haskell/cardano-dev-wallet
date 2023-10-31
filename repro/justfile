@@ -1,0 +1,62 @@
+NPM_PACKAGE_VERSION := `jq '.version' package.json`
+
+ARTEFACTS_DIR := "artefacts"
+BUILD_DIR	:= "build"
+SRC_DIR := "src"
+WALLET_LIB_SRC_DIR := "../wallet-lib/src"
+
+# List the available commands
+@_list:
+	just -ul
+
+# Install the dependencies
+setup:
+	npm i
+	just -f ../wallet-lib/justfile setup
+
+# Clean build artefacts
+clean:
+	rm -rf {{BUILD_DIR}}
+	rm -rf {{ARTEFACTS_DIR}}
+
+	just -f ../wallet-lib/justfile clean
+
+# Clean build artefacts and node_modules
+clean-all:
+	just clean
+
+	rm -rf node_modules
+	just -f ../wallet-lib/justfile clean-all
+
+# Build the project
+build:
+	#!/usr/bin/env bash
+	set -euo pipefail
+
+	echo ">> Building wallet-lib .."
+	just -f ../wallet-lib/justfile build
+
+	mkdir -p {{BUILD_DIR}}
+
+	echo ">> Copying artefacts .."
+	cp -r {{SRC_DIR}}/* {{BUILD_DIR}}
+	echo "Done."
+
+	echo ">> Building Service Worker JS files .."
+	node esbuild.js
+	echo "Done."
+
+
+# Run the project
+run:
+	#!/usr/bin/env bash
+	set -euo pipefail
+
+	just build
+
+	cd {{BUILD_DIR}} && python -m http.server
+
+
+# Watch the source for changes and rebuild
+dev:
+	find {{SRC_DIR}} {{WALLET_LIB_SRC_DIR}} | entr just build
