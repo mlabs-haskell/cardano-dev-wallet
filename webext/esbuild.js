@@ -23,6 +23,7 @@ esbuild.build({
         buffer: true,
         process: true,
         crypto: true,
+        util: true,
       }
     }),
     wasmLoader({
