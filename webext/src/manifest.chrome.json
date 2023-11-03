@@ -15,13 +15,17 @@
       ],
       "run_at": "document_idle",
       "js": [
-        "./content-script/index.js"
+        "./content-script/main.js"
       ],
       "css": [
         "./content-script/index.css"
       ]
     }
   ],
+  "web_accessible_resources": [{
+    "matches": ["<all_urls>"],
+    "resources": ["./content-script/*"]
+  }],
   "background": {
     "service_worker": "./background/background.js",
     "type": "module"

@@ -15,12 +15,17 @@
       ],
       "run_at": "document_idle",
       "js": [
-        "./content-script/index.js"
+        "./content-script/main.js"
       ],
       "css": [
         "./content-script/index.css"
       ]
     }
+  ],
+  "web_accessible_resources": [
+    "./content-script/index.js",
+    "cardano_message_signing_bg-2JVRLONT.wasm",
+    "cardano_serialization_lib_bg-NQLJMYGZ.wasm"
   ],
   "background": {
     "page": "./background/index.html",
