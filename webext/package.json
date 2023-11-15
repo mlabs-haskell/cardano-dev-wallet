@@ -12,7 +12,6 @@
     "esbuild": "^0.19.5",
     "esbuild-plugin-wasm": "^1.1.0",
     "esbuild-plugins-node-modules-polyfill": "^1.6.1",
-    "wallet-lib": "file:../wallet-lib",
     "web-ext": "^7.8.0",
     "webextension-polyfill": "^0.10.0"
   }
