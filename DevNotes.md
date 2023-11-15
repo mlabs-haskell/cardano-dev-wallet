@@ -61,3 +61,25 @@ Run `just bundle {browser}` to create the extension package (crx/xpi).
   * Currently we are using the git commit SHA of the latest commit in
    Purescript 0.15 branch.
     * TODO: Once this is merged into master, use the commit SHA of master.
+
+### Removal Of CTL Dependency
+
+* CTL was giving `maximum call stack size exceeded` error when used inside Chrome's service workers.
+* This issue is specific to Chrome.
+  * Here's a bug report in Chromium.
+    They claim to have resolved it, but there is a post after the bug is marked as resolved, saying the issue is still present.
+    https://bugs.chromium.org/p/chromium/issues/detail?id=252492
+  * Here's another person's report. They were trying to build a game that and ran into the same issue.
+    This was also a long time after the bug report was marked as resolved.
+    The call stack size seemed unreasonably small.
+    https://www.construct.net/en/forum/construct-3/general-discussion-7/maximum-call-stack-size-using-154930
+  * Purescript code has >20 lines of imports which all get compiled down to ESM imports.
+    Both ESBuild and Webpack transpile these imports during bundling to
+    function calls, so to concatenate multiple files into one output file
+    without having scope conflicts.
+    The large number of imports seem to be causing the call stack size issue.
+* Plus, the added overhead of working with Purescript, we decided to eliminate
+  the CTL dependency and re-write the small part of CTL we need to implement
+  CIP30 ourselves, in JS.
+  This will also make the build process much simpler, and reduce the barrier
+  for entry for future contributors.
