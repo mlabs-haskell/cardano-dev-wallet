@@ -10,7 +10,7 @@
 * `entr`: https://eradman.com/entrproject/ \
   For watching files for changes.
 
-Both of these tools should be available in your distro's repo or homebrew if you're on MacOS.
+Both of these tools are very common and should be available in your distro's repo or homebrew if you're on MacOS.
 
 **Development**
 
