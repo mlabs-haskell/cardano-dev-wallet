@@ -1,29 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <title>Web Extension Frontend</title>
-    <link href="./style.css">
-</head>
-<body id="extension-root">
-    <script type="module" src="./popup.js"></script>
-    <div>
-        <h3>Conversions</h1>
-        <div>
-            <input type="text" id="pk-from-mnemonic" placeholder="Mnemonic to private key"/>
-            <button id="btn-pk-from-mnemonic">Convert</button>
-        </div>
-        <div>
-            <input type="text" id="pk-to-address" placeholder="Private key to address"/>
-            <button id="btn-pk-to-address">Convert</button>
-        </div>
-        <div>
-            <input type="text" id="payment-key-from-envelope" placeholder="Payment key from envelope"/>
-            <button id="btn-payment-key-from-envelope">Convert</button>
-        </div>
-        <div>
-            <input type="text" id="stake-key-from-envelope" placeholder="Stake key from envelope"/>
-            <button id="btn-stake-key-from-envelope">Convert</button>
-        </div>
+    <link rel="stylesheet" href="normalize.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body id="extension-root">
+    <script type="module" src="popup.js"></script>
+    <div class="col">
+      <h1>WebExt Demo</h1>
+      <div class="col">
+        <label>
+          Mnemonic to Private Key
+          <textarea
+            type="text"
+            id="pk-from-mnemonic"
+            placeholder="Mnemonic"
+          ></textarea>
+        </label>
+        <button id="btn-pk-from-mnemonic">Convert</button>
+        <pre class="output" id="out-pk-from-mnemonic">
+Output will be displayed here</pre
+        >
+      </div>
+      <div></div>
+      <div class="col">
+        <label>
+          Private Key to Addresses
+          <textarea
+            type="text"
+            id="pk-to-addresses"
+            placeholder="Private key to addresses"
+            rows="5"
+          ></textarea>
+        </label>
+        <button id="btn-pk-to-addresses">Convert</button>
+        <pre class="output" id="out-pk-to-addresses">
+Output will be displayed here</pre
+        >
+      </div>
     </div>
-</body>
+  </body>
 </html>

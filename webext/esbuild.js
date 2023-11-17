@@ -1,6 +1,6 @@
 import * as esbuild from "esbuild";
 import { wasmLoader } from "esbuild-plugin-wasm";
-import { nodeModulesPolyfillPlugin } from 'esbuild-plugins-node-modules-polyfill';
+import { nodeModulesPolyfillPlugin } from "esbuild-plugins-node-modules-polyfill";
 
 esbuild.build({
   entryPoints: [
@@ -16,15 +16,15 @@ esbuild.build({
     nodeModulesPolyfillPlugin({
       globals: {
         Buffer: true,
-        process: true,
+        // process: true,
       },
       modules: {
-        fs: true,
+        // fs: true,
         buffer: true,
-        process: true,
-        crypto: true,
-        util: true,
-      }
+        // process: true,
+        // crypto: true,
+        // util: true,
+      },
     }),
     wasmLoader({
       mode: "deferred",
