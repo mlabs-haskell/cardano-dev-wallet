@@ -3,7 +3,6 @@ NPM_PACKAGE_VERSION := `jq '.version' package.json`
 ARTEFACTS_DIR := "artefacts"
 BUILD_DIR	:= "build"
 SRC_DIR := "src"
-WALLET_LIB_SRC_DIR := "../wallet-lib/src"
 SUPPORTED_BROWSERS := "firefox chrome"
 
 # List the available commands
@@ -13,21 +12,18 @@ SUPPORTED_BROWSERS := "firefox chrome"
 # Install the dependencies
 setup:
 	npm i
-	just -f ../wallet-lib/justfile setup
 
 # Clean build artefacts
 clean:
 	rm -rf {{BUILD_DIR}}
 	rm -rf {{ARTEFACTS_DIR}}
 
-	just -f ../wallet-lib/justfile clean
 
 # Clean build artefacts and node_modules
 clean-all:
 	just clean
 
 	rm -rf node_modules
-	just -f ../wallet-lib/justfile clean-all
 
 # Check if the provided browser is supported by us
 _check_browser browser:
@@ -43,9 +39,6 @@ build browser="firefox":
 	#!/usr/bin/env bash
 	set -euo pipefail
 	just -q _check_browser {{browser}}
-
-	echo ">> Building wallet-lib .."
-	just -f ../wallet-lib/justfile build
 
 	mkdir -p {{BUILD_DIR}}
 
@@ -84,7 +77,7 @@ run browser="firefox":
 
 # Watch the source for changes and rebuild
 dev browser="firefox":
-	find {{SRC_DIR}} {{WALLET_LIB_SRC_DIR}} | entr just build {{browser}}
+	find {{SRC_DIR}} | entr just build {{browser}}
 
 # Bundle the extension
 bundle browser="firefox":
