@@ -3,6 +3,7 @@ NPM_PACKAGE_VERSION := `jq '.version' package.json`
 ARTEFACTS_DIR := "artefacts"
 BUILD_DIR	:= "build"
 SRC_DIR := "src"
+CHROME_KEY := "dev-keys/chrome-dev-key.pem"
 SUPPORTED_BROWSERS := "firefox chrome"
 
 # List the available commands
@@ -93,7 +94,7 @@ bundle browser="firefox":
 	if [ {{browser}} = "firefox" ]; then
 		npx web-ext build -s {{BUILD_DIR}} -a {{ARTEFACTS_DIR}}
 	elif [ {{browser}} = "chrome" ]; then
-		npx crx pack {{BUILD_DIR}} -o {{ARTEFACTS_DIR}}/web-extension-chrome-v{{NPM_PACKAGE_VERSION}}.crx
+		npx crx pack {{BUILD_DIR}} -o {{ARTEFACTS_DIR}}/web-extension-chrome-v{{NPM_PACKAGE_VERSION}}.crx --private-key {{CHROME_KEY}}
 	fi
 
 # Test the extension
