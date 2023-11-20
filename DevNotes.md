@@ -84,3 +84,20 @@ Run `just bundle {browser}` to create the extension package (crx/xpi).
   CIP30 ourselves, in JS.
   This will also make the build process much simpler, and reduce the barrier
   for entry for future contributors.
+
+### Extension loading during development
+
+- Chrome:
+  - Go to extensions page, and turn the `Developer Mode` switch on.
+  - Drag and drop `artefacts/<extension-name>.crx` into the extensions page.
+  - If the drag and drop seem to be not working:
+    - I experienced this issue on Linux (Gnome Wayland).
+    - Try dragging it onto the page, if no overlay appears, drop it back where you dragged it from.
+    - Repeat this a few times. Should get it working after 2-3 tries.
+    - If you drop without the overlay visible, the file will get downloaded instead of getting installed.
+      When you click on the download entry, it will show you `CRX_REQUIRED_PROOF_MISSING` error.
+- Firefox:
+  - Go to extensions page, click the settings icon, select Debug Addons.
+  - Click Load Temporary Addon and open the `.zip` or the `.xpi` file.
+  - Note: Firefox doesn't support drag and drop installation of extensions
+    for development.
