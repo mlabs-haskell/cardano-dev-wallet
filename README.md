@@ -1,9 +1,19 @@
 # Cardano Dev Wallet
 
-## Setup
+## Workflow
 
-To setup your dev environment you need to first build the cardano-transaction-library-api, this can be found in `cardano-transaction-library/`.
+- Setup: `just setup`
+- Run: `just run [browser]`
+- Development with auto-reload:
+  - Run `just dev [browser]` in background for auto-recompiling.
+  - Run `just run [browser]` to launch the extension.
+- Bundle: `just bundle [browser]`
+- Test: `just test [browser]`
 
-Go to that folder and run `npm i && npm run build` to build the purescript API with spago.
+Note:
+`[browser]`, if omitted, defaults to `firefox`.
+Allowed values: `firefox`, `chrome`.
 
-Once that is done, come back to the root folder. First run `npm i` to install all the dependencies, followed by `npm run build` to build the extension for all supported browsers.
+## Devloper Notes
+
+See [DevNotes.md](DevNotes.md)
