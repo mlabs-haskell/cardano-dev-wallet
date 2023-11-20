@@ -47,19 +47,7 @@ function pkToAddresses(privateKey) {
   ].join("\n\n");
 }
 
-attachHandler(
-  "btn-pk-from-mnemonic",
-  "pk-from-mnemonic",
-  "out-pk-from-mnemonic",
-  pkFromMnemonic
-);
-
-attachHandler(
-  "btn-pk-to-addresses",
-  "pk-to-addresses",
-  "out-pk-to-addresses",
-  pkToAddresses
-);
+attachHandler("btn", "mnemonic", "output", pkFromMnemonic);
 
 const mnemonic = bip39.generateMnemonic();
 document.getElementById("pk-from-mnemonic").value = mnemonic;
