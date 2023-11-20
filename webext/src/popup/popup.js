@@ -5,34 +5,30 @@ function harden(num) {
   return 0x80000000 + num;
 }
 
+function el(tag, attrs, children) {
+  let elem = document.createElement(tag);
+  elem = Object.assign(elem, attrs);
+  elem.replaceChildren(...children);
+  return elem;
+}
+
 function attachHandler(btnId, inputId, outputId, handler) {
   const btn = document.getElementById(btnId);
   const input = document.getElementById(inputId);
   const output = document.getElementById(outputId);
-  btn.addEventListener(
-    "click",
-    () => (output.innerText = handler(input.value))
+  btn.addEventListener("click", () =>
+    output.replaceChildren(handler(input.value))
   );
 }
 
-function pkFromMnemonic(mnemonic) {
-  const entropy = bip39.mnemonicToEntropy(mnemonic);
-  const rootKey = CardanoWasm.Bip32PrivateKey.from_bip39_entropy(
-    Buffer.from(entropy, "hex"),
-    Buffer.from("") // password
-  );
-  return rootKey.to_bech32();
-}
-
-function pkToAddresses(privateKey) {
-  const rootKey = CardanoWasm.Bip32PrivateKey.from_bech32(privateKey);
+function deriveAddress(rootKey, account, index) {
   const accountKey = rootKey
     .derive(harden(1852))
     .derive(harden(1815))
-    .derive(harden(0));
+    .derive(harden(account));
 
-  const utxoPubkey = accountKey.derive(0).derive(0).to_public();
-  const stakeKey = accountKey.derive(2).derive(0).to_public();
+  const utxoPubkey = accountKey.derive(0).derive(index).to_public();
+  const stakeKey = accountKey.derive(2).derive(index).to_public();
 
   const baseAddr = CardanoWasm.BaseAddress.new(
     CardanoWasm.NetworkInfo.mainnet().network_id(),
@@ -40,26 +36,72 @@ function pkToAddresses(privateKey) {
     CardanoWasm.StakeCredential.from_keyhash(stakeKey.to_raw_key().hash())
   );
 
-  return [
-    `Payment Address:\n${utxoPubkey.to_bech32()}`,
-    `Stake Address:\n${stakeKey.to_bech32()}`,
-    `Base Address:\n${baseAddr.to_address().to_bech32()}`,
-  ].join("\n\n");
+  return baseAddr;
 }
 
-attachHandler(
-  "btn-pk-from-mnemonic",
-  "pk-from-mnemonic",
-  "out-pk-from-mnemonic",
-  pkFromMnemonic
-);
+function convert(mnemonicOrPk) {
+  let rootKey;
+  mnemonicOrPk = mnemonicOrPk.trim();
 
-attachHandler(
-  "btn-pk-to-addresses",
-  "pk-to-addresses",
-  "out-pk-to-addresses",
-  pkToAddresses
-);
+  try {
+    if (mnemonicOrPk.indexOf(" ") === -1) {
+      // no space => private key
+      rootKey = CardanoWasm.Bip32PrivateKey.from_bech32(mnemonicOrPk);
+    } else {
+      const entropy = bip39.mnemonicToEntropy(mnemonicOrPk);
+      rootKey = CardanoWasm.Bip32PrivateKey.from_bip39_entropy(
+        Buffer.from(entropy, "hex"),
+        Buffer.from("") // password
+      );
+    }
+  } catch (e) {
+    let msg = e.toString();
+    return el("div", { className: "alert error" }, [
+      el("div", { className: "h5" }, "Error"),
+      el("div", { className: "" }, [msg]),
+    ]);
+  }
 
-const mnemonic = bip39.generateMnemonic();
-document.getElementById("pk-from-mnemonic").value = mnemonic;
+  let accounts = [
+    [0, 0],
+    [0, 1],
+    [1, 0],
+    [1, 1],
+  ].map(([account, index]) => [
+    `Account ${account}, Index ${index}`,
+    deriveAddress(rootKey, account, index),
+  ]);
+
+  return el(
+    "div",
+    { className: "column" },
+    accounts.map(([label, addr]) =>
+      el("div", { className: "alert" }, [
+        el("div", { className: "h5" }, label),
+        el("div", { className: "" }, [addr.to_address().to_bech32()]),
+      ])
+    )
+  );
+}
+
+attachHandler("btn", "mnemonicOrPk", "output", convert);
+
+function main() {
+  if (Math.random() < 0.5) {
+    const mnemonic = bip39.generateMnemonic(256);
+    document.getElementById("mnemonicOrPk").value = mnemonic;
+  } else {
+    const mnemonic = bip39.generateMnemonic(256);
+    const entropy = bip39.mnemonicToEntropy(mnemonic);
+    const rootKey = CardanoWasm.Bip32PrivateKey.from_bip39_entropy(
+      Buffer.from(entropy, "hex"),
+      Buffer.from("") // password
+    );
+    const privateKey = rootKey.to_bech32();
+    document.getElementById("mnemonicOrPk").value = privateKey;
+  }
+}
+
+document.getElementById("btn-regen").addEventListener("click", main);
+
+main();

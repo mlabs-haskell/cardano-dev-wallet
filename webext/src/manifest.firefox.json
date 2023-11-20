@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "My Web Extension",
   "author": "my@email.com",
   "description": "A cross browser web extension.",
@@ -23,10 +23,12 @@
     }
   ],
   "background": {
-    "page": "./background/index.html",
+    "scripts": [
+      "./background/background.js"
+    ],
     "persistent": false
   },
-  "browser_action": {
+  "action": {
     "default_area": "navbar",
     "default_popup": "./popup/index.html",
     "default_title": "Open the popup",

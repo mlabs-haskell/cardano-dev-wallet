@@ -1,43 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Web Extension Frontend</title>
+    <title>Cardano Dev Wallet</title>
     <link rel="stylesheet" href="normalize.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body id="extension-root">
+  <body id="extension-root" class="row align-center">
     <script type="module" src="popup.js"></script>
-    <div class="col">
-      <h1>WebExt Demo</h1>
-      <div class="col">
-        <label>
-          Mnemonic to Private Key
-          <textarea
-            type="text"
-            id="pk-from-mnemonic"
-            placeholder="Mnemonic"
-          ></textarea>
-        </label>
-        <button id="btn-pk-from-mnemonic">Convert</button>
-        <pre class="output" id="out-pk-from-mnemonic">
-Output will be displayed here</pre
-        >
-      </div>
-      <div></div>
-      <div class="col">
-        <label>
-          Private Key to Addresses
-          <textarea
-            type="text"
-            id="pk-to-addresses"
-            placeholder="Private key to addresses"
-            rows="5"
-          ></textarea>
-        </label>
-        <button id="btn-pk-to-addresses">Convert</button>
-        <pre class="output" id="out-pk-to-addresses">
-Output will be displayed here</pre
-        >
+    <div class="surface pad w-30">
+      <div class="column gap-l">
+        <h1 class="h3 weight-normal">Dev Wallet</h1>
+        <div class="column">
+          <label class="weight-medium">
+            Mnemonic/Root Private Key
+            <textarea
+              id="mnemonicOrPk"
+              data-testid="mnemonicOrPk"
+              placeholder="Mnemonic or Private Key"
+            ></textarea>
+          </label>
+          <div class="row">
+            <button id="btn">Convert</button>
+            <button id="btn-regen" class="secondary">Random</button>
+          </div>
+        </div>
+        <div class="column force-wrap gap-s">
+          <h5 class="weight-medium">Output</h5>
+          <div class="column" id="output">
+            <div class="alert">Output will be displayed here</div>
+          </div>
+        </div>
       </div>
     </div>
   </body>
