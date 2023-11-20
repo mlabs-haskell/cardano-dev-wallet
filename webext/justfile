@@ -85,7 +85,10 @@ bundle browser="firefox":
 	set -euo pipefail
 	just -q _check_browser {{browser}}
 
+	just clean
 	just build {{browser}}
+
+	mkdir -p {{ARTEFACTS_DIR}}
 
 	if [ {{browser}} = "firefox" ]; then
 		npx web-ext build -s {{BUILD_DIR}} -a {{ARTEFACTS_DIR}}
