@@ -85,12 +85,28 @@
 
 /* Utilities */
 
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25em;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  gap: 1em;
+}
+
 .size-l {
   font-size: 1.125em;
 }
 
 .size-xl {
   font-size: 1.25em;
+}
+
+.pad-0 {
+  padding: 0;
 }
 
 .pad {
@@ -109,22 +125,30 @@
   padding: var(--space-xxl);
 }
 
+.gap-0 {
+  gap: 0;
+}
+
+.gap {
+  gap: var(--space);
+}
+
+.gap-l {
+  gap: var(--space-l);
+}
+
+.gap-xl {
+  gap: var(--space-xl);
+}
+
+.gap-xxl {
+  gap: var(--space-xxl);
+}
+
 .text-block {
   display: block;
   flex-direction: column;
   gap: 0;
-}
-
-.column {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25em;
-}
-
-.row {
-  display: flex;
-  flex-direction: row;
-  gap: 1em;
 }
 
 .align-end {
@@ -258,18 +282,22 @@ label:focus-within {
 }
 
 input,
-textarea {
+textarea,
+.input,
+.textarea {
   border-radius: var(--radius);
   border: none;
   color: var(--text-controls);
   background-color: var(--input-background);
 }
 
-input {
+input,
+.input {
   padding: 0.5em 1em;
 }
 
-textarea {
+textarea,
+.textarea {
   padding: 1em;
   overflow: visible;
   height: fit-content;
@@ -344,11 +372,6 @@ button.secondary:active {
   background-color: var(--secondary-pressed);
 }
 
-.surface {
-  background-color: var(--surface);
-  border-radius: var(--radius);
-}
-
 form.column {
   max-width: 25em;
 }
@@ -361,4 +384,15 @@ form.column {
   border-radius: var(--radius);
   color: var(--alert-body);
   background-color: var(--alert-background);
+}
+
+.alert.error {
+  color: var(--alert-error-body);
+  background-color: var(--alert-error-background);
+  --text-headings: var(--alert-error-title);
+}
+
+.surface {
+  background-color: var(--surface);
+  border-radius: var(--radius);
 }
