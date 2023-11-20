@@ -73,6 +73,7 @@
   --text-size-xxl: 3em;
 
   /* Spacing */
+  --space-s: 1em;
   --space: 1.5em;
   --space-l: 2em;
   --space-xl: 2.5em;
@@ -94,7 +95,7 @@
 .row {
   display: flex;
   flex-direction: row;
-  gap: 1em;
+  gap: 0.75em;
 }
 
 .size-l {
@@ -129,6 +130,10 @@
   gap: 0;
 }
 
+.gap-s {
+  gap: var(--space-s);
+}
+
 .gap {
   gap: var(--space);
 }
@@ -151,12 +156,12 @@
   gap: 0;
 }
 
-.align-end {
-  justify-content: end;
+.align-center {
+  justify-content: center;
 }
 
-.cap-width {
-  max-width: 40em;
+.align-end {
+  justify-content: end;
 }
 
 .force-wrap {

@@ -86,16 +86,22 @@ function convert(mnemonicOrPk) {
 
 attachHandler("btn", "mnemonicOrPk", "output", convert);
 
-if (Math.random() < 0.5) {
-  const mnemonic = bip39.generateMnemonic(256);
-  document.getElementById("mnemonicOrPk").value = mnemonic;
-} else {
-  const mnemonic = bip39.generateMnemonic(256);
-  const entropy = bip39.mnemonicToEntropy(mnemonic);
-  const rootKey = CardanoWasm.Bip32PrivateKey.from_bip39_entropy(
-    Buffer.from(entropy, "hex"),
-    Buffer.from("") // password
-  );
-  const privateKey = rootKey.to_bech32();
-  document.getElementById("mnemonicOrPk").value = privateKey;
+function main() {
+  if (Math.random() < 0.5) {
+    const mnemonic = bip39.generateMnemonic(256);
+    document.getElementById("mnemonicOrPk").value = mnemonic;
+  } else {
+    const mnemonic = bip39.generateMnemonic(256);
+    const entropy = bip39.mnemonicToEntropy(mnemonic);
+    const rootKey = CardanoWasm.Bip32PrivateKey.from_bip39_entropy(
+      Buffer.from(entropy, "hex"),
+      Buffer.from("") // password
+    );
+    const privateKey = rootKey.to_bech32();
+    document.getElementById("mnemonicOrPk").value = privateKey;
+  }
 }
+
+document.getElementById("btn-regen").addEventListener("click", main);
+
+main();
