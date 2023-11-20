@@ -92,3 +92,18 @@ bundle browser="firefox":
 	elif [ {{browser}} = "chrome" ]; then
 		npx crx pack {{BUILD_DIR}} -o {{ARTEFACTS_DIR}}/web-extension-chrome-v{{NPM_PACKAGE_VERSION}}.crx
 	fi
+
+# Test the extension
+test browser="firefox":
+	#!/usr/bin/env bash
+	set -euo pipefail
+	just -q _check_browser {{browser}}
+
+	just build {{browser}}
+
+
+	if [ {{browser}} = "firefox" ]; then
+		npx playwright test --browser firefox
+	elif [ {{browser}} = "chrome" ]; then
+		npx playwright test --browser chromium
+	fi
