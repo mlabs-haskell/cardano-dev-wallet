@@ -17,9 +17,6 @@
       "run_at": "document_idle",
       "js": [
         "./content-script/index.js"
-      ],
-      "css": [
-        "./content-script/index.css"
       ]
     }
   ],
