@@ -25,8 +25,7 @@
   "background": {
     "scripts": [
       "./background/background.js"
-    ],
-    "persistent": false
+    ]
   },
   "action": {
     "default_area": "navbar",
