@@ -75,7 +75,10 @@ class CIP30WalletApiWrapper implements CIP30WalletApi {
       .then((addresses) => addresses.map((address) => address.to_hex()));
   }
 
-  async signTx(tx: CborHexStr, partialSign?: boolean): Promise<CborHexStr> {
+  async signTx(
+    tx: CborHexStr,
+    partialSign: boolean = false
+  ): Promise<CborHexStr> {
     return this.api
       .signTx(CSL.Transaction.from_hex(tx), partialSign)
       .then((signedTx) => signedTx.to_hex());

@@ -1,4 +1,4 @@
-import { APIErrorCode } from "../ErrorTypes";
+import { APIErrorCode, TxSignError, TxSignErrorCode } from "../ErrorTypes";
 import {
   NetworkId,
   Paginate,
@@ -35,7 +35,7 @@ class BlockFrostCIP30WalletApi implements CIP30WalletApiTyped {
   }
 
   _getBaseAddress(): CSL.BaseAddress {
-    return this.wallet.account(0).baseAddress(0);
+    return this.wallet.account(0, 0).baseAddress;
   }
 
   _getAddress(): CSL.Address {
@@ -109,15 +109,51 @@ class BlockFrostCIP30WalletApi implements CIP30WalletApiTyped {
 
   async signTx(
     tx: CSL.Transaction,
-    partialSign?: boolean
+    partialSign: boolean
   ): Promise<CSL.Transaction> {
-    let vkeys = CSL.Vkeywitnesses.new();
-    tx.witness_set().set_vkeys(vkeys);
-    let vkey = CSL.Vkey.new(this.wallet.account(0).publicKey().to_raw_key());
-    let pkey = this.wallet.account(0);
+    tx = cloneTx(tx);
 
-    let sig = pkey.accountKey.to_raw_key().sign(tx.body().to_bytes());
-    vkeys.add(CSL.Vkeywitness.new(vkey, sig));
+    let txBody = tx.body();
+    let txHash = CSL.hash_transaction(txBody);
+
+    let account = this.wallet.account(0, 0);
+    let paymentKeyHash = account.paymentKey.to_public().hash();
+    let stakingKeyHash = account.paymentKey.to_public().hash();
+
+    let requiredKeyHashes = await Utils.getRequiredKeyHashes(
+      tx,
+      (await this.getUtxos())!,
+      paymentKeyHash
+    );
+
+    let requiredKeyHashesSet = new Set(requiredKeyHashes);
+
+    let witnesses: CSL.Vkeywitness[] = [];
+    for (let keyhash of requiredKeyHashesSet) {
+      if (keyhash == paymentKeyHash) {
+        let witness = CSL.make_vkey_witness(txHash, account.paymentKey);
+        witnesses.push(witness);
+      } else if (keyhash == stakingKeyHash) {
+        let witness = CSL.make_vkey_witness(txHash, account.stakingKey);
+        witnesses.push(witness);
+      } else {
+        if (partialSign == false) {
+          throw {
+            code: TxSignErrorCode.ProofGeneration,
+            info: `Unknown keyhash ${keyhash.to_hex()}`,
+          };
+        }
+      }
+    }
+
+    if (witnesses.length > 0) {
+      if (tx.witness_set().vkeys() == null) {
+        tx.witness_set().set_vkeys(CSL.Vkeywitnesses.new());
+      }
+      for (let witness of witnesses) {
+        tx.witness_set().vkeys()!.add(witness);
+      }
+    }
 
     return tx;
   }
@@ -125,6 +161,10 @@ class BlockFrostCIP30WalletApi implements CIP30WalletApiTyped {
   async submitTx(tx: string): Promise<string> {
     return this.blockfrost.submitTx(tx);
   }
+}
+
+function cloneTx(tx: CSL.Transaction): CSL.Transaction {
+  return CSL.Transaction.from_bytes(tx.to_bytes());
 }
 
 export { BlockFrostCIP30WalletApi };
