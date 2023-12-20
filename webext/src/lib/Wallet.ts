@@ -23,39 +23,35 @@ export class Wallet {
     }
   }
 
-  account(account: number): Account {
+  account(account: number, index: number): Account {
     let accountKey = this.rootKey
       .derive(harden(1852))
       .derive(harden(1815))
       .derive(harden(account));
-    return new Account(this.networkId, accountKey);
+    return new Account(this.networkId, accountKey, index);
   }
 }
 
 export class Account {
-  accountKey: CSL.Bip32PrivateKey;
   networkId: number;
+  paymentKey: CSL.PrivateKey;
+  stakingKey: CSL.PrivateKey;
+  baseAddress: CSL.BaseAddress;
 
-  constructor(networkId: number, accountKey: CSL.Bip32PrivateKey) {
-    this.accountKey = accountKey;
+  constructor(
+    networkId: number,
+    accountKey: CSL.Bip32PrivateKey,
+    index: number
+  ) {
     this.networkId = networkId;
-  }
 
-  baseAddress(index: number): CSL.BaseAddress {
-    const utxoPubkey = this.accountKey.derive(0).derive(index).to_public();
-    const stakeKey = this.accountKey.derive(2).derive(index).to_public();
-
-    const baseAddr = CSL.BaseAddress.new(
+    this.paymentKey = accountKey.derive(0).derive(index).to_raw_key();
+    this.stakingKey = accountKey.derive(2).derive(index).to_raw_key();
+    this.baseAddress = CSL.BaseAddress.new(
       this.networkId,
-      CSL.StakeCredential.from_keyhash(utxoPubkey.to_raw_key().hash()),
-      CSL.StakeCredential.from_keyhash(stakeKey.to_raw_key().hash())
+      CSL.StakeCredential.from_keyhash(this.paymentKey.to_public().hash()),
+      CSL.StakeCredential.from_keyhash(this.stakingKey.to_public().hash())
     );
-
-    return baseAddr;
-  }
-
-  publicKey(): CSL.Bip32PublicKey {
-    return this.accountKey.to_public();
   }
 }
 

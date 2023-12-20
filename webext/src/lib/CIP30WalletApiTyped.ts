@@ -28,7 +28,7 @@ interface CIP30WalletApiTyped {
 
   getRewardAddresses(): Promise<CSL.Address[]>;
 
-  signTx(tx: CSL.Transaction, partialSign?: boolean): Promise<CSL.Transaction>;
+  signTx(tx: CSL.Transaction, partialSign: boolean): Promise<CSL.Transaction>;
 
   submitTx(tx: CborHexStr): Promise<string>;
 }
