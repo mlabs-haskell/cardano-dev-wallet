@@ -1,5 +1,5 @@
 import * as CSL from "@emurgo/cardano-serialization-lib-browser";
-import { Paginate } from "./CIP30WalletApi";
+import { CSLIterator } from "./CSLIterator";
 
 function getAllPolicyIdAssetNames(
   value: CSL.Value
@@ -213,46 +213,4 @@ export function getRequiredKeyHashesFromCertificate(
     result.push(UNKNOWN_KEYHASH);
   }
   return result;
-}
-
-export interface CSLContainer<T> {
-  len(): number;
-  get(i: number): T;
-}
-
-export class CSLIterator<T> implements Iterator<T>, Iterable<T> {
-  private index: number;
-  constructor(private container: CSLContainer<T> | undefined) {
-    this.index = 0;
-  }
-
-  [Symbol.iterator](): Iterator<T> {
-    return this;
-  }
-
-  next(): IteratorResult<T> {
-    if (this.container != null && this.index < this.container.len()) {
-      this.index += 1;
-      return {
-        done: false,
-        value: this.container.get(this.index),
-      };
-    } else {
-      return {
-        done: true,
-        value: null,
-      };
-    }
-  }
-}
-
-/**
- * Pretty much useless client side pagination.
- * Because we have the whole thing in memory wherever we use it.
- */
-export function paginateClientSide<T>(x: T[], paginate?: Paginate): T[] {
-  if (paginate == null) return x;
-  let start = paginate.page * paginate.limit;
-  let end = start + paginate.limit;
-  return x.slice(start, end);
 }
