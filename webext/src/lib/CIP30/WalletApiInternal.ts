@@ -1,39 +1,26 @@
-import { APIErrorCode, TxSignError, TxSignErrorCode } from "../ErrorTypes";
-import {
-  NetworkId,
-  Paginate,
-  CIP30WalletApiExtension,
-  CIP30WalletApiTyped,
-} from "../CIP30WalletApiTyped";
+import { Paginate, WalletApiExtension } from "./Types";
 import * as CSL from "@emurgo/cardano-serialization-lib-browser";
 import * as CMS from "@emurgo/cardano-message-signing-browser";
 import * as Utils from "../Utils";
-import { BlockFrostHelper } from "./BlockFrostHelper";
 import { Wallet } from "../Wallet";
-import { Bytes, Cip30DataSignature } from "../CIP30WalletApi";
+import {
+  HexStr,
+  DataSignature,
+  TxSignError,
+  TxSignErrorCode,
+  Backend,
+  NetworkId,
+} from ".";
 
-class BlockFrostCIP30WalletApi implements CIP30WalletApiTyped {
+import { paginateClientSide } from "./Utils";
+
+class WalletApiInternal {
   wallet: Wallet;
-  networkId: NetworkId;
-  blockfrost: BlockFrostHelper;
+  backend: Backend;
 
-  constructor(projectId: string, networkId: NetworkId, wallet: Wallet) {
-    BlockFrostCIP30WalletApi.validateProjectId(projectId, networkId);
-
-    this.blockfrost = new BlockFrostHelper(projectId);
+  constructor(backend: Backend, wallet: Wallet) {
+    this.backend = backend;
     this.wallet = wallet;
-    this.networkId = networkId;
-  }
-
-  static validateProjectId(projectId: string, networkId: NetworkId) {
-    let networkIdFromProjectId =
-      BlockFrostHelper.getNetworkIdFromProjectId(projectId);
-    if (networkIdFromProjectId != networkId) {
-      throw {
-        code: APIErrorCode.InternalError,
-        info: `Network ID ${networkId} doesn't match the network ID in the project ID ${projectId}`,
-      };
-    }
   }
 
   _getBaseAddress(): CSL.BaseAddress {
@@ -45,10 +32,10 @@ class BlockFrostCIP30WalletApi implements CIP30WalletApiTyped {
   }
 
   async getNetworkId(): Promise<NetworkId> {
-    return this.networkId;
+    return this.backend.getNetwork().networkId;
   }
 
-  async getExtensions(): Promise<CIP30WalletApiExtension[]> {
+  async getExtensions(): Promise<WalletApiExtension[]> {
     return [];
   }
 
@@ -58,7 +45,7 @@ class BlockFrostCIP30WalletApi implements CIP30WalletApiTyped {
   ): Promise<CSL.TransactionUnspentOutput[] | null> {
     let address = this._getAddress();
 
-    let utxos = await this.blockfrost.addressesUtxos(address);
+    let utxos = await this.backend.getUtxos(address);
 
     if (amount != null) {
       let res = Utils.getUtxosAddingUpToTarget(utxos, amount);
@@ -66,12 +53,12 @@ class BlockFrostCIP30WalletApi implements CIP30WalletApiTyped {
       utxos = res;
     }
 
-    return Utils.paginateClientSide(utxos, paginate);
+    return paginateClientSide(utxos, paginate);
   }
 
   async getBalance(): Promise<CSL.Value> {
     let address = this._getAddress();
-    let utxos = await this.blockfrost.addressesUtxos(address);
+    let utxos = await this.backend.getUtxos(address);
     return Utils.sumUtxos(utxos);
   }
 
@@ -88,7 +75,7 @@ class BlockFrostCIP30WalletApi implements CIP30WalletApiTyped {
       target = fiveAda;
     }
 
-    let utxos = await this.blockfrost.addressesUtxos(address);
+    let utxos = await this.backend.getUtxos(address);
 
     return Utils.getPureAdaUtxosAddingUpToTarget(utxos, target);
   }
@@ -160,10 +147,7 @@ class BlockFrostCIP30WalletApi implements CIP30WalletApiTyped {
     return tx;
   }
 
-  async signData(
-    addr: CSL.Address,
-    payload: Bytes
-  ): Promise<Cip30DataSignature> {
+  async signData(addr: CSL.Address, payload: HexStr): Promise<DataSignature> {
     let account = this.wallet.account(0, 0);
     let paymentKey = account.paymentKey;
     let stakingKey = account.stakingKey;
@@ -263,7 +247,7 @@ class BlockFrostCIP30WalletApi implements CIP30WalletApiTyped {
   }
 
   async submitTx(tx: string): Promise<string> {
-    return this.blockfrost.submitTx(tx);
+    return this.backend.submitTx(tx);
   }
 }
 
@@ -271,4 +255,4 @@ function cloneTx(tx: CSL.Transaction): CSL.Transaction {
   return CSL.Transaction.from_bytes(tx.to_bytes());
 }
 
-export { BlockFrostCIP30WalletApi };
+export { WalletApiInternal };

@@ -1,25 +1,25 @@
 import * as CSL from "@emurgo/cardano-serialization-lib-browser";
 
-import { AddressInputStr, CIP30WalletApi } from "./CIP30WalletApi";
-import { CIP30WalletApiTyped } from "./CIP30WalletApiTyped";
 import {
-  NetworkId,
-  CIP30WalletApiExtension,
+  WalletApiExtension,
   CborHexStr,
   AddressHexStr,
   Paginate,
-  Bytes,
-  Cip30DataSignature,
-} from "./CIP30WalletApi";
+  HexStr,
+  DataSignature,
+  AddressInputStr,
+  NetworkId,
+  WalletApiInternal,
+} from ".";
 
-class CIP30WalletApiWrapper implements CIP30WalletApi {
-  constructor(private api: CIP30WalletApiTyped) {}
+class WalletApi {
+  constructor(private api: WalletApiInternal) {}
 
   async getNetworkId(): Promise<NetworkId> {
     return this.api.getNetworkId();
   }
 
-  async getExtensions(): Promise<CIP30WalletApiExtension[]> {
+  async getExtensions(): Promise<WalletApiExtension[]> {
     return this.api.getExtensions();
   }
 
@@ -85,8 +85,8 @@ class CIP30WalletApiWrapper implements CIP30WalletApi {
 
   async signData(
     addr: AddressInputStr,
-    payload: Bytes
-  ): Promise<Cip30DataSignature> {
+    payload: HexStr
+  ): Promise<DataSignature> {
     let addrParsed: CSL.Address | null = null;
     try {
       addrParsed = CSL.Address.from_bech32(addr);
@@ -104,4 +104,4 @@ class CIP30WalletApiWrapper implements CIP30WalletApi {
   }
 }
 
-export { CIP30WalletApiWrapper };
+export { WalletApi };
