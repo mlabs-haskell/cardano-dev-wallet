@@ -11,6 +11,9 @@ export type CborHexStr = string;
 /** A hex-encoded string representing an address. */
 export type AddressHexStr = string;
 
+/** A hex-encoded string or a Bech32 string representing an address. */
+export type AddressInputStr = string;
+
 /** A hex-encoded string of the corresponding bytes. */
 export type Bytes = string;
 export type PaymentAddress = string;
