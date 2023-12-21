@@ -6,9 +6,11 @@ import {
   CIP30WalletApiTyped,
 } from "../CIP30WalletApiTyped";
 import * as CSL from "@emurgo/cardano-serialization-lib-browser";
+import * as CMS from "@emurgo/cardano-message-signing-browser";
 import * as Utils from "../Utils";
 import { BlockFrostHelper } from "./BlockFrostHelper";
 import { Wallet } from "../Wallet";
+import { Bytes, Cip30DataSignature } from "../CIP30WalletApi";
 
 class BlockFrostCIP30WalletApi implements CIP30WalletApiTyped {
   wallet: Wallet;
@@ -156,6 +158,108 @@ class BlockFrostCIP30WalletApi implements CIP30WalletApiTyped {
     }
 
     return tx;
+  }
+
+  async signData(
+    addr: CSL.Address,
+    payload: Bytes
+  ): Promise<Cip30DataSignature> {
+    let account = this.wallet.account(0, 0);
+    let paymentKey = account.paymentKey;
+    let stakingKey = account.stakingKey;
+    let keyToSign: CSL.PrivateKey;
+
+    let paymentAddressFns = [
+      CSL.BaseAddress,
+      CSL.EnterpriseAddress,
+      CSL.PointerAddress,
+    ];
+
+    let addressStakeCred: CSL.StakeCredential | null = null;
+    for (let fn of paymentAddressFns) {
+      let addrDowncasted = fn.from_address(addr);
+      if (addrDowncasted != null) {
+        addressStakeCred = addrDowncasted.payment_cred();
+        break;
+      }
+    }
+
+    if (addressStakeCred == null) {
+      let addrDowncasted = CSL.RewardAddress.from_address(addr);
+      if (addrDowncasted != null) {
+        addressStakeCred = account.baseAddress.stake_cred();
+      }
+    }
+
+    if (addressStakeCred == null) {
+      throw new Error(
+        "This should be unreachable unless CSL adds a new address type"
+      );
+    }
+
+    let addressKeyhash = addressStakeCred.to_keyhash()!;
+
+    if (addressKeyhash == paymentKey.to_public().hash()) {
+      keyToSign = paymentKey;
+    } else if (addressKeyhash == stakingKey.to_public().hash()) {
+      keyToSign = stakingKey;
+    } else {
+      let err: TxSignError = {
+        code: TxSignErrorCode.ProofGeneration,
+        info: "We don't own the keyhash: " + addressKeyhash.to_hex(),
+      };
+      throw err;
+    }
+
+    // Headers:
+    // alg (1): EdDSA (-8)
+    // kid (4): ignore, nami doesn't set it
+    // "address": raw bytes of address
+    //
+    // Don't hash payload
+    // Don't use External AAD
+
+    let protectedHeaders = CMS.HeaderMap.new();
+    protectedHeaders.set_algorithm_id(
+      CMS.Label.from_algorithm_id(-8) // CMS.AlgorithmId.EdDSA
+    );
+    protectedHeaders.set_header(
+      CMS.Label.new_text("address"),
+      CMS.CBORValue.from_bytes(addr.to_bytes())
+    );
+    let protectedHeadersWrapped = CMS.ProtectedHeaderMap.new(protectedHeaders);
+
+    let unprotectedHeaders = CMS.HeaderMap.new();
+
+    let headers = CMS.Headers.new(protectedHeadersWrapped, unprotectedHeaders);
+
+    let builder = CMS.COSESign1Builder.new(
+      headers,
+      Buffer.from(payload, "hex"),
+      false
+    );
+    let toSign = builder.make_data_to_sign().to_bytes();
+    keyToSign.sign(toSign);
+
+    let coseSign1 = builder.build(keyToSign.sign(toSign).to_bytes());
+
+    let coseKey = CMS.COSEKey.new(CMS.Label.from_key_type(CMS.KeyType.OKP));
+    coseKey.set_algorithm_id(
+      CMS.Label.from_algorithm_id(-8) // CMS.AlgorithmId.EdDSA
+    );
+    coseKey.set_header(
+      CMS.Label.new_int(CMS.Int.new_negative(CMS.BigNum.from_str("1"))),
+      CMS.CBORValue.new_int(CMS.Int.new_i32(6)) // CMS.CurveType.Ed25519
+    ); // crv (-1) set to Ed25519 (6)
+    coseKey.set_header(
+      CMS.Label.new_int(CMS.Int.new_negative(CMS.BigNum.from_str("2"))),
+      CMS.CBORValue.from_bytes(keyToSign.to_public().as_bytes())
+    ); // x (-2) set to public key
+
+    return {
+      signature: Buffer.from(coseSign1.to_bytes()).toString("hex"),
+      key: Buffer.from(coseKey.to_bytes()).toString("hex"),
+    };
   }
 
   async submitTx(tx: string): Promise<string> {

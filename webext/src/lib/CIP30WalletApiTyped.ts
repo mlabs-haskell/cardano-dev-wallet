@@ -4,6 +4,8 @@ import {
   NetworkId,
   Paginate,
   CIP30WalletApiExtension,
+  Bytes,
+  Cip30DataSignature,
 } from "./CIP30WalletApi";
 
 interface CIP30WalletApiTyped {
@@ -29,6 +31,8 @@ interface CIP30WalletApiTyped {
   getRewardAddresses(): Promise<CSL.Address[]>;
 
   signTx(tx: CSL.Transaction, partialSign: boolean): Promise<CSL.Transaction>;
+
+  signData(addr: CSL.Address, payload: Bytes): Promise<Cip30DataSignature>;
 
   submitTx(tx: CborHexStr): Promise<string>;
 }
