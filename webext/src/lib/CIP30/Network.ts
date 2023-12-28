@@ -9,24 +9,16 @@ enum NetworkName {
   Preview = "preview",
 }
 
-interface Network {
-  networkName: NetworkName;
-  networkId: NetworkId;
+function networkNameToId(networkName: NetworkName): NetworkId {
+  switch (networkName) {
+    case NetworkName.Mainnet:
+      return NetworkId.Mainnet;
+    case NetworkName.Preprod:
+      return NetworkId.Testnet;
+    case NetworkName.Preview:
+      return NetworkId.Testnet;
+  }
 }
 
-const MAINNET: Network = {
-  networkName: NetworkName.Mainnet,
-  networkId: NetworkId.Mainnet,
-};
 
-const PREPROD: Network = {
-  networkName: NetworkName.Preprod,
-  networkId: NetworkId.Testnet,
-};
-
-const PREVIEW: Network = {
-  networkName: NetworkName.Preview,
-  networkId: NetworkId.Testnet,
-};
-
-export { Network, NetworkId, NetworkName, MAINNET, PREPROD, PREVIEW };
+export { NetworkId, NetworkName, networkNameToId };
