@@ -5,38 +5,85 @@ export * from "./Types";
 export * from "./WalletApi";
 export * from "./WalletApiInternal";
 
-import WalletIcon from "./Icon.js";
+import { Wallet } from "../Wallet";
+import { Backend } from "./Backend";
 import { WalletApi } from "./WalletApi";
+
+import WalletIcon from "./Icon";
+import { WalletApiInternal } from "./WalletApiInternal";
+import { State } from "./State";
+import { APIError, APIErrorCode } from "./ErrorTypes";
+import { networkNameToId } from "./Network";
+import { BlockFrostBackend } from "./Backends/Blockfrost";
+import { OgmiosKupoBackend } from "./Backends/OgmiosKupo";
 
 /**
  * CIP30 Entrypoint.
  */
-export class CIP30Entrypoint {
+class CIP30Entrypoint {
   apiVersion: string = "1";
   supportedExtensions = [];
   name: string = "Cardano Dev Wallet";
   icon: string = WalletIcon;
-  #storage: Storage;
 
-  constructor() {
-    this.#storage = new Storage();
+  state: State;
+
+  constructor(state: State) {
+    this.state = state;
   }
 
   async isEnabled(): Promise<boolean> {
-    throw new Error("Not implemented");
+    return true;
   }
 
   async enable(): Promise<WalletApi> {
-    throw new Error("Not implemented");
+    // Fetch active network
+    let networkName = await this.state.activeNetworkGet();
+    let networkId = networkNameToId(networkName);
+
+    // Fetch active account
+    let accountId = await this.state.accountsGetActive();
+    if (accountId == null) {
+      let err: APIError = {
+        code: APIErrorCode.Refused,
+        info: "Please configure the active account in the extension",
+      };
+      throw err;
+    }
+    let accounts = await this.state.accountsGet();
+    let accountInfo = accounts[accountId];
+    let keys = await this.state.rootKeysGet();
+    let keyInfo = keys[accountInfo.keyId];
+
+    let wallet = new Wallet({ networkId, privateKey: keyInfo.keyBech32 });
+    let account = wallet.account(accountInfo.accountIdx, 0);
+
+    // Fetch active backend
+    let backendId = await this.state.backendsGetActive();
+    if (backendId == null) {
+      let err: APIError = {
+        code: APIErrorCode.Refused,
+        info: "Please configure the active backend in the extension",
+      };
+      throw err;
+    }
+    let backends = await this.state.backendsGet();
+    let backendInfo = backends[backendId];
+    let backend: Backend;
+    if (backendInfo.type == "blockfrost") {
+      backend = new BlockFrostBackend(backendInfo.projectId);
+    } else if (backendInfo.type == "ogmios_kupo") {
+      backend = new OgmiosKupoBackend(backendInfo);
+    } else {
+      throw new Error("Unreachable");
+    }
+
+    // Construct api
+    let apiInternal = new WalletApiInternal(account, backend, networkId);
+    let api = new WalletApi(apiInternal, this.state, accountId);
+
+    return api;
   }
 }
 
-class Storage {
-  getAccounts() {
-    for (let [key, val] of Object.entries(localStorage)) {
-      if (key.startsWith("account/")) {
-        // TODO
-      }
-    }
-  }
-}
+export { CIP30Entrypoint };
