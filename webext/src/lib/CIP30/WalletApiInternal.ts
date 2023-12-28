@@ -13,20 +13,24 @@ import {
 } from ".";
 
 import { paginateClientSide } from "./Utils";
+import { State, Utxo } from "./State";
 
 class WalletApiInternal {
   account: Account;
   backend: Backend;
   networkId: NetworkId;
+  state: State;
 
   constructor(
     account: Account,
     backend: Backend,
     networkId: NetworkId,
+    state: State,
   ) {
     this.account = account;
     this.backend = backend;
     this.networkId = networkId;
+    this.state = state;
   }
 
   _getBaseAddress(): CSL.BaseAddress {
@@ -52,6 +56,8 @@ class WalletApiInternal {
     let address = this._getAddress();
 
     let utxos = await this.backend.getUtxos(address);
+    let overrides = await this.state.overridesGet();
+    utxos = filterUtxos(utxos, overrides.hiddenUtxos);
 
     if (amount != null) {
       let res = Utils.getUtxosAddingUpToTarget(utxos, amount);
@@ -63,6 +69,11 @@ class WalletApiInternal {
   }
 
   async getBalance(): Promise<CSL.Value> {
+    let overrides = await this.state.overridesGet();
+    if (overrides.balance != null) {
+      return CSL.Value.new(CSL.BigNum.from_str(overrides.balance.toString()));
+    }
+
     let address = this._getAddress();
     let utxos = await this.backend.getUtxos(address);
     return Utils.sumUtxos(utxos);
@@ -82,6 +93,8 @@ class WalletApiInternal {
     }
 
     let utxos = await this.backend.getUtxos(address);
+    let overrides = await this.state.overridesGet();
+    utxos = filterUtxos(utxos, overrides.hiddenCollateral);
 
     return Utils.getPureAdaUtxosAddingUpToTarget(utxos, target);
   }
@@ -255,6 +268,24 @@ class WalletApiInternal {
   async submitTx(tx: string): Promise<string> {
     return this.backend.submitTx(tx);
   }
+}
+
+function filterUtxos(
+  utxos: CSL.TransactionUnspentOutput[],
+  hiddenUtxos: Utxo[],
+) {
+  utxos = utxos.filter((utxo) => {
+    for (let utxo1 of hiddenUtxos) {
+      if (
+        utxo.input().index() == utxo1.idx &&
+        utxo.input().transaction_id().to_hex() == utxo1.txHashHex
+      ) {
+        return false;
+      }
+    }
+    return true;
+  });
+  return utxos;
 }
 
 function cloneTx(tx: CSL.Transaction): CSL.Transaction {
