@@ -7,12 +7,13 @@ function getAllPolicyIdAssetNames(
   let ret: [CSL.ScriptHash, CSL.AssetName][] = [];
   let multiasset = value.multiasset() || CSL.MultiAsset.new();
 
-  for (let i = 0; i < multiasset.keys().len(); i++) {
-    let policyId = multiasset.keys().get(i);
+  let policyIds = new CSLIterator(multiasset.keys());
+
+  for (let policyId of policyIds) {
     let assets = multiasset.get(policyId) || CSL.Assets.new();
 
-    for (let j = 0; j < assets.keys().len(); j++) {
-      let assetName = assets.keys().get(j);
+    let assetNames = new CSLIterator(assets.keys());
+    for (let assetName of assetNames) {
       ret.push([policyId, assetName]);
     }
   }
