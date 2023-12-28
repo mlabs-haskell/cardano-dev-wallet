@@ -9,14 +9,14 @@ export class Wallet {
     params: { networkId: number } & (
       | { mnemonics: string[] }
       | { privateKey: string }
-    )
+    ),
   ) {
     this.networkId = params.networkId;
     if ("mnemonics" in params) {
       const entropy = bip39.mnemonicToEntropy(params.mnemonics.join(" "));
       this.rootKey = CSL.Bip32PrivateKey.from_bip39_entropy(
         Buffer.from(entropy, "hex"),
-        Buffer.from("") // password
+        Buffer.from(""), // password
       );
     } else {
       this.rootKey = CSL.Bip32PrivateKey.from_bech32(params.privateKey);
@@ -41,7 +41,7 @@ export class Account {
   constructor(
     networkId: number,
     accountKey: CSL.Bip32PrivateKey,
-    index: number
+    index: number,
   ) {
     this.networkId = networkId;
 
@@ -50,7 +50,7 @@ export class Account {
     this.baseAddress = CSL.BaseAddress.new(
       this.networkId,
       CSL.StakeCredential.from_keyhash(this.paymentKey.to_public().hash()),
-      CSL.StakeCredential.from_keyhash(this.stakingKey.to_public().hash())
+      CSL.StakeCredential.from_keyhash(this.stakingKey.to_public().hash()),
     );
   }
 }

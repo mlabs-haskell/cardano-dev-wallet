@@ -51,7 +51,7 @@ class WalletApiInternal {
 
   async getUtxos(
     amount?: CSL.Value,
-    paginate?: Paginate
+    paginate?: Paginate,
   ): Promise<CSL.TransactionUnspentOutput[] | null> {
     let address = this._getAddress();
 
@@ -103,7 +103,7 @@ class WalletApiInternal {
     return this._getAddress();
   }
 
-  async getUsedAddresses(paginate?: Paginate): Promise<CSL.Address[]> {
+  async getUsedAddresses(_paginate?: Paginate): Promise<CSL.Address[]> {
     return [this._getAddress()];
   }
 
@@ -117,7 +117,7 @@ class WalletApiInternal {
 
   async signTx(
     tx: CSL.Transaction,
-    partialSign: boolean
+    partialSign: boolean,
   ): Promise<CSL.Transaction> {
     tx = cloneTx(tx);
 
@@ -131,7 +131,7 @@ class WalletApiInternal {
     let requiredKeyHashes = await Utils.getRequiredKeyHashes(
       tx,
       (await this.getUtxos())!,
-      paymentKeyHash
+      paymentKeyHash,
     );
 
     let requiredKeyHashesSet = new Set(requiredKeyHashes);
@@ -196,7 +196,7 @@ class WalletApiInternal {
 
     if (addressStakeCred == null) {
       throw new Error(
-        "This should be unreachable unless CSL adds a new address type"
+        "This should be unreachable unless CSL adds a new address type",
       );
     }
 
@@ -224,11 +224,11 @@ class WalletApiInternal {
 
     let protectedHeaders = CMS.HeaderMap.new();
     protectedHeaders.set_algorithm_id(
-      CMS.Label.from_algorithm_id(-8) // CMS.AlgorithmId.EdDSA
+      CMS.Label.from_algorithm_id(-8), // CMS.AlgorithmId.EdDSA
     );
     protectedHeaders.set_header(
       CMS.Label.new_text("address"),
-      CMS.CBORValue.from_bytes(addr.to_bytes())
+      CMS.CBORValue.from_bytes(addr.to_bytes()),
     );
     let protectedHeadersWrapped = CMS.ProtectedHeaderMap.new(protectedHeaders);
 
@@ -239,7 +239,7 @@ class WalletApiInternal {
     let builder = CMS.COSESign1Builder.new(
       headers,
       Buffer.from(payload, "hex"),
-      false
+      false,
     );
     let toSign = builder.make_data_to_sign().to_bytes();
     keyToSign.sign(toSign);
@@ -248,15 +248,15 @@ class WalletApiInternal {
 
     let coseKey = CMS.COSEKey.new(CMS.Label.from_key_type(CMS.KeyType.OKP));
     coseKey.set_algorithm_id(
-      CMS.Label.from_algorithm_id(-8) // CMS.AlgorithmId.EdDSA
+      CMS.Label.from_algorithm_id(-8), // CMS.AlgorithmId.EdDSA
     );
     coseKey.set_header(
       CMS.Label.new_int(CMS.Int.new_negative(CMS.BigNum.from_str("1"))),
-      CMS.CBORValue.new_int(CMS.Int.new_i32(6)) // CMS.CurveType.Ed25519
+      CMS.CBORValue.new_int(CMS.Int.new_i32(6)), // CMS.CurveType.Ed25519
     ); // crv (-1) set to Ed25519 (6)
     coseKey.set_header(
       CMS.Label.new_int(CMS.Int.new_negative(CMS.BigNum.from_str("2"))),
-      CMS.CBORValue.from_bytes(keyToSign.to_public().as_bytes())
+      CMS.CBORValue.from_bytes(keyToSign.to_public().as_bytes()),
     ); // x (-2) set to public key
 
     return {

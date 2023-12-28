@@ -34,11 +34,11 @@ class BlockFrostBackend implements CIP30.Backend {
       let value = amountToValue(utxo.amount);
       const txIn = CSL.TransactionInput.new(
         CSL.TransactionHash.from_hex(utxo.tx_hash),
-        utxo.output_index
+        utxo.output_index,
       );
       const txOut = CSL.TransactionOutput.new(
         CSL.Address.from_bech32(utxo.address),
-        value
+        value,
       );
       let utxo_ = CSL.TransactionUnspentOutput.new(txIn, txOut);
       values.push(utxo_);
@@ -55,7 +55,7 @@ function amountToValue(
   amount: {
     unit: string;
     quantity: string;
-  }[]
+  }[],
 ): CSL.Value {
   let value = CSL.Value.new(CSL.BigNum.zero());
   for (let item of amount) {
@@ -81,7 +81,7 @@ function amountToValue(
     multiasset.set_asset(
       policyIdWasm,
       assetNameWasm,
-      CSL.BigNum.from_str(item.quantity)
+      CSL.BigNum.from_str(item.quantity),
     );
   }
   return value;
