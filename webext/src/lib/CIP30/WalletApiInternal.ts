@@ -17,10 +17,16 @@ import { paginateClientSide } from "./Utils";
 class WalletApiInternal {
   wallet: Wallet;
   backend: Backend;
+  networkId: NetworkId;
 
-  constructor(backend: Backend, wallet: Wallet) {
-    this.backend = backend;
+  constructor(
+    wallet: Wallet,
+    backend: Backend,
+    networkId: NetworkId,
+  ) {
     this.wallet = wallet;
+    this.backend = backend;
+    this.networkId = networkId;
   }
 
   _getBaseAddress(): CSL.BaseAddress {
@@ -32,7 +38,7 @@ class WalletApiInternal {
   }
 
   async getNetworkId(): Promise<NetworkId> {
-    return this.backend.getNetwork().networkId;
+    return this.networkId;
   }
 
   async getExtensions(): Promise<WalletApiExtension[]> {
