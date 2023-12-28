@@ -2,7 +2,7 @@ import { Paginate, WalletApiExtension } from "./Types";
 import * as CSL from "@emurgo/cardano-serialization-lib-browser";
 import * as CMS from "@emurgo/cardano-message-signing-browser";
 import * as Utils from "../Utils";
-import { Wallet } from "../Wallet";
+import { Account } from "../Wallet";
 import {
   HexStr,
   DataSignature,
@@ -15,22 +15,22 @@ import {
 import { paginateClientSide } from "./Utils";
 
 class WalletApiInternal {
-  wallet: Wallet;
+  account: Account;
   backend: Backend;
   networkId: NetworkId;
 
   constructor(
-    wallet: Wallet,
+    account: Account,
     backend: Backend,
     networkId: NetworkId,
   ) {
-    this.wallet = wallet;
+    this.account = account;
     this.backend = backend;
     this.networkId = networkId;
   }
 
   _getBaseAddress(): CSL.BaseAddress {
-    return this.wallet.account(0, 0).baseAddress;
+    return this.account.baseAddress;
   }
 
   _getAddress(): CSL.Address {
@@ -111,7 +111,7 @@ class WalletApiInternal {
     let txBody = tx.body();
     let txHash = CSL.hash_transaction(txBody);
 
-    let account = this.wallet.account(0, 0);
+    let account = this.account;
     let paymentKeyHash = account.paymentKey.to_public().hash();
     let stakingKeyHash = account.paymentKey.to_public().hash();
 
@@ -154,7 +154,7 @@ class WalletApiInternal {
   }
 
   async signData(addr: CSL.Address, payload: HexStr): Promise<DataSignature> {
-    let account = this.wallet.account(0, 0);
+    let account = this.account;
     let paymentKey = account.paymentKey;
     let stakingKey = account.stakingKey;
     let keyToSign: CSL.PrivateKey;
