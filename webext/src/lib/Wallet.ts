@@ -3,7 +3,7 @@ import * as CSL from "@emurgo/cardano-serialization-lib-browser";
 
 export class Wallet {
   rootKey: CSL.Bip32PrivateKey;
-  networkId: any;
+  networkId: number;
 
   constructor(
     params: { networkId: number } & (
