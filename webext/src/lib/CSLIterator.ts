@@ -29,4 +29,4 @@ class CSLIterator<T> implements Iterator<T>, Iterable<T> {
   }
 }
 
-export { CSLIterator, CSLContainer };
+export { CSLIterator, type CSLContainer };
