@@ -11,24 +11,22 @@ class BlockFrostBackend implements CIP30.Backend {
     this.blockfrost = new BlockFrostAPI({ projectId: projectId });
   }
 
-  getNetwork(): CIP30.Network {
-    if (this.projectId.startsWith("mainnet")) {
-      return CIP30.MAINNET;
-    } else if (this.projectId.startsWith("preview")) {
-      return CIP30.PREVIEW;
-    } else if (this.projectId.startsWith("preprod")) {
-      return CIP30.PREVIEW;
+  static getNetworkNameFromProjectId(
+    projectId: string,
+  ): CIP30.NetworkName | null {
+    if (projectId.startsWith("mainnet")) {
+      return CIP30.NetworkName.Mainnet;
+    } else if (projectId.startsWith("preview")) {
+      return CIP30.NetworkName.Preview;
+    } else if (projectId.startsWith("preprod")) {
+      return CIP30.NetworkName.Preprod;
     } else {
-      let err: CIP30.APIError = {
-        code: CIP30.APIErrorCode.InternalError,
-        info: "Can't determine network because the project ID doesn't start with any of the recognized network IDs: mainnet, preview, preprod",
-      };
-      throw err;
+      return null;
     }
   }
 
   async getUtxos(
-    address: CSL.Address
+    address: CSL.Address,
   ): Promise<CSL.TransactionUnspentOutput[]> {
     let utxos = await this.blockfrost.addressesUtxosAll(address.to_bech32());
     let values: CSL.TransactionUnspentOutput[] = [];
