@@ -10,82 +10,162 @@ import {
   AddressInputStr,
   NetworkId,
   WalletApiInternal,
+  APIError,
+  APIErrorCode,
 } from ".";
+import { State } from "./State";
+
+function jsonReplacerCSL(_key: string, value: any) {
+  if (value.to_json != undefined) {
+    return value.to_json();
+  }
+  return value;
+}
 
 class WalletApi {
-  constructor(private api: WalletApiInternal) {}
+  api: WalletApiInternal;
+  state: State;
+  accountId: number;
+
+  constructor(api: WalletApiInternal, state: State, accountId: number) {
+    this.api = api;
+    this.state = state;
+    this.accountId = accountId;
+  }
+
+  async ensureAccountNotChanged() {
+    let activeAccountId = await this.state.accountsGetActive();
+    if (activeAccountId != this.accountId) {
+      let err: APIError = {
+        code: APIErrorCode.AccountChange,
+        info: "Account was changed by the user. Please reconnect to the Wallet",
+      };
+      throw err;
+    }
+  }
+
+  async logCall(fn: string, params: readonly any[] = []): Promise<number> {
+    let log =
+      fn +
+      "(" +
+      params.map((p) => JSON.stringify(p, jsonReplacerCSL)).join(", ") +
+      ")";
+    return this.state.callLogsPush(null, log);
+  }
+
+  async logReturn(idx: number, value: any) {
+    let log = "=> " + JSON.stringify(value, jsonReplacerCSL);
+    await this.state.callLogsPush(idx, log);
+  }
+
+  async logError(idx: number, error: any) {
+    let log = "=> " + JSON.stringify(error, jsonReplacerCSL);
+    await this.state.callLogsPush(idx, log);
+  }
+
+  async wrapCall<T extends unknown[], U>(
+    fnName: string,
+    fn: (...args: T) => Promise<U>,
+    args: T = [] as unknown[] as T,
+  ) {
+    let idx = await this.logCall(fnName, args);
+    try {
+      await this.ensureAccountNotChanged();
+
+      let ret = await fn(...args);
+      this.logReturn(idx, ret);
+      return ret;
+    } catch (e) {
+      this.logError(idx, e);
+      throw e;
+    }
+  }
 
   async getNetworkId(): Promise<NetworkId> {
-    return this.api.getNetworkId();
+    return this.wrapCall("getNetworkId", this.api.getNetworkId);
   }
 
   async getExtensions(): Promise<WalletApiExtension[]> {
-    return this.api.getExtensions();
+    return this.wrapCall("getExtensions", this.api.getExtensions);
   }
 
   async getUtxos(
     amount?: CborHexStr,
-    paginate?: Paginate
+    paginate?: Paginate,
   ): Promise<CborHexStr[] | null> {
-    return this.api
-      .getUtxos(amount ? CSL.Value.from_hex(amount) : undefined, paginate)
-      .then((utxos) =>
-        utxos == null ? null : utxos.map((utxo) => utxo.to_hex())
-      );
+    let params: [CSL.Value | undefined, Paginate | undefined] = [
+      amount == null ? amount : CSL.Value.from_hex(amount),
+      paginate,
+    ];
+    let utxos = await this.wrapCall("getUtxos", this.api.getUtxos, params);
+    if (utxos == null) return null;
+    return utxos.map((utxo) => utxo.to_hex());
   }
 
   async getBalance(): Promise<CborHexStr> {
-    return this.api.getBalance().then((balance) => balance.to_hex());
+    let balance = await this.wrapCall("getBalance", this.api.getBalance);
+    return balance.to_hex();
   }
 
   async getCollateral(params?: {
     amount: CborHexStr;
   }): Promise<CborHexStr[] | null> {
-    return this.api
-      .getCollateral(
-        params == undefined
-          ? undefined
-          : { amount: CSL.BigNum.from_hex(params.amount) }
-      )
-      .then((collateral) =>
-        collateral == null ? null : collateral.map((c) => c.to_hex())
-      );
+    let paramsTyped: [params?: { amount: CSL.BigNum }] = [];
+    if (params != null) {
+      let amount = CSL.BigNum.from_hex(params.amount);
+
+      paramsTyped.push({
+        amount,
+      });
+    }
+
+    let collaterals = await this.wrapCall(
+      "getCollateral",
+      this.api.getCollateral,
+      paramsTyped,
+    );
+    return collaterals == null ? null : collaterals.map((c) => c.to_hex());
   }
 
   async getUsedAddresses(paginate?: Paginate): Promise<AddressHexStr[]> {
-    return this.api
-      .getUsedAddresses(paginate)
-      .then((addresses) => addresses.map((address) => address.to_hex()));
+    return this.wrapCall("getUsedAddresses", this.api.getUsedAddresses, [
+      paginate,
+    ]).then((addresses) => addresses.map((address) => address.to_hex()));
   }
 
   async getUnusedAddresses(): Promise<AddressHexStr[]> {
-    return this.api
-      .getUnusedAddresses()
-      .then((addresses) => addresses.map((address) => address.to_hex()));
+    return this.wrapCall(
+      "getUnusedAddresses",
+      this.api.getUnusedAddresses,
+    ).then((addresses) => addresses.map((address) => address.to_hex()));
   }
 
   async getChangeAddress(): Promise<AddressHexStr> {
-    return this.api.getChangeAddress().then((address) => address.to_hex());
+    return this.wrapCall("getChangeAddress", this.api.getChangeAddress).then(
+      (address) => address.to_hex(),
+    );
   }
 
   async getRewardAddresses(): Promise<AddressHexStr[]> {
-    return this.api
-      .getRewardAddresses()
-      .then((addresses) => addresses.map((address) => address.to_hex()));
+    return this.wrapCall(
+      "getRewardAddresses",
+      this.api.getRewardAddresses,
+    ).then((addresses) => addresses.map((address) => address.to_hex()));
   }
 
   async signTx(
     tx: CborHexStr,
-    partialSign: boolean = false
+    partialSign: boolean = false,
   ): Promise<CborHexStr> {
-    return this.api
-      .signTx(CSL.Transaction.from_hex(tx), partialSign)
-      .then((signedTx) => signedTx.to_hex());
+    return this.wrapCall("signTx", this.api.signTx, [
+      CSL.Transaction.from_hex(tx),
+      partialSign,
+    ]).then((signedTx) => signedTx.to_hex());
   }
 
   async signData(
     addr: AddressInputStr,
-    payload: HexStr
+    payload: HexStr,
   ): Promise<DataSignature> {
     let addrParsed: CSL.Address | null = null;
     try {
@@ -96,11 +176,11 @@ class WalletApi {
     if (addrParsed == null) {
       addrParsed = CSL.Address.from_hex(addr);
     }
-    return this.api.signData(addrParsed, payload);
+    return this.wrapCall("signData", this.api.signData, [addrParsed, payload]);
   }
 
   async submitTx(tx: CborHexStr): Promise<string> {
-    return this.api.submitTx(tx);
+    return this.wrapCall("submitTx", this.api.submitTx, [tx]);
   }
 }
 
