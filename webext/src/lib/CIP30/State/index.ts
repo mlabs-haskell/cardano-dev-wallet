@@ -21,6 +21,10 @@ class State {
     return activeNetwork;
   }
 
+  async activeNetworkSet(network: NetworkName) {
+    await this.rootStore.set("activeNetwork", network);
+  }
+
   async _getCurrentNetworkStore() {
     let activeNetwork = await this.activeNetworkGet();
     return this.rootStore.withPrefix(activeNetwork);

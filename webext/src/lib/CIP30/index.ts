@@ -79,7 +79,7 @@ class CIP30Entrypoint {
     }
 
     // Construct api
-    let apiInternal = new WalletApiInternal(account, backend, networkId);
+    let apiInternal = new WalletApiInternal(account, backend, networkId, this.state);
     let api = new WalletApi(apiInternal, this.state, accountId);
 
     return api;

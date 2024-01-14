@@ -8,7 +8,6 @@
   "private": true,
   "scripts": {},
   "devDependencies": {
-    "@blockfrost/blockfrost-js": "^5.4.0",
     "@emurgo/cardano-message-signing-browser": "^1.0.1",
     "@emurgo/cardano-serialization-lib-browser": "^11.5.0",
     "@playwright/test": "^1.40.0",

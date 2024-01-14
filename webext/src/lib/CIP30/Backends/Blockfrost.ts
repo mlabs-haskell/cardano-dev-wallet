@@ -1,14 +1,11 @@
 import * as CIP30 from "..";
-import { BlockFrostAPI } from "@blockfrost/blockfrost-js";
 import * as CSL from "@emurgo/cardano-serialization-lib-browser";
 
 class BlockFrostBackend implements CIP30.Backend {
   projectId: string;
-  blockfrost: BlockFrostAPI;
 
   constructor(projectId: string) {
     this.projectId = projectId;
-    this.blockfrost = new BlockFrostAPI({ projectId: projectId });
   }
 
   static getNetworkNameFromProjectId(
@@ -28,7 +25,7 @@ class BlockFrostBackend implements CIP30.Backend {
   async getUtxos(
     address: CSL.Address,
   ): Promise<CSL.TransactionUnspentOutput[]> {
-    let utxos = await this.blockfrost.addressesUtxosAll(address.to_bech32());
+    let utxos = await addressesUtxosAll(this.projectId, address.to_bech32());
     let values: CSL.TransactionUnspentOutput[] = [];
     for (let utxo of utxos) {
       let value = amountToValue(utxo.amount);
@@ -47,7 +44,7 @@ class BlockFrostBackend implements CIP30.Backend {
   }
 
   async submitTx(tx: string): Promise<string> {
-    return this.blockfrost.txSubmit(tx);
+    return await txSubmit(this.projectId, tx);
   }
 }
 
@@ -85,6 +82,95 @@ function amountToValue(
     );
   }
   return value;
+}
+
+interface AddressUtxosResponseItem {
+  address: string;
+  tx_hash: string;
+  output_index: number;
+  amount: {
+    unit: string;
+    quantity: string;
+  }[];
+  block: string;
+  data_hash: string | null;
+  inline_datum: string | null;
+  reference_script_hash: string | null;
+}
+
+type AddressUtxosResponse = AddressUtxosResponseItem[];
+
+async function addressesUtxos(
+  projectId: string,
+  address: string,
+  params: { page: number; count: number; order: "asc" | "desc" },
+): Promise<AddressUtxosResponse> {
+  let url = new URL(
+    urlFromProjectId(projectId) + "/addresses/" + address + "/utxos",
+  );
+  url.searchParams.append("page", params.page.toString());
+  url.searchParams.append("count", params.count.toString());
+  url.searchParams.append("order", params.order);
+
+  let resp = await fetch(url, {
+    method: "GET",
+    headers: { project_id: projectId },
+  });
+  if (resp.status != 200) {
+    let text = await resp.text();
+    throw new Error("Request failed: " + url.toString() + "\nMessage: " + text);
+  }
+  return await resp.json();
+}
+
+async function addressesUtxosAll(
+  projectId: string,
+  address: string,
+): Promise<AddressUtxosResponse> {
+  let result = [];
+  let page = 1;
+  let count = 100;
+  let order = "asc" as const;
+  while (true) {
+    let resp = await addressesUtxos(projectId, address, { page, count, order });
+    result.push(...resp);
+    if (resp.length < count) break;
+    page += 1;
+  }
+  return result;
+}
+
+type SubmitTxResponse = string;
+
+async function txSubmit(projectId: string, tx: string): Promise<SubmitTxResponse> {
+  let txBinary = Buffer.from(tx, "hex");
+
+  let url = new URL(urlFromProjectId(projectId) + "/tx/submit");
+  let resp = await fetch(url, {
+    method: "POST",
+    headers: { project_id: projectId, "Content-Type": "application/cbor" },
+    body: txBinary,
+  });
+  if (resp.status != 200) {
+    let text = await resp.text();
+    throw new Error("Request failed: " + url.toString() + "\nMessage: " + text);
+  }
+  return await resp.json();
+}
+
+function urlFromProjectId(projectId: string) {
+  let prefix = "";
+  if (projectId.startsWith("mainnet")) {
+    prefix = "mainnet";
+  } else if (projectId.startsWith("preview")) {
+    prefix = "preview";
+  } else if (projectId.startsWith("preprod")) {
+    prefix = "preprod";
+  } else {
+    throw new Error("Invalid project id: " + projectId);
+  }
+
+  return "https://cardano-" + prefix + ".blockfrost.io/api/v0";
 }
 
 export { BlockFrostBackend };
