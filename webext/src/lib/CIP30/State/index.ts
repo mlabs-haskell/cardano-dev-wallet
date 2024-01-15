@@ -14,17 +14,17 @@ class State {
     this.rootStore = store;
   }
 
-  async activeNetworkGet(): Promise<NetworkName> {
-    let activeNetwork: NetworkName | null =
-      await this.rootStore.get("activeNetwork");
-    if (activeNetwork == null) {
+  async networkActiveGet(): Promise<NetworkName> {
+    let networkActive: NetworkName | null =
+      await this.rootStore.get("networkActive");
+    if (networkActive == null) {
       return NetworkName.Mainnet;
     }
-    return activeNetwork;
+    return networkActive;
   }
 
-  async activeNetworkSet(network: NetworkName) {
-    await this.rootStore.set("activeNetwork", network);
+  async networkActiveSet(network: NetworkName) {
+    await this.rootStore.set("networkActive", network);
   }
 
   async _getNetworkSubStore(network: NetworkName) {
@@ -105,14 +105,14 @@ class State {
     return this._recordsDelete(network, "accounts", id);
   }
 
-  async accountsGetActive(network: NetworkName): Promise<string | null> {
+  async accountsActiveGet(network: NetworkName): Promise<string | null> {
     let store = await this._getNetworkSubStore(network);
     let id = store.get("accounts/activeId");
     if (id == null) return null;
     return id;
   }
 
-  async accountsSetActive(network: NetworkName, id: string) {
+  async accountsActiveSet(network: NetworkName, id: string) {
     let store = await this._getNetworkSubStore(network);
     await store.set("accounts/activeId", id);
   }
@@ -133,14 +133,14 @@ class State {
     return this._recordsDelete(network, "backends", id);
   }
 
-  async backendsGetActive(network: NetworkName): Promise<string | null> {
+  async backendsActiveGet(network: NetworkName): Promise<string | null> {
     let store = await this._getNetworkSubStore(network);
     let id = store.get("backends/activeId");
     if (id == null) return null;
     return id;
   }
 
-  async backendsSetActive(network: NetworkName, id: string) {
+  async backendsActiveSet(network: NetworkName, id: string) {
     let store = await this._getNetworkSubStore(network);
     await store.set("backends/activeId", id);
   }

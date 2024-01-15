@@ -53,11 +53,11 @@ class WalletApiInternal {
     amount?: CSL.Value,
     paginate?: Paginate,
   ): Promise<CSL.TransactionUnspentOutput[] | null> {
-    let activeNetwork = await this.state.activeNetworkGet();
+    let networkActive = await this.state.networkActiveGet();
     let address = this._getAddress();
 
     let utxos = await this.backend.getUtxos(address);
-    let overrides = await this.state.overridesGet(activeNetwork);
+    let overrides = await this.state.overridesGet(networkActive);
     utxos = filterUtxos(utxos, overrides.hiddenUtxos);
 
     if (amount != null) {
@@ -70,8 +70,8 @@ class WalletApiInternal {
   }
 
   async getBalance(): Promise<CSL.Value> {
-    let activeNetwork = await this.state.activeNetworkGet();
-    let overrides = await this.state.overridesGet(activeNetwork);
+    let networkActive = await this.state.networkActiveGet();
+    let overrides = await this.state.overridesGet(networkActive);
     if (overrides.balance != null) {
       return CSL.Value.new(CSL.BigNum.from_str(overrides.balance.toString()));
     }
@@ -84,7 +84,7 @@ class WalletApiInternal {
   async getCollateral(params?: {
     amount: CSL.BigNum;
   }): Promise<CSL.TransactionUnspentOutput[] | null> {
-    let activeNetwork = await this.state.activeNetworkGet();
+    let networkActive = await this.state.networkActiveGet();
     const fiveAda = CSL.BigNum.from_str("5000000");
 
     let address = this._getAddress();
@@ -96,7 +96,7 @@ class WalletApiInternal {
     }
 
     let utxos = await this.backend.getUtxos(address);
-    let overrides = await this.state.overridesGet(activeNetwork);
+    let overrides = await this.state.overridesGet(networkActive);
     utxos = filterUtxos(utxos, overrides.hiddenCollateral);
 
     return Utils.getPureAdaUtxosAddingUpToTarget(utxos, target);

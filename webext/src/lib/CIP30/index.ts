@@ -38,11 +38,11 @@ class CIP30Entrypoint {
 
   async enable(): Promise<WalletApi> {
     // Fetch active network
-    let networkName = await this.state.activeNetworkGet();
+    let networkName = await this.state.networkActiveGet();
     let networkId = networkNameToId(networkName);
 
     // Fetch active account
-    let accountId = await this.state.accountsGetActive(networkName);
+    let accountId = await this.state.accountsActiveGet(networkName);
     if (accountId == null) {
       let err: APIError = {
         code: APIErrorCode.Refused,
@@ -59,7 +59,7 @@ class CIP30Entrypoint {
     let account = wallet.account(accountInfo.accountIdx, 0);
 
     // Fetch active backend
-    let backendId = await this.state.backendsGetActive(networkName);
+    let backendId = await this.state.backendsActiveGet(networkName);
     if (backendId == null) {
       let err: APIError = {
         code: APIErrorCode.Refused,

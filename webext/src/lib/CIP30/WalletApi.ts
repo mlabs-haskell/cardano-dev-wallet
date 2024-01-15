@@ -37,8 +37,8 @@ class WalletApi {
   }
 
   async ensureAccountNotChanged() {
-    let activeNetwork = await this.state.activeNetworkGet();
-    if (activeNetwork != this.network) {
+    let networkActive = await this.state.networkActiveGet();
+    if (networkActive != this.network) {
       let err: APIError = {
         code: APIErrorCode.AccountChange,
         info: "Account was changed by the user. Please reconnect to the Wallet",
@@ -46,7 +46,7 @@ class WalletApi {
       throw err;
     }
 
-    let activeAccountId = await this.state.accountsGetActive(activeNetwork);
+    let activeAccountId = await this.state.accountsActiveGet(networkActive);
     if (activeAccountId != this.accountId) {
       let err: APIError = {
         code: APIErrorCode.AccountChange,
@@ -57,25 +57,25 @@ class WalletApi {
   }
 
   async logCall(fn: string, params: readonly any[] = []): Promise<number> {
-    let activeNetwork = await this.state.activeNetworkGet();
+    let networkActive = await this.state.networkActiveGet();
     let log =
       fn +
       "(" +
       params.map((p) => JSON.stringify(p, jsonReplacerCSL)).join(", ") +
       ")";
-    return this.state.callLogsPush(activeNetwork, null, log);
+    return this.state.callLogsPush(networkActive, null, log);
   }
 
   async logReturn(idx: number, value: any) {
-    let activeNetwork = await this.state.activeNetworkGet();
+    let networkActive = await this.state.networkActiveGet();
     let log = "=> " + JSON.stringify(value, jsonReplacerCSL);
-    await this.state.callLogsPush(activeNetwork, idx, log);
+    await this.state.callLogsPush(networkActive, idx, log);
   }
 
   async logError(idx: number, error: any) {
-    let activeNetwork = await this.state.activeNetworkGet();
+    let networkActive = await this.state.networkActiveGet();
     let log = "=> " + JSON.stringify(error, jsonReplacerCSL);
-    await this.state.callLogsPush(activeNetwork, idx, log);
+    await this.state.callLogsPush(networkActive, idx, log);
   }
 
   async wrapCall<T extends unknown[], U>(
