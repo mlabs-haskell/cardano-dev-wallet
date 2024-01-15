@@ -18,7 +18,7 @@ interface RootKey {
 
 interface Account {
   name: string;
-  keyId: number;
+  keyId: string;
   accountIdx: number;
 }
 

@@ -6,6 +6,8 @@ export * from "./Store";
 
 import { Account, Backend, Overrides, RootKey } from "./Types";
 
+type Record<T> = { [key: string]: T };
+
 class State {
   rootStore: HeirarchialStore;
   constructor(store: HeirarchialStore) {
@@ -29,10 +31,7 @@ class State {
     return this.rootStore.withPrefix(network);
   }
 
-  async _recordsGet<T>(
-    network: NetworkName,
-    key: string,
-  ): Promise<Record<number, T>> {
+  async _recordsGet<T>(network: NetworkName, key: string): Promise<Record<T>> {
     let store = await this._getNetworkSubStore(network);
     let records = await store.get(key);
     if (records == null) return {};
@@ -43,22 +42,22 @@ class State {
     network: NetworkName,
     key: string,
     value: T,
-  ): Promise<number> {
+  ): Promise<string> {
     let store = await this._getNetworkSubStore(network);
-    let id = await store.get(key + "/nextId");
+    let id: number | null = await store.get(key + "/nextId");
     if (id == null) id = 0;
     let records = await store.get(key);
     if (records == null) records = {};
     records[id] = value;
     await store.set(key, records);
     await store.set(key + "/nextId", id + 1);
-    return id;
+    return id.toString();
   }
 
   async _recordsUpdate<T>(
     network: NetworkName,
     key: string,
-    id: number,
+    id: string,
     value: T,
   ) {
     let store = await this._getNetworkSubStore(network);
@@ -67,81 +66,81 @@ class State {
     await store.set(key, records);
   }
 
-  async _recordsDelete(network: NetworkName, key: string, id: number) {
+  async _recordsDelete(network: NetworkName, key: string, id: string) {
     let store = await this._getNetworkSubStore(network);
     let records = await store.get(key);
     delete records[id];
     await store.set(key, records);
   }
 
-  async rootKeysGet(network: NetworkName): Promise<Record<number, RootKey>> {
+  async rootKeysGet(network: NetworkName): Promise<Record<RootKey>> {
     return this._recordsGet(network, "rootKeys");
   }
 
-  async rootKeysAdd(network: NetworkName, rootKey: RootKey): Promise<number> {
+  async rootKeysAdd(network: NetworkName, rootKey: RootKey): Promise<string> {
     return this._recordsAdd(network, "rootKeys", rootKey);
   }
 
-  async rootKeysUpdate(network: NetworkName, id: number, rootKey: RootKey) {
+  async rootKeysUpdate(network: NetworkName, id: string, rootKey: RootKey) {
     return this._recordsUpdate(network, "rootKeys", id, rootKey);
   }
 
-  async rootKeysDelete(network: NetworkName, id: number) {
+  async rootKeysDelete(network: NetworkName, id: string) {
     return this._recordsDelete(network, "rootKeys", id);
   }
 
-  async accountsGet(network: NetworkName): Promise<Record<number, Account>> {
+  async accountsGet(network: NetworkName): Promise<Record<Account>> {
     return this._recordsGet(network, "accounts");
   }
 
-  async accountsAdd(network: NetworkName, account: Account): Promise<number> {
+  async accountsAdd(network: NetworkName, account: Account): Promise<string> {
     return this._recordsAdd(network, "accounts", account);
   }
 
-  async accountsUpdate(network: NetworkName, id: number, account: Account) {
+  async accountsUpdate(network: NetworkName, id: string, account: Account) {
     return this._recordsUpdate(network, "accounts", id, account);
   }
 
-  async accountsDelete(network: NetworkName, id: number) {
+  async accountsDelete(network: NetworkName, id: string) {
     return this._recordsDelete(network, "accounts", id);
   }
 
-  async accountsGetActive(network: NetworkName): Promise<number | null> {
-    let store = await this._getNetworkSubStore(network,);
+  async accountsGetActive(network: NetworkName): Promise<string | null> {
+    let store = await this._getNetworkSubStore(network);
     let id = store.get("accounts/activeId");
     if (id == null) return null;
     return id;
   }
 
-  async accountsSetActive(network: NetworkName, id: number) {
-    let store = await this._getNetworkSubStore(network,);
+  async accountsSetActive(network: NetworkName, id: string) {
+    let store = await this._getNetworkSubStore(network);
     await store.set("accounts/activeId", id);
   }
 
-  async backendsGet(network: NetworkName): Promise<Record<number, Backend>> {
+  async backendsGet(network: NetworkName): Promise<Record<Backend>> {
     return this._recordsGet(network, "backends");
   }
 
-  async backendsAdd(network: NetworkName, backend: Backend): Promise<number> {
+  async backendsAdd(network: NetworkName, backend: Backend): Promise<string> {
     return this._recordsAdd(network, "backends", backend);
   }
 
-  async backendsUpdate(network: NetworkName, id: number, backend: Backend) {
+  async backendsUpdate(network: NetworkName, id: string, backend: Backend) {
     return this._recordsUpdate(network, "backends", id, backend);
   }
 
-  async backendsDelete(network: NetworkName, id: number) {
+  async backendsDelete(network: NetworkName, id: string) {
     return this._recordsDelete(network, "backends", id);
   }
 
-  async backendsGetActive(network: NetworkName): Promise<number | null> {
+  async backendsGetActive(network: NetworkName): Promise<string | null> {
     let store = await this._getNetworkSubStore(network);
     let id = store.get("backends/activeId");
     if (id == null) return null;
     return id;
   }
 
-  async backendsSetActive(network: NetworkName, id: number) {
+  async backendsSetActive(network: NetworkName, id: string) {
     let store = await this._getNetworkSubStore(network);
     await store.set("backends/activeId", id);
   }
@@ -170,7 +169,11 @@ class State {
     return logs;
   }
 
-  async callLogsPush(network: NetworkName, idx: number | null, log: string): Promise<number> {
+  async callLogsPush(
+    network: NetworkName,
+    idx: number | null,
+    log: string,
+  ): Promise<number> {
     let store = await this._getNetworkSubStore(network);
     let logs: string[] | null = await store.get("callLogs");
     if (logs == null) logs = [];

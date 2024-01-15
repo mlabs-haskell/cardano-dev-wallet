@@ -27,9 +27,9 @@ class WalletApi {
   api: WalletApiInternal;
   state: State;
   network: NetworkName;
-  accountId: number;
+  accountId: string;
 
-  constructor(api: WalletApiInternal, state: State, accountId: number, network: NetworkName) {
+  constructor(api: WalletApiInternal, state: State, accountId: string, network: NetworkName) {
     this.api = api;
     this.state = state;
     this.network = network;
