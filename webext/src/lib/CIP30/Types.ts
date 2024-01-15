@@ -24,7 +24,7 @@ interface DataSignature {
   signature: HexStr;
 }
 
-export {
+export type {
   CborHexStr,
   AddressHexStr,
   AddressInputStr,

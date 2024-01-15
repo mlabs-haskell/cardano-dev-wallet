@@ -47,14 +47,12 @@ enum TxSignErrorCode {
   UserDeclined = 2,
 }
 
-export {
+export type {
   PaginateError,
   APIError,
   DataSignError,
   TxSendError,
   TxSignError,
-  APIErrorCode,
-  DataSignErrorCode,
-  TxSendErrorCode,
-  TxSignErrorCode,
 };
+
+export { APIErrorCode, DataSignErrorCode, TxSendErrorCode, TxSignErrorCode };
