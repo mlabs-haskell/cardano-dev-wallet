@@ -12,6 +12,7 @@ import {
   WalletApiInternal,
   APIError,
   APIErrorCode,
+  NetworkName,
 } from ".";
 import { State } from "./State";
 
@@ -25,16 +26,27 @@ function jsonReplacerCSL(_key: string, value: any) {
 class WalletApi {
   api: WalletApiInternal;
   state: State;
+  network: NetworkName;
   accountId: number;
 
-  constructor(api: WalletApiInternal, state: State, accountId: number) {
+  constructor(api: WalletApiInternal, state: State, accountId: number, network: NetworkName) {
     this.api = api;
     this.state = state;
+    this.network = network;
     this.accountId = accountId;
   }
 
   async ensureAccountNotChanged() {
-    let activeAccountId = await this.state.accountsGetActive();
+    let activeNetwork = await this.state.activeNetworkGet();
+    if (activeNetwork != this.network) {
+      let err: APIError = {
+        code: APIErrorCode.AccountChange,
+        info: "Account was changed by the user. Please reconnect to the Wallet",
+      };
+      throw err;
+    }
+
+    let activeAccountId = await this.state.accountsGetActive(activeNetwork);
     if (activeAccountId != this.accountId) {
       let err: APIError = {
         code: APIErrorCode.AccountChange,
@@ -45,22 +57,25 @@ class WalletApi {
   }
 
   async logCall(fn: string, params: readonly any[] = []): Promise<number> {
+    let activeNetwork = await this.state.activeNetworkGet();
     let log =
       fn +
       "(" +
       params.map((p) => JSON.stringify(p, jsonReplacerCSL)).join(", ") +
       ")";
-    return this.state.callLogsPush(null, log);
+    return this.state.callLogsPush(activeNetwork, null, log);
   }
 
   async logReturn(idx: number, value: any) {
+    let activeNetwork = await this.state.activeNetworkGet();
     let log = "=> " + JSON.stringify(value, jsonReplacerCSL);
-    await this.state.callLogsPush(idx, log);
+    await this.state.callLogsPush(activeNetwork, idx, log);
   }
 
   async logError(idx: number, error: any) {
+    let activeNetwork = await this.state.activeNetworkGet();
     let log = "=> " + JSON.stringify(error, jsonReplacerCSL);
-    await this.state.callLogsPush(idx, log);
+    await this.state.callLogsPush(activeNetwork, idx, log);
   }
 
   async wrapCall<T extends unknown[], U>(

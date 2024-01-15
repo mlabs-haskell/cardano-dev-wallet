@@ -42,7 +42,7 @@ class CIP30Entrypoint {
     let networkId = networkNameToId(networkName);
 
     // Fetch active account
-    let accountId = await this.state.accountsGetActive();
+    let accountId = await this.state.accountsGetActive(networkName);
     if (accountId == null) {
       let err: APIError = {
         code: APIErrorCode.Refused,
@@ -50,16 +50,16 @@ class CIP30Entrypoint {
       };
       throw err;
     }
-    let accounts = await this.state.accountsGet();
+    let accounts = await this.state.accountsGet(networkName);
     let accountInfo = accounts[accountId];
-    let keys = await this.state.rootKeysGet();
+    let keys = await this.state.rootKeysGet(networkName);
     let keyInfo = keys[accountInfo.keyId];
 
     let wallet = new Wallet({ networkId, privateKey: keyInfo.keyBech32 });
     let account = wallet.account(accountInfo.accountIdx, 0);
 
     // Fetch active backend
-    let backendId = await this.state.backendsGetActive();
+    let backendId = await this.state.backendsGetActive(networkName);
     if (backendId == null) {
       let err: APIError = {
         code: APIErrorCode.Refused,
@@ -67,7 +67,7 @@ class CIP30Entrypoint {
       };
       throw err;
     }
-    let backends = await this.state.backendsGet();
+    let backends = await this.state.backendsGet(networkName);
     let backendInfo = backends[backendId];
     let backend: Backend;
     if (backendInfo.type == "blockfrost") {
@@ -80,7 +80,7 @@ class CIP30Entrypoint {
 
     // Construct api
     let apiInternal = new WalletApiInternal(account, backend, networkId, this.state);
-    let api = new WalletApi(apiInternal, this.state, accountId);
+    let api = new WalletApi(apiInternal, this.state, accountId, networkName);
 
     return api;
   }
