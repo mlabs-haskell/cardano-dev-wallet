@@ -34,6 +34,7 @@ export class Wallet {
 
 export class Account {
   networkId: number;
+  index: number;
   paymentKey: CSL.PrivateKey;
   stakingKey: CSL.PrivateKey;
   baseAddress: CSL.BaseAddress;
@@ -44,6 +45,7 @@ export class Account {
     index: number,
   ) {
     this.networkId = networkId;
+    this.index = index;
 
     this.paymentKey = accountKey.derive(0).derive(index).to_raw_key();
     this.stakingKey = accountKey.derive(2).derive(index).to_raw_key();
