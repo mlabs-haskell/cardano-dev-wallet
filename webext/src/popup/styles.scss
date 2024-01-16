@@ -1,0 +1,513 @@
+@use "sass:map";
+@use "sass:color";
+
+@font-face {
+  font-family: "Roboto";
+  src: url("./static/Roboto-Regular.ttf");
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("./static/Roboto-Medium.ttf");
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("./static/Roboto-Bold.ttf");
+  font-weight: bold;
+}
+
+// COLORS //////////////////////////////////////////////////////////////////////
+
+$hues: (
+  "primary": 220,
+  "success": 165,
+  "warning": 30,
+  "error": 0,
+);
+
+$colors: (
+  // to be filled by the loop below
+);
+
+@each $hue-name in "primary", "success", "warning", "error" {
+  $hue: map.get($hues, $hue-name);
+
+  $colors: map.set( //
+      $colors,
+      $hue-name,
+      /* color map */
+      (
+        /* main colors */
+        "main": color.hwb($hue, 10%, 20%),
+        "main-hover": color.hwb($hue, 20%, 20%),
+        "main-focus": color.hwb($hue, 20%, 10%),
+        "main-pressed": color.hwb($hue, 20%, 30%),
+        "main-disabled": color.hwb($hue, 40%, 30%),
+        "main-text": color.hwb($hue, 95%, 0%),
+        "main-disabled-text": color.hwb($hue, 95%, 0%),
+        "main-outline": color.hwb($hue, 99%, 1%),
+        /* light colors */
+        "light": color.hwb($hue, 94%, 1%),
+        "light-hover": color.hwb($hue, 96%, 0%),
+        "light-focus": color.hwb($hue, 90%, 0%),
+        "light-pressed": color.hwb($hue, 93%, 2%),
+        "light-disabled": color.hwb($hue, 94%, 3%),
+        "light-text": color.hwb($hue, 40%, 20%),
+        "light-disabled-text": color.hwb($hue, 60%, 30%),
+        "light-outline": color.hwb($hue, 40%, 40%),
+        /* text & background colors */
+        "headings": color.hwb($hue, 10%, 30%),
+        "text": color.hwb($hue, 30%, 40%),
+        "background": color.hwb($hue, 97.5%, 1%),
+      )
+      /* end of color map */
+    );
+}
+
+body {
+  color: map.get($colors, "primary", "text");
+  background-color: map.get($colors, "primary", "background");
+}
+
+@each $h in 1, 2, 3, 5, 6 {
+
+  h#{$h},
+  .h#{$h} {
+    color: map.get($colors, "primary", "headings");
+  }
+}
+
+label {
+  &:focus-within {
+    color: map.get($colors, "primary", "headings");
+  }
+}
+
+@each $hue in "success", "warning", "error" {
+  .#{$hue} {
+    color: map.get($colors, $hue, "text");
+  }
+}
+
+@mixin input-colors($hue) {
+  color: map.get($colors, $hue, "text");
+  background-color: map.get($colors, $hue, "light");
+
+  &:hover {
+    background-color: map.get($colors, $hue, "light-hover");
+  }
+
+  &:focus {
+    background-color: map.get($colors, $hue, "light-focus");
+    outline: map.get($colors, $hue, "light-outline") solid 1px;
+  }
+}
+
+input,
+textarea,
+select {
+  @include input-colors("primary");
+
+  @each $hue in "success", "warning", "error" {
+
+    &.#{$hue},
+    .#{$hue} & {
+      @include input-colors($hue);
+    }
+  }
+}
+
+@mixin button-colors($hue, $sub) {
+  color: map.get($colors, $hue, "#{$sub}-text");
+  background-color: map.get($colors, $hue, "#{$sub}");
+  border: none;
+
+  &:focus {
+    background-color: map.get($colors, $hue, "#{$sub}-focus");
+    outline: map.get($colors, $hue, "#{$sub}-outline") solid 1px;
+    outline-offset: -4px;
+  }
+
+  &:hover {
+    background-color: map.get($colors, $hue, "#{$sub}-hover");
+  }
+
+  &:active {
+    background-color: map.get($colors, $hue, "#{$sub}-pressed");
+  }
+
+  &:disabled {
+    color: map.get($colors, $hue, "#{$sub}-disabled-text");
+    background-color: map.get($colors, $hue, "#{$sub}-disabled");
+  }
+}
+
+
+input[type="button"],
+input[type="submit"],
+button {
+  @include button-colors("primary", "main");
+
+  &.secondary {
+    @include button-colors("primary", "light");
+  }
+
+  @each $hue in "primary", "success", "warning", "error" {
+
+    &.#{$hue},
+    .#{$hue} & {
+      @include button-colors($hue, "main");
+
+      &.secondary {
+        @include button-colors($hue, "light");
+      }
+    }
+  }
+}
+
+// END COLORS //////////////////////////////////////////////////////////////////
+
+:root {
+  /* Colors */
+  --hue: 220;
+  --success-hue: 165;
+  --warning-hue: 30;
+  --error-hue: 0;
+
+  --background: hsl(var(--hue), 0%, 97%);
+  --surface: white;
+
+  --alert-background: hsl(var(--hue), 40%, 98%);
+  --alert-title: hsl(var(--hue), 50%, 50%);
+  --alert-body: var(--text);
+
+  --alert-success-background: hsl(var(--success-hue), 40%, 98%);
+  --alert-success-title: hsl(var(--success-hue), 60%, 30%);
+  --alert-success-body: hsl(var(--success-hue), 30%, 35%);
+
+  --alert-warning-background: hsl(var(--warning-hue), 40%, 98%);
+  --alert-warning-title: hsl(var(--warning-hue), 60%, 45%);
+  --alert-warning-body: hsl(var(--warning-hue), 40%, 50%);
+
+  --alert-error-background: hsl(var(--error-hue), 40%, 98%);
+  --alert-error-title: hsl(var(--error-hue), 60%, 40%);
+  --alert-error-body: hsl(var(--error-hue), 30%, 45%);
+
+  /* Typography */
+  --text-size-s: 0.85rem;
+  --text-size: 1rem;
+  --text-size-l: 1.125rem;
+  --text-size-xl: 1.5rem;
+  --text-size-xxl: 2rem;
+
+  /* Spacing */
+  --space-xxs: 0.50rem;
+  --space-xs: 0.75rem;
+  --space-s: 1rem;
+  --space: 1.25rem;
+  --space-l: 1.5rem;
+  --space-xl: 2rem;
+  --space-xxl: 2.5rem;
+  --space-xxxl: 4rem;
+
+  --radius: 0.35em;
+  --radius-l: 0.5em;
+  --radius-xl: 0.75em;
+}
+
+/* Utilities */
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25em;
+
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75em;
+  align-items: baseline;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-start {
+  justify-content: start;
+}
+
+.justify-end {
+  justify-content: end;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.align-start {
+  align-items: start;
+}
+
+.align-end {
+  align-items: end;
+}
+
+.align-self-end {
+  justify-self: end;
+}
+
+.grow-1 {
+  flex-grow: 1;
+}
+
+.pad-0 {
+  padding: 0;
+}
+
+.pad-s {
+  padding: var(--space-s);
+}
+
+.pad {
+  padding: var(--space);
+}
+
+.pad-l {
+  padding: var(--space-l);
+}
+
+.pad-xl {
+  padding: var(--space-xl);
+}
+
+.pad-xxl {
+  padding: var(--space-xxl);
+}
+
+.gap-0 {
+  gap: 0;
+}
+
+.gap-s {
+  gap: var(--space-s);
+}
+
+.gap {
+  gap: var(--space);
+}
+
+.gap-l {
+  gap: var(--space-l);
+}
+
+.gap-xl {
+  gap: var(--space-xl);
+}
+
+.gap-xxl {
+  gap: var(--space-xxl);
+}
+
+.text-block {
+  display: block;
+  flex-direction: column;
+  gap: 0;
+}
+
+.align-center {
+  justify-content: center;
+}
+
+.align-end {
+  justify-content: end;
+}
+
+.force-wrap {
+  word-break: break-all;
+}
+
+.w-20 {
+  width: 20em;
+}
+
+.w-30 {
+  width: 30em;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.weight-normal {
+  font-weight: normal;
+}
+
+.weight-medium {
+  font-weight: 600;
+}
+
+.size-s {
+  font-size: var(--text-size-s);
+}
+
+/* Elements */
+
+* {
+  transition: background-color 0.2s, color 0.2s;
+  box-sizing: border-box;
+  word-break: break-all;
+}
+
+body {
+  line-height: 1.4;
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+}
+
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
+  margin: 0;
+}
+
+p {
+  margin: 0;
+  max-width: 40em;
+}
+
+h1,
+.h1 {
+  font-size: var(--text-size-xxl);
+}
+
+h2,
+.h2 {
+  font-size: var(--text-size-xl);
+}
+
+h3,
+.h3 {
+  font-size: var(--text-size-l);
+}
+
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
+  font-size: var(--text-size);
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+input,
+textarea,
+select {
+  border-radius: var(--radius);
+  border: none;
+}
+
+input,
+select {
+  padding: 0.5em 1em;
+}
+
+textarea {
+  padding: 1em;
+  overflow: visible;
+  height: fit-content;
+  min-height: 10em;
+  resize: none;
+}
+
+input[type="button"],
+input[type="submit"],
+button {
+  padding: 0.5em 1em;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+form.column {
+  max-width: 25em;
+}
+
+.alert {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space) / 4);
+  padding: 1em;
+  border-radius: var(--radius);
+  color: var(--alert-body);
+  background-color: var(--alert-background);
+
+  &.error {
+    color: var(--alert-error-body);
+    background-color: var(--alert-error-background);
+    --text-headings: var(--alert-error-title);
+  }
+}
+
+.surface {
+  background-color: var(--surface);
+  border-radius: var(--radius);
+}
+
+.tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+
+  .tab {
+    display: none;
+  }
+
+  .tabs-header {
+    display: flex;
+    border-bottom: solid 2px var(--primary);
+
+    .tab-button {
+      padding: 0.5em 1em;
+      color: var(--text-controls);
+      text-decoration: none;
+
+      &.-selected {
+        background-color: var(--secondary);
+        border-top-left-radius: 0.5em;
+        border-top-right-radius: 0.5em;
+      }
+    }
+  }
+
+  .tab.-selected {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75em;
+  margin-top: var(--space-xxs);
+}
