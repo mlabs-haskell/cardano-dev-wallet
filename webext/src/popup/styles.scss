@@ -113,8 +113,8 @@ select {
 
   @each $hue in "success", "warning", "error" {
 
-    &.#{$hue},
-    .#{$hue} & {
+    .#{$hue} &,
+    &.#{$hue} {
       @include input-colors($hue);
     }
   }
@@ -231,7 +231,7 @@ button {
   display: flex;
   flex-direction: row;
   gap: 0.75em;
-  align-items: baseline;
+  align-items: center;
 }
 
 .justify-center {
@@ -484,15 +484,16 @@ form.column {
 
   .tabs-header {
     display: flex;
-    border-bottom: solid 2px var(--primary);
+    border-bottom: solid 2px map.get($colors, "primary", "main");
 
     .tab-button {
       padding: 0.5em 1em;
-      color: var(--text-controls);
       text-decoration: none;
+      color: map.get($colors, "primary", "text");
 
       &.-selected {
-        background-color: var(--secondary);
+        background-color: map.get($colors, "primary", "light");
+        color: map.get($colors, "primary", "light-text");
         border-top-left-radius: 0.5em;
         border-top-right-radius: 0.5em;
       }

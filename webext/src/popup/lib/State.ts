@@ -84,6 +84,27 @@ async function walletsAdd(name: string, wallet: Wallet) {
   internalState.value.rootKeys.value = await STATE.rootKeysGet(networkActive);
 }
 
+async function walletsRename(walletId: string, name: string) {
+  let networkActive = internalState.value.networkActive.value;
+  let rootKeys = await STATE.rootKeysGet(networkActive);
+
+  let rootKey = rootKeys[walletId];
+  rootKey.name = name;
+
+  await STATE.rootKeysUpdate(networkActive, walletId, rootKey);
+
+  internalState.value.rootKeys.value = await STATE.rootKeysGet(networkActive);
+}
+
+async function walletsDelete(walletId: string) {
+  let networkActive = internalState.value.networkActive.value;
+
+  await accountsDeleteByWallet(walletId);
+  await STATE.rootKeysDelete(networkActive, walletId);
+
+  internalState.value.rootKeys.value = await STATE.rootKeysGet(networkActive);
+}
+
 const accounts = computed(() => {
   let accounts = new Map<string, AccountDef>();
 
@@ -91,6 +112,7 @@ const accounts = computed(() => {
     internalState.value.accounts.value,
   )) {
     let walletDef = wallets.value.get(account.keyId)!;
+    if (walletDef == null) console.log(account);
     let wallet = walletDef.wallet;
 
     let accountDef: AccountDef = {
@@ -119,6 +141,41 @@ async function accountsAdd({ walletId, name, accountIdx }: AccountNew) {
     accountIdx: accountIdx,
   };
   await STATE.accountsAdd(networkActive, account);
+
+  internalState.value.accounts.value = await STATE.accountsGet(networkActive);
+}
+
+async function accountsDeleteByWallet(walletId: string) {
+  let networkActive = internalState.value.networkActive.value;
+
+  let idsToDelete = []
+  for (let [id, ac] of Object.entries(internalState.value.accounts.value)) {
+    if (ac.keyId == walletId) idsToDelete.push(id);
+  }
+  for (let id of idsToDelete) {
+    await STATE.accountsDelete(networkActive, id);
+  }
+
+  internalState.value.accounts.value = await STATE.accountsGet(networkActive);
+}
+
+async function accountsRename(accountId: string, name: string) {
+  let networkActive = internalState.value.networkActive.value;
+  let accounts = await STATE.accountsGet(networkActive);
+
+  let account = accounts[accountId];
+  account.name = name;
+
+  await STATE.accountsUpdate(networkActive, accountId, account);
+
+  internalState.value.accounts.value = await STATE.accountsGet(networkActive);
+}
+
+async function accountsDelete(accountId: string) {
+  let networkActive = internalState.value.networkActive.value;
+
+  await accountsDeleteByWallet(accountId);
+  await STATE.accountsDelete(networkActive, accountId);
 
   internalState.value.accounts.value = await STATE.accountsGet(networkActive);
 }
@@ -163,8 +220,12 @@ export {
   networkActiveSet,
   wallets,
   walletsAdd,
+  walletsRename,
+  walletsDelete,
   accounts,
   accountsAdd,
+  accountsRename,
+  accountsDelete,
   accountActiveId,
   accountActive,
   accountActiveSet,

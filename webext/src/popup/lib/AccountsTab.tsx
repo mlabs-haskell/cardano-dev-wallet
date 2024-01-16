@@ -48,10 +48,25 @@ interface WalletCardProps {
 
 function WalletCard({ walletId, wallet, accounts }: WalletCardProps) {
   let [adding, setAdding] = useState(false);
+  let [renaming, setRenaming] = useState(false);
+  let [name, setName] = useState(wallet.name || "Unnamed");
+  let [deleting, setDeleting] = useState(false);
 
   let ourAccounts = [...accounts].filter(([_, ac]) => ac.walletId == walletId);
-  let name = wallet.name || "Unnamed";
   let pubKey = wallet.wallet.rootKey.to_public().to_bech32();
+
+  const onRenameStart = () => setRenaming(true);
+  const onRename = async () => {
+    await State.walletsRename(walletId, name);
+    setRenaming(false);
+  };
+
+  const onDeleteStart = () => setDeleting(true);
+  const onDeleteCancel = () => setDeleting(false);
+  const onDelete = async () => {
+    await State.walletsDelete(walletId);
+    setRenaming(false);
+  };
 
   return (
     <div
@@ -63,11 +78,31 @@ function WalletCard({ walletId, wallet, accounts }: WalletCardProps) {
       }}
       class="surface pad-s"
     >
-      <div class="h3">{name}</div>
+      <div class="row">
+        {!renaming ?
+          <div class="h3">{name}</div>
+          : <div class="row">
+            <input value={name} onInput={(ev) => setName(ev.currentTarget.value)} />
+            <button class="size-s" onClick={onRename}>Save</button>
+          </div>
+        }
+        <div class="grow-1" />
+        <button class="secondary size-s" onClick={onRenameStart}>Rename</button>
+        <button class="error secondary size-s" onClick={onDeleteStart}>Delete</button>
+      </div>
+      {deleting && <div class="alert error">
+        <div class="row">
+          <p>Are you sure to delete?</p>
+          <button class="size-s" onClick={onDelete}>Delete</button>
+          <button class="secondary size-s" onClick={onDeleteCancel}>Cancel</button>
+        </div>
+      </div>
+      }
       <div>{pubKey}</div>
       <div />
       <div class="row">
         <div class="h4">Accounts</div>
+        <div class="grow-1" />
         <button
           class="size-s secondary"
           onClick={() => {
@@ -109,6 +144,7 @@ function WalletAddForm({ onClose }: WalletAddFormProps) {
   const onSubmit = async () => {
     let network = State.networkActive.value;
     let networkId = networkNameToId(network);
+    keyOrMnemonics = keyOrMnemonics.trim();
 
     let wallet;
     try {
@@ -152,7 +188,7 @@ function WalletAddForm({ onClose }: WalletAddFormProps) {
         class={error ? "error" : ""}
       >
         Key or Mnemonics
-        <input
+        <textarea
           type="text"
           value={keyOrMnemonics}
           onInput={(ev) => setKeyOrMnemonics(ev.currentTarget.value)}
@@ -175,9 +211,26 @@ interface AccountCardProps {
   accountDef: State.AccountDef;
 }
 
-function AccountCard({ accountDef }: AccountCardProps) {
+function AccountCard({ accountId, accountDef }: AccountCardProps) {
   let accountIdx = accountDef.accountIdx;
-  let name = accountDef.name || "Unnamed";
+
+  let [renaming, setRenaming] = useState(false);
+  let [name, setName] = useState(accountDef.name || "Unnamed");
+  let [deleting, setDeleting] = useState(false);
+
+  const onRenameStart = () => setRenaming(true);
+  const onRename = async () => {
+    await State.accountsRename(accountId, name);
+    setRenaming(false);
+  };
+
+  const onDeleteStart = () => setDeleting(true);
+  const onDeleteCancel = () => setDeleting(false);
+  const onDelete = async () => {
+    await State.accountsDelete(accountId);
+    setRenaming(false);
+  };
+
   let derivation = `m(1852'/1815'/${accountIdx}')`;
   let pubkey = accountDef.account.baseAddress.to_address().to_bech32();
 
@@ -192,9 +245,26 @@ function AccountCard({ accountDef }: AccountCardProps) {
       class="alert pad-s"
     >
       <div class="row">
-        <div class="h3">{name}</div>
+        {!renaming ?
+          <div class="h3">{name}</div>
+          : <div class="row">
+            <input value={name} onInput={(ev) => setName(ev.currentTarget.value)} />
+            <button class="size-s" onClick={onRename}>Save</button>
+          </div>
+        }
         <div>{derivation}</div>
+        <div class="grow-1" />
+        <button class="secondary size-s" onClick={onRenameStart}>Rename</button>
+        <button class="error secondary size-s" onClick={onDeleteStart}>Delete</button>
       </div>
+      {deleting && <div class="alert error">
+        <div class="row">
+          <p>Are you sure to delete?</p>
+          <button class="size-s" onClick={onDelete}>Delete</button>
+          <button class="secondary size-s" onClick={onDeleteCancel}>Cancel</button>
+        </div>
+      </div>
+      }
       <div>{pubkey}</div>
     </div>
   );
@@ -217,9 +287,9 @@ function AccountAddForm({ walletId, onClose }: AccountAddFormProps) {
     <div
       style={{
         display: "flex",
-        flexDirection: "column",
+        flexDirection: "row",
         gap: "0.5em",
-        alignItems: "stretch",
+        alignItems: "end",
       }}
       class="surface pad-s"
     >
