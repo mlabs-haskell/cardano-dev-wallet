@@ -6,6 +6,9 @@ import { AccountsTab } from "./AccountsTab";
 import { HomeTab } from "./HomeTab";
 import { LogsTab } from "./LogsTab";
 
+import * as State from "./State";
+import { NetworkName } from "../../lib/CIP30";
+
 function App() {
   return (
     <div class="column gap w-full">
@@ -37,15 +40,22 @@ function Logo() {
 }
 
 function NetworkSelector() {
-  return <div class="column align-center">
-    <label>
-      <select>
-        <option>mainnet</option>
-        <option>preprod</option>
-        <option>preview</option>
-      </select>
-    </label>
-  </div>;
+  return (
+    <div class="column align-center">
+      <label>
+        <select
+          value={State.networkActive.value}
+          onChange={(e) =>
+            State.networkActiveSet(e.currentTarget.value as NetworkName)
+          }
+        >
+          <option>mainnet</option>
+          <option>preprod</option>
+          <option>preview</option>
+        </select>
+      </label>
+    </div>
+  );
 }
 
 function Body() {
@@ -59,7 +69,7 @@ function Body() {
           Overrides: <OverridesTab />,
           Logs: <LogsTab />,
         }}
-        defaultTab={"Accounts"}
+        defaultTab={"Network"}
       />
     </div>
   );
