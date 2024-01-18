@@ -1,5 +1,6 @@
 @use "sass:map";
 @use "sass:color";
+@use "sass:math";
 
 @font-face {
   font-family: "Roboto";
@@ -72,7 +73,7 @@ body {
   background-color: map.get($colors, "primary", "background");
 }
 
-@each $h in 1, 2, 3, 5, 6 {
+@each $h in 1, 2, 3, 4, 5, 6 {
 
   h#{$h},
   .h#{$h} {
@@ -93,6 +94,7 @@ label {
 }
 
 @mixin input-colors($hue) {
+  border: none;
   color: map.get($colors, $hue, "text");
   background-color: map.get($colors, $hue, "light");
 
@@ -168,7 +170,118 @@ button {
   }
 }
 
+.surface {
+  background-color: white;
+}
+
+hr {
+  border: none;
+  border-bottom: solid 1px map.get($colors, "primary", "light");
+}
+
 // END COLORS //////////////////////////////////////////////////////////////////
+
+// SPACING /////////////////////////////////////////////////////////////////////
+
+$spacing: (
+  "0": 0,
+  "xs": 0.5rem,
+  "s": 1rem,
+  "m": 1.5rem,
+  "l": 2rem,
+  "xl": 3rem,
+  "xxl": 4rem,
+);
+
+.column {
+  gap: map.get($spacing, "m");
+}
+
+.row {
+  gap: math.div(map.get($spacing, "m"), 2);
+}
+
+input,
+select,
+input[type="button"],
+input[type="submit"],
+button {
+  padding: map.get($spacing, "xs") map.get($spacing, "s")
+}
+
+textarea {
+  padding:
+    0.75rem //todo standardize this value into $spacing
+    map.get($spacing, "s")
+}
+
+hr {
+  width: 100%;
+}
+
+@each $size, $value in $spacing {
+  .pad-#{$size} {
+    padding: $value;
+
+    &>.unpad {
+      margin: -$value;
+    }
+
+    &>.unpad-x {
+      margin-left: -$value;
+      margin-right: -$value;
+    }
+
+    &>.unpad-y {
+      margin-top: -$value;
+      margin-bottom: -$value;
+    }
+  }
+
+  .padx-#{$size} {
+    padding-left: $value;
+    padding-right: $value;
+
+    &>.unpad,
+    &>.unpad-x {
+      margin-left: -$value;
+      margin-right: -$value;
+    }
+  }
+
+  .pady-#{$size} {
+    padding-top: $value;
+    padding-bottom: $value;
+
+    &>.unpad,
+    &>.unpad-y {
+      margin-top: -$value;
+      margin-bottom: -$value;
+    }
+  }
+
+  .pad-top-#{$size} {
+    padding-top: $value;
+  }
+
+  .pad-bottom-#{$size} {
+    padding-bottom: $value;
+  }
+
+  .margin-#{$size} {
+    margin: $value;
+  }
+
+  .gap-#{$size} {
+    gap: $value;
+  }
+
+  .row.gap-#{$size} {
+    gap: math.div($value, 2);
+  }
+}
+
+// END SPACING /////////////////////////////////////////////////////////////////
 
 :root {
   /* Colors */
@@ -203,16 +316,6 @@ button {
   --text-size-xl: 1.5rem;
   --text-size-xxl: 2rem;
 
-  /* Spacing */
-  --space-xxs: 0.50rem;
-  --space-xs: 0.75rem;
-  --space-s: 1rem;
-  --space: 1.25rem;
-  --space-l: 1.5rem;
-  --space-xl: 2rem;
-  --space-xxl: 2.5rem;
-  --space-xxxl: 4rem;
-
   --radius: 0.35em;
   --radius-l: 0.5em;
   --radius-xl: 0.75em;
@@ -223,14 +326,12 @@ button {
 .column {
   display: flex;
   flex-direction: column;
-  gap: 1.25em;
-
+  align-items: stretch;
 }
 
 .row {
   display: flex;
   flex-direction: row;
-  gap: 0.75em;
   align-items: center;
 }
 
@@ -264,54 +365,6 @@ button {
 
 .grow-1 {
   flex-grow: 1;
-}
-
-.pad-0 {
-  padding: 0;
-}
-
-.pad-s {
-  padding: var(--space-s);
-}
-
-.pad {
-  padding: var(--space);
-}
-
-.pad-l {
-  padding: var(--space-l);
-}
-
-.pad-xl {
-  padding: var(--space-xl);
-}
-
-.pad-xxl {
-  padding: var(--space-xxl);
-}
-
-.gap-0 {
-  gap: 0;
-}
-
-.gap-s {
-  gap: var(--space-s);
-}
-
-.gap {
-  gap: var(--space);
-}
-
-.gap-l {
-  gap: var(--space-l);
-}
-
-.gap-xl {
-  gap: var(--space-xl);
-}
-
-.gap-xxl {
-  gap: var(--space-xxl);
 }
 
 .text-block {
@@ -417,23 +470,16 @@ h6,
 label {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: map.get($spacing, "xs");
 }
 
 input,
 textarea,
 select {
   border-radius: var(--radius);
-  border: none;
-}
-
-input,
-select {
-  padding: 0.5em 1em;
 }
 
 textarea {
-  padding: 1em;
   overflow: visible;
   height: fit-content;
   min-height: 10em;
@@ -443,13 +489,8 @@ textarea {
 input[type="button"],
 input[type="submit"],
 button {
-  padding: 0.5em 1em;
   border-radius: var(--radius);
   cursor: pointer;
-}
-
-form.column {
-  max-width: 25em;
 }
 
 .alert {
@@ -469,7 +510,6 @@ form.column {
 }
 
 .surface {
-  background-color: var(--surface);
   border-radius: var(--radius);
 }
 
@@ -484,7 +524,7 @@ form.column {
 
   .tabs-header {
     display: flex;
-    border-bottom: solid 2px map.get($colors, "primary", "main");
+    border-bottom: solid 1px map.get($colors, "primary", "main");
 
     .tab-button {
       padding: 0.5em 1em;
@@ -506,9 +546,10 @@ form.column {
   }
 }
 
-.buttons {
-  display: flex;
-  flex-direction: row;
-  gap: 0.75em;
-  margin-top: var(--space-xxs);
+@each $h in 1, 2, 3, 4, 5, 6 {
+
+  h#{$h},
+  .h#{$h} {
+    font-weight: normal;
+  }
 }

@@ -7,7 +7,7 @@ export function NetworkTab() {
   let [adding, setAdding] = useState(false);
 
   return (
-    <div class="flex column pad">
+    <div class="flex column pad-m gap-l">
       <div class="row">
         <h2>Network Backends</h2>
         <div class="grow-1" />
@@ -67,13 +67,7 @@ function BackendCard({ backendId, backend }: BackendCardProps) {
 
   return (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.5em",
-        alignItems: "stretch",
-      }}
-      class="surface pad-s"
+      class="column surface pad-s pad-bottom-m"
     >
       <div class="row">
         {!renaming ? (
@@ -119,7 +113,7 @@ function BackendCard({ backendId, backend }: BackendCardProps) {
         </div>
       )}
       {backend.type == "blockfrost" && (
-        <div class="column" style={{ gap: "0.25rem" }}>
+        <div class="column gap-xs">
           <label>
             Provider
             <input readonly value="Blockfrost" />
@@ -130,26 +124,28 @@ function BackendCard({ backendId, backend }: BackendCardProps) {
             <input readonly value={backend.projectId} />
           </label>
         </div>
-      )}
-      {backend.type == "ogmios_kupo" && (
-        <div class="column" style={{ gap: "0.25rem" }}>
-          <label>
-            Provider
-            <input readonly value="Ogmios/Kupo" />
-          </label>
-          <div />
-          <label>
-            Ogmios URL
-            <input readonly value={backend.ogmiosUrl} />
-          </label>
-          <label>
-            Kupo URL
-            <input readonly value={backend.kupoUrl} />
-          </label>
-        </div>
-      )}
-      <div />
-    </div>
+      )
+      }
+      {
+        backend.type == "ogmios_kupo" && (
+          <div class="column" style={{ gap: "0.25rem" }}>
+            <label>
+              Provider
+              <input readonly value="Ogmios/Kupo" />
+            </label>
+            <div />
+            <label>
+              Ogmios URL
+              <input readonly value={backend.ogmiosUrl} />
+            </label>
+            <label>
+              Kupo URL
+              <input readonly value={backend.kupoUrl} />
+            </label>
+          </div>
+        )
+      }
+    </div >
   );
 }
 
@@ -189,13 +185,7 @@ function BackendAddForm({ onClose }: BackendAddFormProps) {
 
   return (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.5em",
-        alignItems: "stretch",
-      }}
-      class="surface pad-s"
+      class="column surface pad-s"
     >
       <label>
         Name:
@@ -242,7 +232,6 @@ function BackendAddForm({ onClose }: BackendAddFormProps) {
           </label>
         </>
       )}
-      <div />
       <div class="row">
         <button onClick={onSubmit}>Save</button>
         <button class="secondary" onClick={onClose}>

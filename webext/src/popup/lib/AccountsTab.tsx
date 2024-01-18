@@ -10,7 +10,7 @@ export function AccountsTab() {
   let [adding, setAdding] = useState(false);
 
   return (
-    <div class="flex column pad">
+    <div class="flex column pad-m gap-l">
       <div class="row">
         <h2>Wallets</h2>
         <div class="grow-1" />
@@ -69,66 +69,81 @@ function WalletCard({ walletId, wallet, accounts }: WalletCardProps) {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.5em",
-        alignItems: "stretch",
-      }}
-      class="surface pad-s"
-    >
-      <div class="row">
-        {!renaming ?
-          <div class="h3">{name}</div>
-          : <div class="row">
-            <input value={name} onInput={(ev) => setName(ev.currentTarget.value)} />
-            <button class="size-s" onClick={onRename}>Save</button>
-          </div>
-        }
-        <div class="grow-1" />
-        <button class="secondary size-s" onClick={onRenameStart}>Rename</button>
-        <button class="error secondary size-s" onClick={onDeleteStart}>Delete</button>
-      </div>
-      {deleting && <div class="alert error">
+    <div class="column surface gap-0">
+      <div class="column pad-s gap-s">
         <div class="row">
-          <p>Are you sure to delete?</p>
-          <button class="size-s" onClick={onDelete}>Delete</button>
-          <button class="secondary size-s" onClick={onDeleteCancel}>Cancel</button>
+          {!renaming ? (
+            <h3>{name}</h3>
+          ) : (
+            <div class="row">
+              <input
+                value={name}
+                onInput={(ev) => setName(ev.currentTarget.value)}
+              />
+              <button class="size-s" onClick={onRename}>
+                Save
+              </button>
+            </div>
+          )}
+          <div class="grow-1" />
+          <button class="secondary size-s" onClick={onRenameStart}>
+            Rename
+          </button>
+          <button class="error secondary size-s" onClick={onDeleteStart}>
+            Delete
+          </button>
         </div>
+        {deleting && (
+          <div class="alert error">
+            <div class="row">
+              <p>Are you sure to delete?</p>
+              <button class="size-s" onClick={onDelete}>
+                Delete
+              </button>
+              <button class="secondary size-s" onClick={onDeleteCancel}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+        <div>{pubKey}</div>
       </div>
-      }
-      <div>{pubKey}</div>
-      <div />
-      <div class="row">
-        <div class="h4">Accounts</div>
-        <div class="grow-1" />
-        <button
-          class="size-s secondary"
-          onClick={() => {
-            setAdding(true);
-          }}
-          disabled={adding}
-        >
-          Add Account
-        </button>
-      </div>
+      <hr />
+      <div class="pad-s column">
+        <div class="row">
+          <h5>Accounts</h5>
+          <div class="grow-1" />
+          <button
+            class="size-s secondary"
+            onClick={() => {
+              setAdding(true);
+            }}
+            disabled={adding}
+          >
+            Add Account
+          </button>
+        </div>
 
-      {adding && (
-        <AccountAddForm walletId={walletId} onClose={() => setAdding(false)} />
-      )}
-
-      {[...ourAccounts].map(([accountId, account]) => {
-        return (
-          <AccountCard
-            key={accountId}
-            accountId={accountId}
-            accountDef={account}
+        {adding && (
+          <AccountAddForm
+            walletId={walletId}
+            onClose={() => setAdding(false)}
           />
-        );
-      })}
+        )}
+      </div>
+      <div class="pad-s column gap-l">
+        {[...ourAccounts].map(([accountId, account]) => {
+          return (
+            <AccountCard
+              key={accountId}
+              accountId={accountId}
+              accountDef={account}
+            />
+          );
+        })}
 
-      {ourAccounts.length == 0 && <div class="alert">empty</div>}
+        {ourAccounts.length == 0 && <div class="alert">empty</div>}
+      </div>
     </div>
   );
 }
@@ -184,9 +199,7 @@ function WalletAddForm({ onClose }: WalletAddFormProps) {
           onInput={(ev) => setName(ev.currentTarget.value)}
         />
       </label>
-      <label
-        class={error ? "error" : ""}
-      >
+      <label class={error ? "error" : ""}>
         Key or Mnemonics
         <textarea
           type="text"
@@ -218,6 +231,8 @@ function AccountCard({ accountId, accountDef }: AccountCardProps) {
   let [name, setName] = useState(accountDef.name || "Unnamed");
   let [deleting, setDeleting] = useState(false);
 
+  let isActive = accountId == State.accountsActiveId.value;
+
   const onRenameStart = () => setRenaming(true);
   const onRename = async () => {
     await State.accountsRename(accountId, name);
@@ -231,6 +246,10 @@ function AccountCard({ accountId, accountDef }: AccountCardProps) {
     setRenaming(false);
   };
 
+  const makeActive = async () => {
+    await State.accountsActiveSet(accountId);
+  };
+
   let derivation = `m(1852'/1815'/${accountIdx}')`;
   let pubkey = accountDef.account.baseAddress.to_address().to_bech32();
 
@@ -242,29 +261,50 @@ function AccountCard({ accountId, accountDef }: AccountCardProps) {
         gap: "0.5em",
         alignItems: "stretch",
       }}
-      class="alert pad-s"
+      class=""
     >
       <div class="row">
-        {!renaming ?
+        {!renaming ? (
           <div class="h3">{name}</div>
-          : <div class="row">
-            <input value={name} onInput={(ev) => setName(ev.currentTarget.value)} />
-            <button class="size-s" onClick={onRename}>Save</button>
+        ) : (
+          <div class="row">
+            <input
+              value={name}
+              onInput={(ev) => setName(ev.currentTarget.value)}
+            />
+            <button class="size-s" onClick={onRename}>
+              Save
+            </button>
           </div>
-        }
+        )}
         <div>{derivation}</div>
+        {isActive && <span class="success">Active</span>}
         <div class="grow-1" />
-        <button class="secondary size-s" onClick={onRenameStart}>Rename</button>
-        <button class="error secondary size-s" onClick={onDeleteStart}>Delete</button>
+        {!isActive && (
+          <button class="secondary size-s" onClick={makeActive}>
+            Set Active
+          </button>
+        )}
+        <button class="secondary size-s" onClick={onRenameStart}>
+          Rename
+        </button>
+        <button class="error secondary size-s" onClick={onDeleteStart}>
+          Delete
+        </button>
       </div>
-      {deleting && <div class="alert error">
-        <div class="row">
-          <p>Are you sure to delete?</p>
-          <button class="size-s" onClick={onDelete}>Delete</button>
-          <button class="secondary size-s" onClick={onDeleteCancel}>Cancel</button>
+      {deleting && (
+        <div class="alert error">
+          <div class="row">
+            <p>Are you sure to delete?</p>
+            <button class="size-s" onClick={onDelete}>
+              Delete
+            </button>
+            <button class="secondary size-s" onClick={onDeleteCancel}>
+              Cancel
+            </button>
+          </div>
         </div>
-      </div>
-      }
+      )}
       <div>{pubkey}</div>
     </div>
   );
@@ -291,7 +331,7 @@ function AccountAddForm({ walletId, onClose }: AccountAddFormProps) {
         gap: "0.5em",
         alignItems: "end",
       }}
-      class="surface pad-s"
+      class=""
     >
       <label>
         Name:
