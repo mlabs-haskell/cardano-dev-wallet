@@ -29,7 +29,12 @@ class WalletApi {
   network: NetworkName;
   accountId: string;
 
-  constructor(api: WalletApiInternal, state: State, accountId: string, network: NetworkName) {
+  constructor(
+    api: WalletApiInternal,
+    state: State,
+    accountId: string,
+    network: NetworkName,
+  ) {
     this.api = api;
     this.state = state;
     this.network = network;
@@ -125,7 +130,7 @@ class WalletApi {
   async getCollateral(params?: {
     amount: CborHexStr;
   }): Promise<CborHexStr[] | null> {
-    let paramsTyped: [params?: { amount: CSL.BigNum }] = [];
+    let paramsTyped: [params?: { amount: CSL.BigNum; }] = [];
     if (params != null) {
       let amount = CSL.BigNum.from_hex(params.amount);
 
