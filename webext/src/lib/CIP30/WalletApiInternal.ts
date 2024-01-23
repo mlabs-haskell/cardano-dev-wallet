@@ -103,8 +103,7 @@ class WalletApiInternal {
   }
 
   async getCollateral(params?: {
-    amount: CSL.BigNum;
-    _all: boolean /* This is an internal option used by the UI */
+    amount?: CSL.BigNum;
   }): Promise<CSL.TransactionUnspentOutput[] | null> {
     let networkActive = await this.state.networkActiveGet();
     const fiveAda = CSL.BigNum.from_str("5000000");
@@ -126,11 +125,13 @@ class WalletApiInternal {
       }
     }
 
-    if (params?._all) {
-      return utxos;
-    } else {
-      return Utils.getPureAdaUtxosAddingUpToTarget(utxos, target);
+    utxos = Utils.getPureAdaUtxos(utxos);
+
+    if (params?.amount != null) {
+      let value = CSL.Value.new(params.amount);
+      return Utils.getUtxosAddingUpToTarget(utxos, value);
     }
+    return utxos;
   }
 
   async getChangeAddress(): Promise<CSL.Address> {

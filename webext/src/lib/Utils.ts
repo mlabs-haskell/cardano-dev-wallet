@@ -2,7 +2,7 @@ import * as CSL from "@emurgo/cardano-serialization-lib-browser";
 import { CSLIterator } from "./CSLIterator";
 
 function getAllPolicyIdAssetNames(
-  value: CSL.Value
+  value: CSL.Value,
 ): [CSL.ScriptHash, CSL.AssetName][] {
   let ret: [CSL.ScriptHash, CSL.AssetName][] = [];
   let multiasset = value.multiasset() || CSL.MultiAsset.new();
@@ -20,33 +20,23 @@ function getAllPolicyIdAssetNames(
   return ret;
 }
 
-export function getPureAdaUtxosAddingUpToTarget(
+export function getPureAdaUtxos(
   utxos: CSL.TransactionUnspentOutput[],
-  target: CSL.BigNum
-): CSL.TransactionUnspentOutput[] | null {
+): CSL.TransactionUnspentOutput[] {
   let ret: CSL.TransactionUnspentOutput[] = [];
-  let sum = CSL.BigNum.zero();
 
   for (let utxo of utxos) {
     let multiasset = utxo.output().amount().multiasset();
     if (multiasset != null && multiasset.len() > 0) continue;
 
-    let value = utxo.output().amount().coin();
     ret.push(utxo);
-    sum.checked_add(value);
-
-    if (sum.less_than(target)) {
-      continue;
-    }
-
-    return ret;
   }
-  return null;
+  return ret;
 }
 
 export function getUtxosAddingUpToTarget(
   utxos: CSL.TransactionUnspentOutput[],
-  target: CSL.Value
+  target: CSL.Value,
 ): CSL.TransactionUnspentOutput[] | null {
   let policyIdAssetNames = getAllPolicyIdAssetNames(target);
 
@@ -90,13 +80,13 @@ export function sumUtxos(utxos: CSL.TransactionUnspentOutput[]): CSL.Value {
 }
 
 const UNKNOWN_KEYHASH: CSL.Ed25519KeyHash = CSL.Ed25519KeyHash.from_bytes(
-  new Uint8Array(new Array(28).fill(0))
+  new Uint8Array(new Array(28).fill(0)),
 );
 
 export async function getRequiredKeyHashes(
   tx: CSL.Transaction,
   utxos: CSL.TransactionUnspentOutput[],
-  paymentKeyHash: CSL.Ed25519KeyHash
+  paymentKeyHash: CSL.Ed25519KeyHash,
 ): Promise<CSL.Ed25519KeyHash[]> {
   const txBody = tx.body();
 
@@ -157,7 +147,7 @@ export async function getRequiredKeyHashes(
 
 export function findUtxo(
   txInput: CSL.TransactionInput,
-  utxos: CSL.TransactionUnspentOutput[]
+  utxos: CSL.TransactionUnspentOutput[],
 ): CSL.TransactionUnspentOutput | null {
   let txHash = txInput.transaction_id().to_hex();
   let index = txInput.index();
@@ -173,7 +163,7 @@ export function findUtxo(
 }
 
 export function getRequiredKeyHashesFromCertificate(
-  cert: CSL.Certificate
+  cert: CSL.Certificate,
 ): CSL.Ed25519KeyHash[] {
   let result: CSL.Ed25519KeyHash[] = [];
 
