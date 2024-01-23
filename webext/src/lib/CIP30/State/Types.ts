@@ -23,7 +23,7 @@ interface Account {
 }
 
 interface Overrides {
-  balance: number | null;
+  balance: string | null;
   hiddenUtxos: Utxo[];
   hiddenCollateral: Utxo[];
 }
