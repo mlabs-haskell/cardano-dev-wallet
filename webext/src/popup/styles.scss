@@ -351,7 +351,7 @@ body {
 }
 
 .icon {
-  @each $icon in "edit", "close", "save", "add", "visible", "hidden" {
+  @each $icon in "edit", "close", "save", "add", "visible", "hidden", "expand-left", "expand-right", "expand-up", "expand-down" {
     &.-#{$icon} {
       mask-image: url("static/icons/#{$icon}.svg");
     }
@@ -383,4 +383,8 @@ input {
 
 .hidden {
   visibility: hidden;
+}
+
+.faded {
+  opacity: 50%;
 }

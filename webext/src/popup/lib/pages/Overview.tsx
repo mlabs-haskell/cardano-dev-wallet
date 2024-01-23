@@ -1,10 +1,11 @@
 import { useEffect, useState } from "preact/hooks";
-import { WalletApiInternal, networkNameToId } from "../../../lib/CIP30";
+import { WalletApiInternal } from "../../../lib/CIP30";
 import * as State from "../State";
 import { bindInputNum, lovelaceToAda } from "../utils";
 
 import { CSLIterator } from "../../../lib/CSLIterator";
 import * as CSL from "@emurgo/cardano-serialization-lib-browser";
+import { Utxo } from "../../../lib/CIP30/State";
 
 export default function Page() {
   let activeAccount = State.accountsActive.value;
@@ -14,9 +15,13 @@ export default function Page() {
     <>
       <section class="row">
         {activeAccount != null && <ActiveAccount account={activeAccount} />}
-        {activeAccount == null && <div>No Account</div>}
       </section>
-      {api == "NO_ACCOUNT" && <div></div>}
+      {api == "NO_ACCOUNT" && (
+        <div class="L2">No active account configured</div>
+      )}
+      {api == "NO_BACKEND" && (
+        <div class="L2">No active backend configured</div>
+      )}
       {api instanceof WalletApiInternal && <NetworkData api={api} />}
     </>
   );
@@ -56,13 +61,14 @@ function NetworkData({ api }: { api: WalletApiInternal }) {
 function Balance({ api }: { api: WalletApiInternal }) {
   let [balance, setBalance] = useState<string | null>(null);
   useEffect(() => {
+    setBalance(null);
     api.getBalance().then((balance) => {
       let balanceAda = lovelaceToAda(balance.coin());
       setBalance(balanceAda.toString());
     });
   }, [api]);
 
-  let override = State.overrides.value.balance;
+  let override = State.overrides.value?.balance;
 
   let [overrideEditing, setOverrideEditing] = useState(false);
   const onOverrideSave = async (value: string) => {
@@ -253,8 +259,10 @@ function BalanceComponent({
 
 function UTxOs({ api }: { api: WalletApiInternal }) {
   let [utxos, setUtxos] = useState<UtxoDef[] | null>(null);
+  let [utxosFiltered, setUtxosFiltered] = useState<UtxoDef[] | null>(null);
 
   useEffect(() => {
+    setUtxos(null);
     api.getUtxos().then((utxos) => {
       if (utxos == null) return;
       let utxosParsed = utxos?.map(parseUtxo);
@@ -262,26 +270,98 @@ function UTxOs({ api }: { api: WalletApiInternal }) {
     });
   }, [api]);
 
-  return <UtxoList title="UTxOs" utxos={utxos} />;
+  useEffect(() => {
+    if (utxos == null) {
+      setUtxosFiltered(null);
+      return;
+    }
+    let utxosFiltered = utxos?.map((x) =>
+      hideUtxo(x, State.overrides.value?.hiddenUtxos || []),
+    );
+    setUtxosFiltered(utxosFiltered);
+  }, [utxos, State.overrides.value]);
+
+  const onHide = async (txHash: string, txIdx: number) => {
+    let overrides = State.overrides.value;
+    let hiddenUtxos = overrides.hiddenUtxos || [];
+    hiddenUtxos.push({ txHashHex: txHash, idx: txIdx });
+    overrides.hiddenUtxos = hiddenUtxos;
+    await State.overridesSet(overrides);
+  };
+
+  const onShow = async (txHash: string, txIdx: number) => {
+    let overrides = State.overrides.value;
+    let hiddenUtxos = overrides.hiddenUtxos || [];
+    hiddenUtxos = hiddenUtxos.filter(
+      (h) => !(h.txHashHex == txHash && h.idx == txIdx),
+    );
+    overrides.hiddenUtxos = hiddenUtxos;
+    await State.overridesSet(overrides);
+  };
+
+  return (
+    <UtxoList
+      title="UTxOs"
+      utxos={utxosFiltered}
+      onHide={onHide}
+      onShow={onShow}
+    />
+  );
 }
 
 function Collateral({ api }: { api: WalletApiInternal }) {
   let [utxos, setUtxos] = useState<UtxoDef[] | null>(null);
+  let [utxosFiltered, setUtxosFiltered] = useState<UtxoDef[] | null>(null);
 
   useEffect(() => {
-    api
-      .getCollateral({ amount: CSL.BigNum.zero(), _all: true })
-      .then((utxos) => {
-        if (utxos == null) {
-          setUtxos([]);
-          return;
-        }
-        let utxosParsed = utxos?.map(parseUtxo);
-        setUtxos(utxosParsed);
-      });
+    setUtxos(null);
+    api.getCollateral().then((utxos) => {
+      if (utxos == null) {
+        setUtxos([]);
+        return;
+      }
+      let utxosParsed = utxos?.map(parseUtxo);
+      setUtxos(utxosParsed);
+    });
   }, [api]);
 
-  return <UtxoList title="Collateral" utxos={utxos} />;
+  useEffect(() => {
+    if (utxos == null) {
+      setUtxosFiltered(null);
+      return;
+    }
+    let utxosFiltered = utxos?.map((x) =>
+      hideUtxo(x, State.overrides.value?.hiddenCollateral || []),
+    );
+    setUtxosFiltered(utxosFiltered);
+  }, [utxos, State.overrides.value]);
+
+  const onHide = async (txHash: string, txIdx: number) => {
+    let overrides = State.overrides.value;
+    let hiddenCollateral = overrides.hiddenCollateral || [];
+    hiddenCollateral.push({ txHashHex: txHash, idx: txIdx });
+    overrides.hiddenCollateral = hiddenCollateral;
+    await State.overridesSet(overrides);
+  };
+
+  const onShow = async (txHash: string, txIdx: number) => {
+    let overrides = State.overrides.value;
+    let hiddenCollateral = overrides.hiddenCollateral || [];
+    hiddenCollateral = hiddenCollateral.filter(
+      (h) => !(h.txHashHex == txHash && h.idx == txIdx),
+    );
+    overrides.hiddenCollateral = hiddenCollateral;
+    await State.overridesSet(overrides);
+  };
+
+  return (
+    <UtxoList
+      title="Collateral"
+      utxos={utxosFiltered}
+      onShow={onShow}
+      onHide={onHide}
+    />
+  );
 }
 
 interface UtxoDef {
@@ -310,9 +390,10 @@ function parseUtxo(u: CSL.TransactionUnspentOutput): UtxoDef {
     let asset = multiasset!.get(policyId);
     for (let assetName of new CSLIterator(asset?.keys())) {
       let assetAmount = asset!.get(assetName)!.to_str();
+      let assetNameStr = Buffer.from(assetName.to_js_value(), "hex").toString();
       tokens.push({
         policyId: policyId.to_hex(),
-        assetName: assetName.to_hex(),
+        assetName: assetNameStr,
         amount: assetAmount,
       });
     }
@@ -327,12 +408,27 @@ function parseUtxo(u: CSL.TransactionUnspentOutput): UtxoDef {
   };
 }
 
+function hideUtxo(utxo: UtxoDef, hiddenList: Utxo[]) {
+  let hidden =
+    hiddenList.find(
+      (h) => h.txHashHex == utxo.txHashHex && h.idx == utxo.txIdx,
+    ) != null;
+  return {
+    ...utxo,
+    hidden,
+  };
+}
+
 function UtxoList({
   title,
   utxos,
+  onHide,
+  onShow,
 }: {
   title: string;
   utxos: UtxoDef[] | null;
+  onHide?: (txHash: string, txIdx: number) => void;
+  onShow?: (txHash: string, txIdx: number) => void;
 }) {
   return (
     <section class="column">
@@ -345,8 +441,23 @@ function UtxoList({
             "..." +
             utxo.txHashHex.slice(utxo.txHashHex.length - 6);
           return (
-            <article class="column">
+            <article class={"column" + (utxo.hidden ? " faded" : "")}>
               <div class="item">
+                {!utxo.hidden ? (
+                  <button
+                    class="button"
+                    onClick={() => onHide && onHide(utxo.txHashHex, utxo.txIdx)}
+                  >
+                    Hide <span class="icon -hidden" />
+                  </button>
+                ) : (
+                  <button
+                    class="button"
+                    onClick={() => onShow && onShow(utxo.txHashHex, utxo.txIdx)}
+                  >
+                    Show <span class="icon -visible" />
+                  </button>
+                )}
                 <div class="label-mono">
                   {txHash} #{utxo.txIdx}
                 </div>
@@ -356,13 +467,15 @@ function UtxoList({
                 </div>
               </div>
               {utxo.tokens.map((token) => {
-                <div class="item">
-                  <div>{token.assetName}</div>
-                  <div class="currency -xsmall">
-                    <h3 class="-amount">{token.amount}</h3>
-                    <h3 class="-unit">units</h3>
+                return (
+                  <div class="item">
+                    <div>{token.assetName}</div>
+                    <div class="currency -xsmall">
+                      <h3 class="-amount">{token.amount}</h3>
+                      <h3 class="-unit">units</h3>
+                    </div>
                   </div>
-                </div>;
+                );
               })}
             </article>
           );
@@ -372,11 +485,17 @@ function UtxoList({
 }
 
 function Logs() {
-  return <section class="column">
-    <div class="row">
-      <h2 class="L3">Logs</h2>
-      <button class="button" onClick={() => State.logsClear()}>Clear <span class="icon -close" /></button>
-    </div>
-    {State.logs.value.map(log => <div class="mono color-secondary">{log}</div>)}
-  </section>
+  return (
+    <section class="column">
+      <div class="row">
+        <h2 class="L3">Logs</h2>
+        <button class="button" onClick={() => State.logsClear()}>
+          Clear <span class="icon -close" />
+        </button>
+      </div>
+      {State.logs.value.map((log) => (
+        <div class="mono color-secondary">{log}</div>
+      ))}
+    </section>
+  );
 }

@@ -1,7 +1,10 @@
 import { render } from "preact";
 import { useState } from "preact/hooks";
 
+import * as State from "./State";
+
 import OverviewPage from "./pages/Overview";
+import { NetworkName } from "../../lib/CIP30";
 
 function App() {
   let [navActive, setNavActive] = useState("Overview");
@@ -39,6 +42,7 @@ function Header({
 }
 
 function HeaderLeft() {
+  let networkActive = State.networkActive.value;
   return (
     <div class="header-left">
       <div class="logo">
@@ -49,6 +53,20 @@ function HeaderLeft() {
             <span class="color-action">Dev</span> Wallet
           </div>
         </div>
+      </div>
+      <div class="network-selector">
+        {[NetworkName.Mainnet, NetworkName.Preprod, NetworkName.Preview].map(
+          (network) => (
+            <button
+              class={
+                "button L4" + (network == networkActive ? "" : " -secondary")
+              }
+              onClick={() => State.networkActiveSet(network)}
+            >
+              {network}
+            </button>
+          ),
+        )}
       </div>
     </div>
   );
@@ -65,9 +83,8 @@ function HeaderNav({
     <nav class="header-nav">
       {navItems.map((nav) => (
         <a class={"nav-item " + (navActive == nav ? "-active" : "")}>{nav}</a>
-      ))
-      }
-    </nav >
+      ))}
+    </nav>
   );
 }
 
