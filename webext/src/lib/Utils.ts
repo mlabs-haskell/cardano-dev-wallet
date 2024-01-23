@@ -84,7 +84,7 @@ export function getUtxosAddingUpToTarget(
 export function sumUtxos(utxos: CSL.TransactionUnspentOutput[]): CSL.Value {
   let sum = CSL.Value.new(CSL.BigNum.zero());
   for (let utxo of utxos) {
-    sum.checked_add(utxo.output().amount());
+    sum = sum.checked_add(utxo.output().amount());
   }
   return sum;
 }
