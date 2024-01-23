@@ -175,9 +175,21 @@ class State {
     log: string,
   ): Promise<number> {
     let store = await this._getNetworkSubStore(network);
+    let nextIdx: number | null = await store.get("callLogs/nextIdx");
+
+    if (nextIdx == null) {
+      nextIdx = 0;
+    }
+
     let logs: string[] | null = await store.get("callLogs");
     if (logs == null) logs = [];
-    if (idx == null) idx = logs.length;
+
+    if (idx == null) {
+      idx = nextIdx;
+      nextIdx = nextIdx + 1;
+      await store.set("callLogs/nextIdx", nextIdx);
+    }
+
     logs.push("[" + idx + "] " + log);
     await store.set("callLogs", logs);
     return idx;
