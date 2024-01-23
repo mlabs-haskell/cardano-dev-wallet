@@ -14,6 +14,7 @@ import {
 
 import { paginateClientSide } from "./Utils";
 import { State, Utxo } from "./State";
+import { Big } from "big.js";
 
 class WalletApiInternal {
   account: Account;
@@ -78,11 +79,22 @@ class WalletApiInternal {
 
   async getBalance(): Promise<CSL.Value> {
     let networkActive = await this.state.networkActiveGet();
+
     if (this.overridesEnabled) {
-    let overrides = await this.state.overridesGet(networkActive);
-    if (overrides.balance != null) {
-      return CSL.Value.new(CSL.BigNum.from_str(overrides.balance.toString()));
-    }
+      let overrides = await this.state.overridesGet(networkActive);
+      if (overrides?.balance != null) {
+        try {
+          let balance = new Big(overrides.balance);
+          balance = balance.mul("1000000");
+          return CSL.Value.new(CSL.BigNum.from_str(balance.toString()));
+        } catch (e) {
+          console.error(
+            "Can't parse balance override",
+            e,
+            overrides.balance,
+          );
+        }
+      }
     }
 
     let address = this._getAddress();
