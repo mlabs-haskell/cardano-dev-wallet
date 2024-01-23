@@ -55,6 +55,7 @@ function amountToValue(
   }[],
 ): CSL.Value {
   let value = CSL.Value.new(CSL.BigNum.zero());
+  let multiasset = CSL.MultiAsset.new();
   for (let item of amount) {
     if (item.unit.toLowerCase() == "lovelace") {
       value.set_coin(CSL.BigNum.from_str(item.quantity));
@@ -66,14 +67,7 @@ function amountToValue(
     let assetName = item.unit.slice(56);
 
     let policyIdWasm = CSL.ScriptHash.from_hex(policyId);
-    let assetNameWasm = CSL.AssetName.from_hex(assetName);
-
-    let multiasset = value.multiasset();
-
-    if (multiasset == null) {
-      multiasset = CSL.MultiAsset.new();
-      value.set_multiasset(multiasset);
-    }
+    let assetNameWasm = CSL.AssetName.from_json('"' + assetName + '"');
 
     multiasset.set_asset(
       policyIdWasm,
@@ -81,6 +75,7 @@ function amountToValue(
       CSL.BigNum.from_str(item.quantity),
     );
   }
+  value.set_multiasset(multiasset);
   return value;
 }
 
