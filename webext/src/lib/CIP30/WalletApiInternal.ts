@@ -20,17 +20,20 @@ class WalletApiInternal {
   backend: Backend;
   networkId: NetworkId;
   state: State;
+  overridesEnabled: boolean;
 
   constructor(
     account: Account,
     backend: Backend,
     networkId: NetworkId,
     state: State,
+    overridesEnabled: boolean,
   ) {
     this.account = account;
     this.backend = backend;
     this.networkId = networkId;
     this.state = state;
+    this.overridesEnabled = overridesEnabled;
   }
 
   _getBaseAddress(): CSL.BaseAddress {
@@ -57,8 +60,12 @@ class WalletApiInternal {
     let address = this._getAddress();
 
     let utxos = await this.backend.getUtxos(address);
-    let overrides = await this.state.overridesGet(networkActive);
-    utxos = filterUtxos(utxos, overrides.hiddenUtxos);
+    if (this.overridesEnabled) {
+      let overrides = await this.state.overridesGet(networkActive);
+      if (overrides != null) {
+        utxos = filterUtxos(utxos, overrides.hiddenUtxos);
+      }
+    }
 
     if (amount != null) {
       let res = Utils.getUtxosAddingUpToTarget(utxos, amount);
@@ -71,9 +78,11 @@ class WalletApiInternal {
 
   async getBalance(): Promise<CSL.Value> {
     let networkActive = await this.state.networkActiveGet();
+    if (this.overridesEnabled) {
     let overrides = await this.state.overridesGet(networkActive);
     if (overrides.balance != null) {
       return CSL.Value.new(CSL.BigNum.from_str(overrides.balance.toString()));
+    }
     }
 
     let address = this._getAddress();
@@ -96,8 +105,13 @@ class WalletApiInternal {
     }
 
     let utxos = await this.backend.getUtxos(address);
-    let overrides = await this.state.overridesGet(networkActive);
-    utxos = filterUtxos(utxos, overrides.hiddenCollateral);
+
+    if (this.overridesEnabled) {
+      let overrides = await this.state.overridesGet(networkActive);
+      if (overrides != null) {
+        utxos = filterUtxos(utxos, overrides.hiddenCollateral);
+      }
+    }
 
     return Utils.getPureAdaUtxosAddingUpToTarget(utxos, target);
   }
