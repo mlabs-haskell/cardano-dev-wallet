@@ -15,11 +15,12 @@ class CSLIterator<T> implements Iterator<T>, Iterable<T> {
 
   next(): IteratorResult<T> {
     if (this.container != null && this.index < this.container.len()) {
-      this.index += 1;
-      return {
+      let val = {
         done: false,
         value: this.container.get(this.index),
       };
+      this.index += 1;
+      return val;
     } else {
       return {
         done: true,
