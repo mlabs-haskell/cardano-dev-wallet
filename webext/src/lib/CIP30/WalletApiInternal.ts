@@ -86,7 +86,7 @@ class WalletApiInternal {
         try {
           let balance = new Big(overrides.balance);
           balance = balance.mul("1000000");
-          return CSL.Value.new(CSL.BigNum.from_str(balance.toString()));
+          return CSL.Value.new(CSL.BigNum.from_str(balance.toFixed(0, Big.roundDown)));
         } catch (e) {
           console.error(
             "Can't parse balance override",
@@ -104,6 +104,7 @@ class WalletApiInternal {
 
   async getCollateral(params?: {
     amount: CSL.BigNum;
+    _all: boolean /* This is an internal option used by the UI */
   }): Promise<CSL.TransactionUnspentOutput[] | null> {
     let networkActive = await this.state.networkActiveGet();
     const fiveAda = CSL.BigNum.from_str("5000000");
@@ -125,7 +126,11 @@ class WalletApiInternal {
       }
     }
 
-    return Utils.getPureAdaUtxosAddingUpToTarget(utxos, target);
+    if (params?._all) {
+      return utxos;
+    } else {
+      return Utils.getPureAdaUtxosAddingUpToTarget(utxos, target);
+    }
   }
 
   async getChangeAddress(): Promise<CSL.Address> {

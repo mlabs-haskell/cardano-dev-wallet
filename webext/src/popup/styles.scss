@@ -70,11 +70,32 @@ body {
   font-family: "JetBrainsMono", monospace;
 }
 
+.superrow {
+  display: flex;
+  flex-direction: row;
+  justify-content: stretch;
+  align-items: start;
+  gap: 32px;
+}
+
+.superrow>* {
+  flex-grow: 1;
+  width: 0;
+}
+
 .row {
   display: flex;
   flex-direction: row;
   justify-content: start;
   align-items: end;
+  gap: 32px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
   gap: 32px;
 }
 
@@ -299,6 +320,16 @@ body {
   }
 }
 
+.currency.-xsmall {
+  .-amount {
+    @extend .L3;
+  }
+
+  .-unit {
+    @extend .L4;
+  }
+}
+
 .L1 {
   font-weight: bold;
   font-size: 48px;
@@ -346,5 +377,10 @@ input {
 .buttons {
   display: flex;
   flex-direction: column;
+  align-items: start;
   gap: 12px;
+}
+
+.hidden {
+  visibility: hidden;
 }

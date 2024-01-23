@@ -1,14 +1,9 @@
 import { BigNum } from "@emurgo/cardano-serialization-lib-browser";
 import { Big } from "big.js";
-import { NetworkId } from "../../lib/CIP30";
 
 export function lovelaceToAda(lovelace: BigNum): Big {
   let lovelaceJs = new Big(lovelace.to_str());
   return lovelaceJs.div("1e6");
-}
-
-export function currencySymbol(networkId: NetworkId): string {
-  return networkId == NetworkId.Mainnet ? "₳" : "t₳";
 }
 
 export function bindInput(

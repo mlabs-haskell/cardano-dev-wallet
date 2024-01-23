@@ -61,7 +61,11 @@ interface AccountDef {
   account: Account;
 }
 
-const networkActive = internalState.value.networkActive;
+const networkActive = computed(() => internalState.value.networkActive.value);
+
+const adaSymbol = computed(() =>
+  internalState.value.networkActive.value == NetworkName.Mainnet ? "₳" : "t₳",
+);
 
 const wallets = computed(() => {
   let networkActive = internalState.value.networkActive.value;
@@ -333,6 +337,7 @@ export type { WalletDef, AccountDef, AccountNew, ActiveAccountDef, BackendDef };
 export {
   networkActive,
   networkActiveSet,
+  adaSymbol,
   // Wallets
   wallets,
   walletsAdd,

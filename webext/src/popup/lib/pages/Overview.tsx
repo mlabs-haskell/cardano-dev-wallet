@@ -1,14 +1,10 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { WalletApiInternal, networkNameToId } from "../../../lib/CIP30";
 import * as State from "../State";
-import {
-  bindInput,
-  bindInputNum,
-  currencySymbol,
-  lovelaceToAda,
-} from "../utils";
-import { Big } from "big.js";
-import { createRef } from "preact";
+import { bindInputNum, lovelaceToAda } from "../utils";
+
+import { CSLIterator } from "../../../lib/CSLIterator";
+import * as CSL from "@emurgo/cardano-serialization-lib-browser";
 
 export default function Page() {
   let activeAccount = State.accountsActive.value;
@@ -48,14 +44,16 @@ function NetworkData({ api }: { api: WalletApiInternal }) {
   return (
     <>
       <Balance api={api} />
+      <div class="superrow">
+        <UTxOs api={api} />
+        <Collateral api={api} />
+        <Logs />
+      </div>
     </>
   );
 }
 
 function Balance({ api }: { api: WalletApiInternal }) {
-  let network = State.networkActive.value;
-  let networkId = networkNameToId(network);
-
   let [balance, setBalance] = useState<string | null>(null);
   useEffect(() => {
     api.getBalance().then((balance) => {
@@ -66,11 +64,14 @@ function Balance({ api }: { api: WalletApiInternal }) {
 
   let override = State.overrides.value.balance;
 
-
   let [overrideEditing, setOverrideEditing] = useState(false);
   const onOverrideSave = async (value: string) => {
     let overrides = State.overrides?.value || {};
-    overrides.balance = value;
+    if (value != balance) {
+      overrides.balance = value;
+    } else {
+      overrides.balance = null;
+    }
     await State.overridesSet(overrides);
     setOverrideEditing(false);
   };
@@ -88,7 +89,7 @@ function Balance({ api }: { api: WalletApiInternal }) {
           <BalanceNotEditing
             balance={balance}
             override={override}
-            currencySymbol={currencySymbol(networkId)}
+            currencySymbol={State.adaSymbol.value}
             onEdit={() => setOverrideEditing(true)}
             onReset={onOverrideReset}
           />
@@ -96,7 +97,7 @@ function Balance({ api }: { api: WalletApiInternal }) {
           <BalanceEditing
             balance={balance!}
             override={override}
-            currencySymbol={currencySymbol(networkId)}
+            currencySymbol={State.adaSymbol.value}
             onSave={onOverrideSave}
             onCancel={() => setOverrideEditing(false)}
           />
@@ -147,26 +148,24 @@ function BalanceNotEditing({
           </>
         )}
       </div>
-      {balance != null && (
-        <div class="buttons">
-          {override == null ? (
-            <>
-              <button class="button" onClick={onEdit}>
-                Override <span class="icon -edit" />
-              </button>
-            </>
-          ) : (
-            <>
-              <button class="button" onClick={onEdit}>
-                Edit Override <span class="icon -edit" />
-              </button>
-              <button class="button -secondary" onClick={onReset}>
-                Reset <span class="icon -close" />
-              </button>
-            </>
-          )}
-        </div>
-      )}
+      <div class={(balance == null ? "hidden" : "") + " buttons"}>
+        {override == null ? (
+          <>
+            <button class="button" onClick={onEdit}>
+              Override <span class="icon -edit" />
+            </button>
+          </>
+        ) : (
+          <>
+            <button class="button" onClick={onEdit}>
+              Edit Override <span class="icon -edit" />
+            </button>
+            <button class="button -secondary" onClick={onReset}>
+              Reset <span class="icon -close" />
+            </button>
+          </>
+        )}
+      </div>
     </>
   );
 }
@@ -239,7 +238,7 @@ function BalanceComponent({
           class="-amount"
           value={balance}
           onInput={
-            (editable && setBalance)
+            editable && setBalance
               ? bindInputNum(balance, setBalance)
               : undefined
           }
@@ -253,5 +252,131 @@ function BalanceComponent({
 }
 
 function UTxOs({ api }: { api: WalletApiInternal }) {
-  let [utxos, setUtxos] = useState([]);
+  let [utxos, setUtxos] = useState<UtxoDef[] | null>(null);
+
+  useEffect(() => {
+    api.getUtxos().then((utxos) => {
+      if (utxos == null) return;
+      let utxosParsed = utxos?.map(parseUtxo);
+      setUtxos(utxosParsed);
+    });
+  }, [api]);
+
+  return <UtxoList title="UTxOs" utxos={utxos} />;
+}
+
+function Collateral({ api }: { api: WalletApiInternal }) {
+  let [utxos, setUtxos] = useState<UtxoDef[] | null>(null);
+
+  useEffect(() => {
+    api
+      .getCollateral({ amount: CSL.BigNum.zero(), _all: true })
+      .then((utxos) => {
+        if (utxos == null) {
+          setUtxos([]);
+          return;
+        }
+        let utxosParsed = utxos?.map(parseUtxo);
+        setUtxos(utxosParsed);
+      });
+  }, [api]);
+
+  return <UtxoList title="Collateral" utxos={utxos} />;
+}
+
+interface UtxoDef {
+  hidden: boolean;
+  txHashHex: string;
+  txIdx: number;
+  amount: string;
+  tokens: {
+    policyId: string;
+    assetName: string;
+    amount: string;
+  }[];
+}
+
+function parseUtxo(u: CSL.TransactionUnspentOutput): UtxoDef {
+  let input = u.input();
+  let txHashHex = input.transaction_id().to_hex();
+  let txIdx = input.index();
+
+  let txAmount = u.output().amount();
+  let amount = lovelaceToAda(txAmount.coin()).toString();
+
+  let tokens = [];
+  let multiasset = txAmount.multiasset();
+  for (let policyId of new CSLIterator(multiasset?.keys())) {
+    let asset = multiasset!.get(policyId);
+    for (let assetName of new CSLIterator(asset?.keys())) {
+      let assetAmount = asset!.get(assetName)!.to_str();
+      tokens.push({
+        policyId: policyId.to_hex(),
+        assetName: assetName.to_hex(),
+        amount: assetAmount,
+      });
+    }
+  }
+
+  return {
+    hidden: false,
+    txHashHex,
+    txIdx,
+    amount,
+    tokens,
+  };
+}
+
+function UtxoList({
+  title,
+  utxos,
+}: {
+  title: string;
+  utxos: UtxoDef[] | null;
+}) {
+  return (
+    <section class="column">
+      <h2 class="L3">{title}</h2>
+      {utxos == null && <div class="L2">...</div>}
+      {utxos != null &&
+        utxos.map((utxo) => {
+          let txHash =
+            utxo.txHashHex.slice(0, 6) +
+            "..." +
+            utxo.txHashHex.slice(utxo.txHashHex.length - 6);
+          return (
+            <article class="column">
+              <div class="item">
+                <div class="label-mono">
+                  {txHash} #{utxo.txIdx}
+                </div>
+                <div class="currency -small">
+                  <h3 class="-amount">{utxo.amount}</h3>
+                  <h3 class="-unit">{State.adaSymbol.value}</h3>
+                </div>
+              </div>
+              {utxo.tokens.map((token) => {
+                <div class="item">
+                  <div>{token.assetName}</div>
+                  <div class="currency -xsmall">
+                    <h3 class="-amount">{token.amount}</h3>
+                    <h3 class="-unit">units</h3>
+                  </div>
+                </div>;
+              })}
+            </article>
+          );
+        })}
+    </section>
+  );
+}
+
+function Logs() {
+  return <section class="column">
+    <div class="row">
+      <h2 class="L3">Logs</h2>
+      <button class="button" onClick={() => State.logsClear()}>Clear <span class="icon -close" /></button>
+    </div>
+    {State.logs.value.map(log => <div class="mono color-secondary">{log}</div>)}
+  </section>
 }
