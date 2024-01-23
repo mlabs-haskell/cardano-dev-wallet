@@ -3,553 +3,348 @@
 @use "sass:math";
 
 @font-face {
-  font-family: "Roboto";
-  src: url("./static/Roboto-Regular.ttf");
+  font-family: "JetBrainsMono";
+  src: url("./static/fonts/JetBrainsMono-Regular.ttf");
   font-weight: normal;
 }
 
 @font-face {
-  font-family: "Roboto";
-  src: url("./static/Roboto-Medium.ttf");
-  font-weight: 600;
-}
-
-@font-face {
-  font-family: "Roboto";
-  src: url("./static/Roboto-Bold.ttf");
+  font-family: "JetBrainsMono";
+  src: url("./static/fonts/JetBrainsMono-Bold.ttf");
   font-weight: bold;
 }
 
-// COLORS //////////////////////////////////////////////////////////////////////
+@font-face {
+  font-family: "Inter";
+  src: url("./static/fonts/Inter-Regular.ttf");
+  font-weight: normal;
+}
 
-$hues: (
-  "primary": 220,
-  "success": 165,
-  "warning": 30,
-  "error": 0,
-);
+@font-face {
+  font-family: "Inter";
+  src: url("./static/fonts/Inter-Bold.ttf");
+  font-weight: bold;
+}
 
-$colors: (
-  // to be filled by the loop below
-);
+$color-action: #ad002a;
+$color-accent: #0033ad;
+$color-text: #000000;
+$color-secondary: rgb(0, 0, 0, 0.5);
+$color-background: #ffffff;
 
-@each $hue-name in "primary", "success", "warning", "error" {
-  $hue: map.get($hues, $hue-name);
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: none;
+  text-decoration: none;
+  font: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+}
 
-  $colors: map.set( //
-      $colors,
-      $hue-name,
-      /* color map */
-      (
-        /* main colors */
-        "main": color.hwb($hue, 10%, 20%),
-        "main-hover": color.hwb($hue, 20%, 20%),
-        "main-focus": color.hwb($hue, 20%, 10%),
-        "main-pressed": color.hwb($hue, 20%, 30%),
-        "main-disabled": color.hwb($hue, 40%, 30%),
-        "main-text": color.hwb($hue, 95%, 0%),
-        "main-disabled-text": color.hwb($hue, 95%, 0%),
-        "main-outline": color.hwb($hue, 99%, 1%),
-        /* light colors */
-        "light": color.hwb($hue, 94%, 1%),
-        "light-hover": color.hwb($hue, 96%, 0%),
-        "light-focus": color.hwb($hue, 90%, 0%),
-        "light-pressed": color.hwb($hue, 93%, 2%),
-        "light-disabled": color.hwb($hue, 94%, 3%),
-        "light-text": color.hwb($hue, 40%, 20%),
-        "light-disabled-text": color.hwb($hue, 60%, 30%),
-        "light-outline": color.hwb($hue, 40%, 40%),
-        /* text & background colors */
-        "headings": color.hwb($hue, 10%, 30%),
-        "text": color.hwb($hue, 30%, 40%),
-        "background": color.hwb($hue, 97.5%, 1%),
-      )
-      /* end of color map */
-    );
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  padding: 0;
+  font: inherit;
 }
 
 body {
-  color: map.get($colors, "primary", "text");
-  background-color: map.get($colors, "primary", "background");
-}
+  padding: 40px;
+  background: $color-background;
 
-@each $h in 1, 2, 3, 4, 5, 6 {
+  font-family: "Inter", sans-serif;
 
-  h#{$h},
-  .h#{$h} {
-    color: map.get($colors, "primary", "headings");
-  }
-}
-
-label {
-  &:focus-within {
-    color: map.get($colors, "primary", "headings");
-  }
-}
-
-@each $hue in "success", "warning", "error" {
-  .#{$hue} {
-    color: map.get($colors, $hue, "text");
-  }
-}
-
-@mixin input-colors($hue) {
-  border: none;
-  color: map.get($colors, $hue, "text");
-  background-color: map.get($colors, $hue, "light");
-
-  &:hover {
-    background-color: map.get($colors, $hue, "light-hover");
-  }
-
-  &:focus {
-    background-color: map.get($colors, $hue, "light-focus");
-    outline: map.get($colors, $hue, "light-outline") solid 1px;
-  }
-}
-
-input,
-textarea,
-select {
-  @include input-colors("primary");
-
-  @each $hue in "success", "warning", "error" {
-
-    .#{$hue} &,
-    &.#{$hue} {
-      @include input-colors($hue);
-    }
-  }
-}
-
-@mixin button-colors($hue, $sub) {
-  color: map.get($colors, $hue, "#{$sub}-text");
-  background-color: map.get($colors, $hue, "#{$sub}");
-  border: none;
-
-  &:focus {
-    background-color: map.get($colors, $hue, "#{$sub}-focus");
-    outline: map.get($colors, $hue, "#{$sub}-outline") solid 1px;
-    outline-offset: -4px;
-  }
-
-  &:hover {
-    background-color: map.get($colors, $hue, "#{$sub}-hover");
-  }
-
-  &:active {
-    background-color: map.get($colors, $hue, "#{$sub}-pressed");
-  }
-
-  &:disabled {
-    color: map.get($colors, $hue, "#{$sub}-disabled-text");
-    background-color: map.get($colors, $hue, "#{$sub}-disabled");
-  }
-}
-
-
-input[type="button"],
-input[type="submit"],
-button {
-  @include button-colors("primary", "main");
-
-  &.secondary {
-    @include button-colors("primary", "light");
-  }
-
-  @each $hue in "primary", "success", "warning", "error" {
-
-    &.#{$hue},
-    .#{$hue} & {
-      @include button-colors($hue, "main");
-
-      &.secondary {
-        @include button-colors($hue, "light");
-      }
-    }
-  }
-}
-
-.surface {
-  background-color: white;
-}
-
-hr {
-  border: none;
-  border-bottom: solid 1px map.get($colors, "primary", "light");
-}
-
-// END COLORS //////////////////////////////////////////////////////////////////
-
-// SPACING /////////////////////////////////////////////////////////////////////
-
-$spacing: (
-  "0": 0,
-  "xs": 0.5rem,
-  "s": 1rem,
-  "m": 1.5rem,
-  "l": 2rem,
-  "xl": 3rem,
-  "xxl": 4rem,
-);
-
-.column {
-  gap: map.get($spacing, "m");
-}
-
-.row {
-  gap: math.div(map.get($spacing, "m"), 2);
-}
-
-input,
-select,
-input[type="button"],
-input[type="submit"],
-button {
-  padding: map.get($spacing, "xs") map.get($spacing, "s")
-}
-
-textarea {
-  padding:
-    0.75rem //todo standardize this value into $spacing
-    map.get($spacing, "s")
-}
-
-hr {
-  width: 100%;
-}
-
-@each $size, $value in $spacing {
-  .pad-#{$size} {
-    padding: $value;
-
-    &>.unpad {
-      margin: -$value;
-    }
-
-    &>.unpad-x {
-      margin-left: -$value;
-      margin-right: -$value;
-    }
-
-    &>.unpad-y {
-      margin-top: -$value;
-      margin-bottom: -$value;
-    }
-  }
-
-  .padx-#{$size} {
-    padding-left: $value;
-    padding-right: $value;
-
-    &>.unpad,
-    &>.unpad-x {
-      margin-left: -$value;
-      margin-right: -$value;
-    }
-  }
-
-  .pady-#{$size} {
-    padding-top: $value;
-    padding-bottom: $value;
-
-    &>.unpad,
-    &>.unpad-y {
-      margin-top: -$value;
-      margin-bottom: -$value;
-    }
-  }
-
-  .pad-top-#{$size} {
-    padding-top: $value;
-  }
-
-  .pad-bottom-#{$size} {
-    padding-bottom: $value;
-  }
-
-  .margin-#{$size} {
-    margin: $value;
-  }
-
-  .gap-#{$size} {
-    gap: $value;
-  }
-
-  .row.gap-#{$size} {
-    gap: math.div($value, 2);
-  }
-}
-
-// END SPACING /////////////////////////////////////////////////////////////////
-
-:root {
-  /* Colors */
-  --hue: 220;
-  --success-hue: 165;
-  --warning-hue: 30;
-  --error-hue: 0;
-
-  --background: hsl(var(--hue), 0%, 97%);
-  --surface: white;
-
-  --alert-background: hsl(var(--hue), 40%, 98%);
-  --alert-title: hsl(var(--hue), 50%, 50%);
-  --alert-body: var(--text);
-
-  --alert-success-background: hsl(var(--success-hue), 40%, 98%);
-  --alert-success-title: hsl(var(--success-hue), 60%, 30%);
-  --alert-success-body: hsl(var(--success-hue), 30%, 35%);
-
-  --alert-warning-background: hsl(var(--warning-hue), 40%, 98%);
-  --alert-warning-title: hsl(var(--warning-hue), 60%, 45%);
-  --alert-warning-body: hsl(var(--warning-hue), 40%, 50%);
-
-  --alert-error-background: hsl(var(--error-hue), 40%, 98%);
-  --alert-error-title: hsl(var(--error-hue), 60%, 40%);
-  --alert-error-body: hsl(var(--error-hue), 30%, 45%);
-
-  /* Typography */
-  --text-size-s: 0.85rem;
-  --text-size: 1rem;
-  --text-size-l: 1.125rem;
-  --text-size-xl: 1.5rem;
-  --text-size-xxl: 2rem;
-
-  --radius: 0.35em;
-  --radius-l: 0.5em;
-  --radius-xl: 0.75em;
-}
-
-/* Utilities */
-
-.column {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  gap: 64px;
+}
+
+.mono {
+  font-family: "JetBrainsMono", monospace;
 }
 
 .row {
   display: flex;
   flex-direction: row;
-  align-items: center;
-}
-
-.justify-center {
-  justify-content: center;
-}
-
-.justify-start {
   justify-content: start;
-}
-
-.justify-end {
-  justify-content: end;
-}
-
-.align-center {
-  align-items: center;
-}
-
-.align-start {
-  align-items: start;
-}
-
-.align-end {
   align-items: end;
+  gap: 32px;
 }
 
-.align-self-end {
-  justify-self: end;
-}
-
-.grow-1 {
-  flex-grow: 1;
-}
-
-.text-block {
-  display: block;
-  flex-direction: column;
-  gap: 0;
-}
-
-.align-center {
-  justify-content: center;
-}
-
-.align-end {
-  justify-content: end;
-}
-
-.force-wrap {
-  word-break: break-all;
-}
-
-.w-20 {
-  width: 20em;
-}
-
-.w-30 {
-  width: 30em;
-}
-
-.w-full {
-  width: 100%;
-}
-
-.weight-normal {
-  font-weight: normal;
-}
-
-.weight-medium {
-  font-weight: 600;
-}
-
-.size-s {
-  font-size: var(--text-size-s);
-}
-
-/* Elements */
-
-* {
-  transition: background-color 0.2s, color 0.2s;
-  box-sizing: border-box;
-  word-break: break-all;
-}
-
-body {
-  line-height: 1.4;
-  margin: 0;
-  font-family: "Roboto", sans-serif;
-}
-
-h1,
-.h1,
-h2,
-.h2,
-h3,
-.h3,
-h4,
-.h4,
-h5,
-.h5,
-h6,
-.h6 {
-  margin: 0;
-}
-
-p {
-  margin: 0;
-  max-width: 40em;
-}
-
-h1,
-.h1 {
-  font-size: var(--text-size-xxl);
-}
-
-h2,
-.h2 {
-  font-size: var(--text-size-xl);
-}
-
-h3,
-.h3 {
-  font-size: var(--text-size-l);
-}
-
-h4,
-.h4,
-h5,
-.h5,
-h6,
-.h6 {
-  font-size: var(--text-size);
-}
-
-label {
+.item {
   display: flex;
   flex-direction: column;
-  gap: map.get($spacing, "xs");
+  gap: 8px;
 }
 
-input,
-textarea,
-select {
-  border-radius: var(--radius);
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+
+  .heading {
+    font-weight: bold;
+  }
 }
 
-textarea {
-  overflow: visible;
-  height: fit-content;
-  min-height: 10em;
-  resize: none;
-}
+.button {
+  @extend %focus-outline;
 
-input[type="button"],
-input[type="submit"],
-button {
-  border-radius: var(--radius);
+  font-size: 15px;
+  font-weight: bold;
   cursor: pointer;
-}
 
-.alert {
   display: flex;
-  flex-direction: column;
-  gap: calc(var(--space) / 4);
-  padding: 1em;
-  border-radius: var(--radius);
-  color: var(--alert-body);
-  background-color: var(--alert-background);
+  align-items: center;
 
-  &.error {
-    color: var(--alert-error-body);
-    background-color: var(--alert-error-background);
-    --text-headings: var(--alert-error-title);
-  }
-}
+  --color: #{$color-action};
+  color: var(--color);
 
-.surface {
-  border-radius: var(--radius);
-}
+  text-transform: uppercase;
 
-.tabs {
   display: flex;
-  flex-direction: column;
-  gap: 1em;
+  flex-direction: row;
+  gap: 5px;
 
-  .tab {
-    display: none;
+  .icon {
+    height: 17px;
+    width: 17px;
+    mask-size: 17px;
+
+    background-color: var(--color);
   }
 
-  .tabs-header {
-    display: flex;
-    border-bottom: solid 1px map.get($colors, "primary", "main");
+  &:hover {
+    --color: #{color.scale($color-action, $lightness: 10%)};
+  }
 
-    .tab-button {
-      padding: 0.5em 1em;
-      text-decoration: none;
-      color: map.get($colors, "primary", "text");
+  &:active {
+    --color: #{color.scale($color-action, $lightness: -10%)};
+  }
 
-      &.-selected {
-        background-color: map.get($colors, "primary", "light");
-        color: map.get($colors, "primary", "light-text");
-        border-top-left-radius: 0.5em;
-        border-top-right-radius: 0.5em;
-      }
+  &.-secondary {
+    --color: #{$color-secondary};
+
+    &:hover {
+      --color: #{color.scale($color-secondary, $lightness: 10%)};
+    }
+
+    &:active {
+      --color: #{color.scale($color-secondary, $lightness: -10%)};
     }
   }
+}
 
-  .tab.-selected {
-    display: flex;
-    flex-direction: column;
+%focus-outline {
+
+  &:focus,
+  &:focus-visible {
+    outline: dashed 2px $color-action;
+    outline-offset: 2px;
+  }
+
+  &:not(:focus-visible) {
+    outline: none;
   }
 }
 
-@each $h in 1, 2, 3, 4, 5, 6 {
+// Header
 
-  h#{$h},
-  .h#{$h} {
-    font-weight: normal;
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  flex-direction: row;
+  gap: 18px;
+
+  img {
+    height: 64px;
+    object-fit: contain;
   }
+}
+
+.logo-text-box {
+  display: flex;
+  flex-direction: column;
+
+  color: $color-accent;
+}
+
+.logo-title {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.logo-subtitle {
+  font-size: 16px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 18%;
+}
+
+.header-nav {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  align-items: center;
+}
+
+.nav-item {
+  font-family: "Inter", sans-serif;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 17px;
+  padding-bottom: 5px;
+  border-bottom: solid 2px transparent;
+
+  cursor: pointer;
+
+  &.-active,
+  &:hover {
+    border-bottom-color: $color-action;
+  }
+}
+
+// Utility
+
+.color-accent {
+  color: $color-accent;
+}
+
+.color-action {
+  color: $color-action;
+}
+
+.color-text {
+  color: $color-text;
+}
+
+.color-secondary {
+  color: $color-secondary;
+}
+
+.label {
+  font-size: 17px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.label-sub {
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.label-mono {
+  @extend .mono;
+  @extend .color-secondary;
+
+  font-size: 15px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.label-mono-sub {
+  @extend .mono;
+  @extend .color-secondary;
+
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.currency {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+
+  align-items: baseline;
+
+  .-amount {
+    @extend .L1;
+  }
+
+  .-unit {
+    @extend .color-accent;
+    @extend .L2;
+  }
+}
+
+.currency.-small {
+  .-amount {
+    @extend .L2;
+  }
+
+  .-unit {
+    @extend .L3;
+  }
+}
+
+.L1 {
+  font-weight: bold;
+  font-size: 48px;
+}
+
+.L2 {
+  font-weight: bold;
+  font-size: 32px;
+}
+
+.L3 {
+  font-weight: bold;
+  font-size: 22px;
+}
+
+.L4 {
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.icon {
+  @each $icon in "edit", "close", "save", "add", "visible", "hidden" {
+    &.-#{$icon} {
+      mask-image: url("static/icons/#{$icon}.svg");
+    }
+  }
+}
+
+input {
+  width: fit-content;
+  padding-bottom: 4px;
+  border-bottom: dashed 2px color.scale($color-action, $alpha: -80%);
+
+  &:hover,
+  &:focus {
+    border-bottom: dashed 2px $color-action;
+    outline: none;
+  }
+
+  &:read-only {
+    border-bottom: solid 2px transparent;
+  }
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }

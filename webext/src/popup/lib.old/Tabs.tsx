@@ -11,7 +11,7 @@ export function Tabs({ tabs, defaultTab }: TabsProps) {
   let [selected, setSelected] = useState(defaultTab || Object.keys(tabs)[0]);
   return (
     <div class="tabs">
-      <div class="tabs-header">
+      <div class="tab-buttons pad-m">
         {...Object.keys(tabs).map((name) => (
           <a
             href=""

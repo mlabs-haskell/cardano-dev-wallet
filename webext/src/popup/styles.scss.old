@@ -1,0 +1,557 @@
+@use "sass:map";
+@use "sass:color";
+@use "sass:math";
+
+@font-face {
+  font-family: "Roboto";
+  src: url("./static/Roboto-Regular.ttf");
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("./static/Roboto-Medium.ttf");
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("./static/Roboto-Bold.ttf");
+  font-weight: bold;
+}
+
+.mono {
+  font-family: "Roboto Mono", "Liberation Mono", monospace;
+}
+
+// COLORS //////////////////////////////////////////////////////////////////////
+
+$hues: (
+  "primary": 220,
+  "success": 165,
+  "warning": 30,
+  "error": 0,
+);
+
+$colors2: (
+  "base": hsl(220, 30%, 97%),
+  "neutral": hsl(220, 25%, 45%),
+  "neutral2": hsl(220, 30%, 30%),
+  "action-main": hsl(220, 50%, 50%),
+  "action-green": hsl(165, 50%, 38%),
+  "action-orange": hsl(30, 50%, 50%),
+  "action-red": hsl(0, 50%, 45%),
+);
+
+body {
+  color: map.get($colors2, "neutral");
+  background-color: map.get($colors2, "base");
+}
+
+@each $h in 1, 2, 3, 4, 5, 6 {
+
+  h#{$h},
+  .h#{$h} {
+    color: map.get($colors2, "neutral2");
+  }
+}
+
+@each $hue in "main", "green", "orange", "red" {
+  .color-#{$hue} {
+    color: map.get($colors2, "action-#{$hue}");
+  }
+}
+
+@mixin input-colors($hue) {
+  $base: map.get($colors2, $hue);
+  border: none;
+  color: inherit;
+  background-color: color.scale($base, $lightness: 99.5%);
+  border: solid 2px transparent;
+  border-color: color.scale($base, $saturation: 10%, $lightness: 80%, $alpha: -40%);
+
+  &:hover {
+    background-color: color.scale($base, $lightness: 98%, $saturation: 100%);
+  }
+
+  &:focus {
+    background-color: color.scale($base, $lightness: 98%, $saturation: 0%);
+    outline: none;
+
+    border: color.scale($base, $alpha: -20%) solid 2px;
+    // border-color: transparent;
+  }
+}
+
+input,
+textarea,
+select {
+  width: auto;
+  @include input-colors("action-main");
+
+  @each $hue in "main", "green", "orange", "red" {
+
+    .#{$hue} &,
+    &.#{$hue} {
+      @include input-colors("action-#{$hue}");
+    }
+  }
+}
+
+@mixin button-colors($hue) {
+  $base: map.get($colors2, $hue);
+  $text: white;
+
+  background-color: $base;
+  color: $text;
+  border: none;
+
+  &:focus {
+    background-color: color.scale($base, $whiteness: 10%);
+    outline: color.scale($base, $alpha: -60%) solid 3px;
+  }
+
+  &:hover {
+    background-color: color.adjust($base, $whiteness: 10%, $blackness: -5%);
+  }
+
+  &:active {
+    background-color: color.scale($base, $lightness: -10%);
+  }
+
+  &:disabled {
+    color: color.adjust($text, $lightness: -5%);
+    background-color: color.scale($base, $saturation: -40%, $lightness: 40%);
+  }
+}
+
+@mixin button-secondary-colors($hue) {
+  $base0: map.get($colors2, $hue);
+  $text: color.scale($base0, $lightness: -5%, $saturation: -60%);
+  $base: color.scale($base0, $lightness: 95%);
+  $base: color.adjust($base, $saturation: -20%);
+  border: solid 1px transparent;
+  border-color: color.scale($base, $lightness: -5%);
+
+  background-color: $base;
+  color: $text;
+
+  &:focus {
+    background-color: color.scale($base, $whiteness: 10%);
+    outline: color.scale($base0, $saturation: -30%, $alpha: -70%) solid 3px;
+  }
+
+  &:hover {
+    color: color.scale($text, $lightness: 15%, $saturation: -10%);
+    background-color: color.scale($base, $lightness: 30%, $saturation: -5%);
+  }
+
+  &:active {
+    background-color: color.scale($base, $lightness: -5%);
+  }
+
+  &:disabled {
+    border-color: color.scale($base, $lightness: -5%);
+    color: color.adjust($text, $saturation: -10%, $lightness: 20%);
+    background-color: color.scale($base, $saturation: -40%, $lightness: 40%);
+  }
+}
+
+
+input[type="button"],
+input[type="submit"],
+button {
+  @include button-colors("action-main");
+
+  &.secondary {
+    @include button-secondary-colors("action-main");
+  }
+
+  @each $hue in "main", "green", "orange", "red" {
+
+    &.#{$hue},
+    .#{$hue} & {
+      @include button-colors("action-#{$hue}");
+
+      &.secondary {
+        @include button-secondary-colors("action-#{$hue}");
+      }
+    }
+  }
+}
+
+.surface {
+  background-color: white;
+  border-radius: var(--radius);
+}
+
+.surface .surface {
+  background: white;
+  $base: map.get($colors2, "base");
+  border-radius: var(--radius);
+  border: solid 1px color.scale($base, $lightness: -5%);
+  border-radius: var(--radius);
+}
+
+.div-y>*+* {
+  border: none;
+  $base: map.get($colors2, "base");
+  border-top: solid 1px color.scale($base, $lightness: -5%);
+  border-radius: 0;
+}
+
+
+hr {
+  border: none;
+  $base: map.get($colors2, "base");
+  border-bottom: solid 1px color.scale($base, $lightness: -5%);
+}
+
+// END COLORS //////////////////////////////////////////////////////////////////
+
+// SPACING /////////////////////////////////////////////////////////////////////
+
+$spacing: (
+  "0": 0,
+  "xxs": 0.125em,
+  "xs": 0.5em,
+  "s": 1em,
+  "m": 1.5em,
+  "l": 2em,
+  "xl": 3em,
+  "xxl": 4em,
+);
+
+.column {
+  gap: map.get($spacing, "m");
+}
+
+.row {
+  gap: math.div(map.get($spacing, "m"), 2);
+}
+
+input,
+select {
+  padding: 0.75em 1em;
+}
+
+input[type="button"],
+input[type="submit"],
+button {
+  padding: 0.75em 1.5em;
+}
+
+textarea {
+  padding: 0.75em //todo standardize this value into $spacing
+    map.get($spacing, "s")
+}
+
+hr {
+  margin: 0;
+}
+
+@each $size, $value in $spacing {
+  .pad-#{$size} {
+    padding: $value;
+
+    &>.unpad {
+      margin: -$value;
+    }
+
+    &>.unpad-x {
+      margin-left: -$value;
+      margin-right: -$value;
+    }
+
+    &>.unpad-y {
+      margin-top: -$value;
+      margin-bottom: -$value;
+    }
+  }
+
+  .padx-#{$size} {
+    padding-left: $value;
+    padding-right: $value;
+
+    &>.unpad,
+    &>.unpad-x {
+      margin-left: -$value;
+      margin-right: -$value;
+    }
+  }
+
+  .pady-#{$size} {
+    padding-top: $value;
+    padding-bottom: $value;
+
+    &>.unpad,
+    &>.unpad-y {
+      margin-top: -$value;
+      margin-bottom: -$value;
+    }
+  }
+
+  .pad-top-#{$size} {
+    padding-top: $value;
+  }
+
+  .pad-bottom-#{$size} {
+    padding-bottom: $value;
+  }
+
+  .pad-left-#{$size} {
+    padding-left: $value;
+  }
+
+  .pad-right-#{$size} {
+    padding-right: $value;
+  }
+
+  .margin-#{$size} {
+    margin: $value;
+  }
+
+  .gap-#{$size} {
+    gap: $value;
+  }
+
+  .row.gap-#{$size} {
+    gap: math.div($value, 2);
+  }
+}
+
+// END SPACING /////////////////////////////////////////////////////////////////
+
+
+// TYPOGRAPHY //////////////////////////////////////////////////////////////////
+
+$font-sizes: (
+  "primary": 16px,
+  "secondary": 14px,
+  "tertiary": 12px,
+  "header": 24px,
+  "section-header": 20px,
+);
+
+@each $name, $size in $font-sizes {
+  .size-#{$name} {
+    font-size: $size;
+  }
+}
+
+
+// END TYPOGRAPHY //////////////////////////////////////////////////////////////
+
+.maxw-40 {
+  max-width: 40rem;
+}
+
+.maxw-30 {
+  max-width: 30rem;
+}
+
+.maxw-20 {
+  max-width: 30rem;
+}
+
+:root {
+  --radius: 0.35em;
+  --radius-l: 0.5em;
+  --radius-xl: 0.75em;
+}
+
+/* Utilities */
+
+.column {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-start {
+  justify-content: start;
+}
+
+.justify-end {
+  justify-content: end;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.align-start {
+  align-items: start;
+}
+
+.align-end {
+  align-items: end;
+}
+
+.grow-1 {
+  flex-grow: 1;
+}
+
+.text-block {
+  display: block;
+  flex-direction: column;
+  gap: 0;
+}
+
+.force-wrap {
+  word-break: break-all;
+}
+
+.w-20 {
+  width: 20em;
+}
+
+.w-30 {
+  width: 30em;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.weight-normal {
+  font-weight: normal;
+}
+
+.weight-medium {
+  font-weight: 600;
+}
+
+/* Elements */
+
+* {
+  transition: background-color 0.2s, color 0.2s;
+  box-sizing: border-box;
+  word-break: break-all;
+}
+
+body {
+  line-height: 1.4;
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+}
+
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
+  margin: 0;
+  font-weight: bold;
+}
+
+p {
+  margin: 0;
+  max-width: 40em;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: map.get($spacing, "xs");
+  color: map.get($colors2, "neutral2");
+  font-weight: bold;
+}
+
+input,
+textarea,
+select {
+  border-radius: var(--radius);
+  color: map.get($colors2, "neutral");
+}
+
+textarea {
+  overflow: visible;
+  height: fit-content;
+  min-height: 10em;
+  resize: none;
+}
+
+input[type="button"],
+input[type="submit"],
+button {
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.alert {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space) / 4);
+  padding: 1em;
+  border-radius: var(--radius);
+  color: var(--alert-body);
+  background-color: var(--alert-background);
+
+  &.error {
+    color: var(--alert-error-body);
+    background-color: var(--alert-error-background);
+    --text-headings: var(--alert-error-title);
+  }
+}
+
+.tabs {
+  display: flex;
+  flex-direction: column;
+
+  .tab {
+    display: none;
+  }
+
+  .tab-buttons {
+    display: flex;
+    padding: 0;
+    padding-left: 1em;
+    padding-right: 1em;
+    background-color: white;
+
+    .tab-button {
+      padding: 0.5em 1em;
+      text-decoration: none;
+      color: map.get($colors2, "neutral");
+      background-color: white;
+
+      &.-selected {
+        $base: map.get($colors2, "neutral");
+        background-color: color.scale($base, $lightness: 95%, $saturation: 10%);
+        border-bottom: $base solid 2px;
+        color: map.get($colors2, "neutral");
+      }
+    }
+  }
+
+  .tab.-selected {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@each $h in 1, 2, 3, 4, 5, 6 {
+
+  h#{$h},
+  .h#{$h} {
+    font-weight: bold;
+  }
+}

@@ -8,7 +8,6 @@ import {
 import { Wallet, Account } from "../../lib/Wallet";
 import { BlockFrostBackend } from "../../lib/CIP30/Backends/Blockfrost";
 import { OgmiosKupoBackend } from "../../lib/CIP30/Backends/OgmiosKupo";
-import { Big } from "big.js";
 
 const STORE = new InternalState.HeirarchialStore(
   new InternalState.WebStorage(),
@@ -290,14 +289,6 @@ logs.subscribe(async (logs) => {
 
 const overrides = computed(() => internalState.value.overrides.value);
 
-const overrideBalance = computed(() => {
-  let balance = internalState.value.overrides.value?.balance;
-  if (balance == null) {
-    return null;
-  }
-  return new Big(balance);
-});
-
 async function overridesSet(overrides: InternalState.Overrides) {
   await STATE.overridesSet(networkActive.value, overrides);
   internalState.value.overrides.value = await STATE.overridesGet(
@@ -325,7 +316,7 @@ const API = computed(() => {
     throw new Error("Unreachable; Invalid backend type");
   }
 
-  let api = new WalletApiInternal(account, backend, networkId, STATE, false);
+  let api = new WalletApiInternal(account, backend, networkId, STATE);
   return api;
 });
 
@@ -356,7 +347,6 @@ export {
   logs,
   logsClear,
   overrides,
-  overrideBalance,
   overridesSet,
   API,
 };

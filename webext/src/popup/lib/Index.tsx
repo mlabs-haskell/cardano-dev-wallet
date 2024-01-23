@@ -1,78 +1,74 @@
 import { render } from "preact";
-import { Tabs } from "./Tabs";
-import { OverridesTab } from "./OverridesTab";
-import { NetworkTab } from "./NetworkTab";
-import { AccountsTab } from "./AccountsTab";
-import { HomeTab } from "./HomeTab";
-import { LogsTab } from "./LogsTab";
+import { useState } from "preact/hooks";
 
-import * as State from "./State";
-import { NetworkName } from "../../lib/CIP30";
+import OverviewPage from "./pages/Overview";
 
 function App() {
+  let [navActive, setNavActive] = useState("Overview");
+
+  const pages = {
+    Overview: OverviewPage,
+    Accounts: "Accounts",
+    Network: "Network",
+  };
+
+  let navItems = Object.keys(pages);
+
+  let activePage = pages[navActive];
   return (
-    <div class="column gap w-full">
-      <Header />
-      <Body />
+    <>
+      <Header navItems={navItems} navActive={navActive} />
+      {activePage()}
+    </>
+  );
+}
+
+function Header({
+  navItems,
+  navActive,
+}: {
+  navItems: string[];
+  navActive: string;
+}) {
+  return (
+    <div class="header">
+      <HeaderLeft />
+      <HeaderNav navItems={navItems} navActive={navActive} />
     </div>
   );
 }
 
-function Header() {
+function HeaderLeft() {
   return (
-    <div class="row">
-      <Logo />
-      <div class="grow-1"></div>
-      <NetworkSelector />
+    <div class="header-left">
+      <div class="logo">
+        <img src="static/logo.png" />
+        <div class="logo-text-box">
+          <div class="logo-title">Cardano</div>
+          <div class="logo-subtitle">
+            <span class="color-action">Dev</span> Wallet
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-function Logo() {
+function HeaderNav({
+  navItems,
+  navActive,
+}: {
+  navItems: string[];
+  navActive: string;
+}) {
   return (
-    <img
-      src="./static/icon.svg"
-      style={{
-        width: "3em",
-      }}
-    />
+    <nav class="header-nav">
+      {navItems.map((nav) => (
+        <a class={"nav-item " + (navActive == nav ? "-active" : "")}>{nav}</a>
+      ))
+      }
+    </nav >
   );
 }
 
-function NetworkSelector() {
-  return (
-    <div class="column align-center">
-      <label>
-        <select
-          value={State.networkActive.value}
-          onChange={(e) =>
-            State.networkActiveSet(e.currentTarget.value as NetworkName)
-          }
-        >
-          <option>mainnet</option>
-          <option>preprod</option>
-          <option>preview</option>
-        </select>
-      </label>
-    </div>
-  );
-}
-
-function Body() {
-  return (
-    <div class="column w-full">
-      <Tabs
-        tabs={{
-          Home: <HomeTab />,
-          Accounts: <AccountsTab />,
-          Network: <NetworkTab />,
-          Overrides: <OverridesTab />,
-          Logs: <LogsTab />,
-        }}
-        defaultTab={"Network"}
-      />
-    </div>
-  );
-}
-
-render(App(), document.getElementById("app")!);
+render(<App />, document.getElementById("app")!);

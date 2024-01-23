@@ -1,3 +1,4 @@
+import { NetworkName } from "../../lib/CIP30";
 import * as State from "./State";
 import { useState } from "preact/hooks";
 
@@ -6,32 +7,58 @@ export function NetworkTab() {
 
   let [adding, setAdding] = useState(false);
 
-  return (
-    <div class="flex column pad-m gap-l">
-      <div class="row">
-        <h2>Network Backends</h2>
-        <div class="grow-1" />
-        <button
-          onClick={() => {
-            setAdding(true);
-          }}
-          disabled={adding}
-        >
-          Add Backend
-        </button>
+  return <div class="column pad-s">
+    <NetworkSelector />
+    <div class="column surface gap-0">
+      <div class="column gap-0 pad-top-s">
+        <div class="row pad-s">
+          <h3>Backends</h3>
+          <div class="grow-1" />
+          <button
+            onClick={() => {
+              setAdding(true);
+            }}
+            disabled={adding}
+          >
+            Add Backend
+          </button>
+        </div>
+
+        {adding && <BackendAddForm onClose={() => setAdding(false)} />}
+
+        {Object.entries(backends).map(([backendId, backend]) => {
+          return (
+            <BackendCard
+              key={backendId}
+              backendId={backendId}
+              backend={backend}
+            />
+          );
+        })}
       </div>
-
-      {adding && <BackendAddForm onClose={() => setAdding(false)} />}
-
-      {Object.entries(backends).map(([backendId, backend]) => {
-        return (
-          <BackendCard
-            key={backendId}
-            backendId={backendId}
-            backend={backend}
-          />
-        );
-      })}
+    </div>
+  </div>;
+}
+function NetworkSelector() {
+  return (
+    <div class="column gap-s maxw-20">
+      <div class="column gap-xxs">
+        <h3>Network</h3>
+        <h5 style={{ fontWeight: "normal", color: "#678" }}>Choose the active network</h5>
+      </div>
+      <div class="column surface">
+        <select
+          value={State.networkActive.value}
+          onChange={(e) =>
+            State.networkActiveSet(e.currentTarget.value as NetworkName)
+          }
+          class="grow-1"
+        >
+          <option>mainnet</option>
+          <option>preprod</option>
+          <option>preview</option>
+        </select>
+      </div>
     </div>
   );
 }
@@ -67,7 +94,7 @@ function BackendCard({ backendId, backend }: BackendCardProps) {
 
   return (
     <div
-      class="column surface pad-s pad-bottom-m"
+      class="column pad-s pady-m pad-bottom-m"
     >
       <div class="row">
         {!renaming ? (
@@ -84,7 +111,7 @@ function BackendCard({ backendId, backend }: BackendCardProps) {
           </div>
         )}
         {isActive && (
-          <span class="success">Active</span>
+          <span class="color-green">Active</span>
         )}
         <div class="grow-1" />
         {!isActive && (
@@ -113,7 +140,7 @@ function BackendCard({ backendId, backend }: BackendCardProps) {
         </div>
       )}
       {backend.type == "blockfrost" && (
-        <div class="column gap-xs">
+        <div class="column gap-xs maxw-30">
           <label>
             Provider
             <input readonly value="Blockfrost" />

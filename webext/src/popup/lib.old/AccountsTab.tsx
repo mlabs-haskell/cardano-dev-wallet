@@ -10,32 +10,36 @@ export function AccountsTab() {
   let [adding, setAdding] = useState(false);
 
   return (
-    <div class="flex column pad-m gap-l">
-      <div class="row">
-        <h2>Wallets</h2>
-        <div class="grow-1" />
-        <button
-          onClick={() => {
-            setAdding(true);
-          }}
-          disabled={adding}
-        >
-          New Wallet
-        </button>
+    <div class="column pad-s">
+      <div class="column surface div-y gap-0">
+        <div class="column gap-0">
+          <div class="row pad-s">
+            <h1>Wallets</h1>
+            <div class="grow-1" />
+            <button
+              onClick={() => {
+                setAdding(true);
+              }}
+              disabled={adding}
+            >
+              New Wallet
+            </button>
+          </div>
+
+          {adding && <WalletAddForm onClose={() => setAdding(false)} />}
+        </div>
+
+        {[...wallets].map(([walletId, wallet]) => {
+          return (
+            <WalletCard
+              key={walletId}
+              walletId={walletId}
+              wallet={wallet}
+              accounts={accounts}
+            />
+          );
+        })}
       </div>
-
-      {adding && <WalletAddForm onClose={() => setAdding(false)} />}
-
-      {[...wallets].map(([walletId, wallet]) => {
-        return (
-          <WalletCard
-            key={walletId}
-            walletId={walletId}
-            wallet={wallet}
-            accounts={accounts}
-          />
-        );
-      })}
     </div>
   );
 }
@@ -69,11 +73,11 @@ function WalletCard({ walletId, wallet, accounts }: WalletCardProps) {
   };
 
   return (
-    <div class="column surface gap-0">
-      <div class="column pad-s gap-s">
+    <div class="column pad-s pad-bottom-l gap-m">
+      <div class="column gap-s">
         <div class="row">
           {!renaming ? (
-            <h3>{name}</h3>
+            <h2>{name}</h2>
           ) : (
             <div class="row">
               <input
@@ -108,41 +112,42 @@ function WalletCard({ walletId, wallet, accounts }: WalletCardProps) {
         )}
         <div>{pubKey}</div>
       </div>
-      <hr />
-      <div class="pad-s column">
-        <div class="row">
-          <h5>Accounts</h5>
-          <div class="grow-1" />
-          <button
-            class="size-s secondary"
-            onClick={() => {
-              setAdding(true);
-            }}
-            disabled={adding}
-          >
-            Add Account
-          </button>
-        </div>
+      <div class="column gap-l">
+        <div class="column">
+          <div class="row">
+            <h4>Accounts</h4>
+            <div class="grow-1" />
+            <button
+              class="size-s secondary"
+              onClick={() => {
+                setAdding(true);
+              }}
+              disabled={adding}
+            >
+              Add Account
+            </button>
+          </div>
 
-        {adding && (
-          <AccountAddForm
-            walletId={walletId}
-            onClose={() => setAdding(false)}
-          />
-        )}
-      </div>
-      <div class="pad-s column gap-l">
-        {[...ourAccounts].map(([accountId, account]) => {
-          return (
-            <AccountCard
-              key={accountId}
-              accountId={accountId}
-              accountDef={account}
+          {adding && (
+            <AccountAddForm
+              walletId={walletId}
+              onClose={() => setAdding(false)}
             />
-          );
-        })}
+          )}
+        </div>
+        <div class="column gap-l">
+          {[...ourAccounts].map(([accountId, account]) => {
+            return (
+              <AccountCard
+                key={accountId}
+                accountId={accountId}
+                accountDef={account}
+              />
+            );
+          })}
 
-        {ourAccounts.length == 0 && <div class="alert">empty</div>}
+          {ourAccounts.length == 0 && <div>empty</div>}
+        </div>
       </div>
     </div>
   );
@@ -234,6 +239,10 @@ function AccountCard({ accountId, accountDef }: AccountCardProps) {
   let isActive = accountId == State.accountsActiveId.value;
 
   const onRenameStart = () => setRenaming(true);
+  const onRenameCancel = () => {
+    setName(accountDef.name || "Unnamed");
+    setRenaming(false);
+  };
   const onRename = async () => {
     await State.accountsRename(accountId, name);
     setRenaming(false);
@@ -254,18 +263,25 @@ function AccountCard({ accountId, accountDef }: AccountCardProps) {
   let pubkey = accountDef.account.baseAddress.to_address().to_bech32();
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.5em",
-        alignItems: "stretch",
-      }}
-      class=""
-    >
+    <div class="column gap-xs">
       <div class="row">
         {!renaming ? (
-          <div class="h3">{name}</div>
+          <>
+            <div class="h5">{name}</div>
+            {isActive && <span class="color-green">Active</span>}
+            <div class="grow-1" />
+            {!isActive && (
+              <button class="secondary size-s" onClick={makeActive}>
+                Set Active
+              </button>
+            )}
+            <button class="secondary size-s" onClick={onRenameStart}>
+              Rename
+            </button>
+            <button class="error secondary size-s" onClick={onDeleteStart}>
+              Delete
+            </button>
+          </>
         ) : (
           <div class="row">
             <input
@@ -275,22 +291,11 @@ function AccountCard({ accountId, accountDef }: AccountCardProps) {
             <button class="size-s" onClick={onRename}>
               Save
             </button>
+            <button class="size-s secondary" onClick={onRenameCancel}>
+              Cancel
+            </button>
           </div>
         )}
-        <div>{derivation}</div>
-        {isActive && <span class="success">Active</span>}
-        <div class="grow-1" />
-        {!isActive && (
-          <button class="secondary size-s" onClick={makeActive}>
-            Set Active
-          </button>
-        )}
-        <button class="secondary size-s" onClick={onRenameStart}>
-          Rename
-        </button>
-        <button class="error secondary size-s" onClick={onDeleteStart}>
-          Delete
-        </button>
       </div>
       {deleting && (
         <div class="alert error">
@@ -305,6 +310,7 @@ function AccountCard({ accountId, accountDef }: AccountCardProps) {
           </div>
         </div>
       )}
+      <div>{derivation}</div>
       <div>{pubkey}</div>
     </div>
   );
@@ -324,15 +330,7 @@ function AccountAddForm({ walletId, onClose }: AccountAddFormProps) {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        gap: "0.5em",
-        alignItems: "end",
-      }}
-      class=""
-    >
+    <div class="column gap-s">
       <label>
         Name:
         <input
