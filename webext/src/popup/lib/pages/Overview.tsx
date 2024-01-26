@@ -1,7 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { WalletApiInternal } from "../../../lib/CIP30";
 import * as State from "../State";
-import { bindInputNum, lovelaceToAda } from "../utils";
+import { bindInputNum, ellipsizeMiddle, lovelaceToAda } from "../utils";
 
 import { CSLIterator } from "../../../lib/CSLIterator";
 import * as CSL from "@emurgo/cardano-serialization-lib-browser";
@@ -9,6 +9,7 @@ import { Utxo } from "../../../lib/CIP30/State";
 
 export default function Page() {
   let activeAccount = State.accountsActive.value;
+
   let api = State.API.value;
 
   return (
@@ -32,15 +33,12 @@ function ActiveAccount({ account }: { account: State.ActiveAccountDef }) {
   let derivation = "m(1852'/1815'/" + accountIdx + "')";
   let address = account.accountDef.account.baseAddress.to_address().to_bech32();
   let idx1 = address.indexOf("1");
-  address =
-    address.slice(0, idx1 + 6) +
-    "..." +
-    address.slice(address.length - 6, address.length);
+  address = ellipsizeMiddle(address, idx1 + 6, 6);
   return (
-    <article class="item">
+    <article class="column gap-s">
       <h1 class="L3">{account.walletDef.name}</h1>
       <div>{derivation}</div>
-      <div class="label-mono-sub">{address}</div>
+      <div class="label-mono uncaps">{address}</div>
     </article>
   );
 }
@@ -49,7 +47,7 @@ function NetworkData({ api }: { api: WalletApiInternal }) {
   return (
     <>
       <Balance api={api} />
-      <div class="superrow">
+      <div class="row equalize-children">
         <UTxOs api={api} />
         <Collateral api={api} />
         <Logs />
@@ -90,7 +88,7 @@ function Balance({ api }: { api: WalletApiInternal }) {
 
   return (
     <>
-      <section class="item">
+      <section class="column gap-s">
         {!overrideEditing ? (
           <BalanceNotEditing
             balance={balance}
@@ -129,7 +127,7 @@ function BalanceNotEditing({
   let balanceDisplay = balance == null ? "..." : balance;
   return (
     <>
-      <div class="row">
+      <div class="row gap-l align-end">
         {override == null ? (
           <>
             <BalanceComponent
@@ -431,51 +429,17 @@ function UtxoList({
   onShow?: (txHash: string, txIdx: number) => void;
 }) {
   return (
-    <section class="column">
+    <section class="column gap-xl">
       <h2 class="L3">{title}</h2>
       {utxos == null && <div class="L2">...</div>}
       {utxos != null &&
         utxos.map((utxo) => {
-          let txHash =
-            utxo.txHashHex.slice(0, 6) +
-            "..." +
-            utxo.txHashHex.slice(utxo.txHashHex.length - 6);
           return (
             <article class={"column" + (utxo.hidden ? " faded" : "")}>
-              <div class="item">
-                {!utxo.hidden ? (
-                  <button
-                    class="button"
-                    onClick={() => onHide && onHide(utxo.txHashHex, utxo.txIdx)}
-                  >
-                    Hide <span class="icon -hidden" />
-                  </button>
-                ) : (
-                  <button
-                    class="button"
-                    onClick={() => onShow && onShow(utxo.txHashHex, utxo.txIdx)}
-                  >
-                    Show <span class="icon -visible" />
-                  </button>
-                )}
-                <div class="label-mono">
-                  {txHash} #{utxo.txIdx}
-                </div>
-                <div class="currency -small">
-                  <h3 class="-amount">{utxo.amount}</h3>
-                  <h3 class="-unit">{State.adaSymbol.value}</h3>
-                </div>
-              </div>
+              <UtxoHeader utxo={utxo} onHide={onHide} onShow={onShow} />
               {utxo.tokens.map((token) => {
-                return (
-                  <div class="item">
-                    <div>{token.assetName}</div>
-                    <div class="currency -xsmall">
-                      <h3 class="-amount">{token.amount}</h3>
-                      <h3 class="-unit">units</h3>
-                    </div>
-                  </div>
-                );
+                let policyId = ellipsizeMiddle(token.policyId, 6, 6);
+                return <UtxoToken token={token} policyId={policyId} />;
               })}
             </article>
           );
@@ -484,9 +448,70 @@ function UtxoList({
   );
 }
 
+function UtxoHeader({
+  utxo,
+  onHide,
+  onShow,
+}: {
+  utxo: UtxoDef;
+  onHide?: (txHash: string, txIdx: number) => void;
+  onShow?: (txHash: string, txIdx: number) => void;
+}) {
+  let txHash = ellipsizeMiddle(utxo.txHashHex, 6, 6);
+  return (
+    <div class="column gap-s">
+      {!utxo.hidden ? (
+        <button
+          class="button"
+          onClick={() => onHide && onHide(utxo.txHashHex, utxo.txIdx)}
+        >
+          Hide <span class="icon -hidden" />
+        </button>
+      ) : (
+        <button
+          class="button"
+          onClick={() => onShow && onShow(utxo.txHashHex, utxo.txIdx)}
+        >
+          Show <span class="icon -visible" />
+        </button>
+      )}
+      <div class="label-mono">
+        {txHash} #{utxo.txIdx}
+      </div>
+      <div class="currency -small">
+        <h3 class="-amount">{utxo.amount}</h3>
+        <h3 class="-unit">{State.adaSymbol.value}</h3>
+      </div>
+    </div>
+  );
+}
+
+function UtxoToken({
+  token,
+  policyId,
+}: {
+  token: { policyId: string; assetName: string; amount: string };
+  policyId: string;
+}) {
+  return (
+    <div class="column gap-s">
+      <div>{token.assetName}</div>
+      <label class="label-mono-sub">{policyId}</label>
+      <div class="currency -xsmall">
+        <h3 class="-amount">{token.amount}</h3>
+        {token.amount == "1" ? (
+          <h3 class="-unit">unit</h3>
+        ) : (
+          <h3 class="-unit">units</h3>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Logs() {
   return (
-    <section class="column">
+    <section class="column gap-xl">
       <div class="row">
         <h2 class="L3">Logs</h2>
         <button class="button" onClick={() => State.logsClear()}>

@@ -8,14 +8,14 @@ export function lovelaceToAda(lovelace: BigNum): Big {
 
 export function bindInput(
   fn: (val: string) => void,
-): preact.JSX.InputEventHandler<HTMLInputElement> {
+): preact.JSX.InputEventHandler<HTMLInputElement | HTMLTextAreaElement> {
   return (ev) => fn(ev.currentTarget.value);
 }
 
 export function bindInputNum(
   curVal: string,
   fn: (val: string) => void,
-): preact.JSX.InputEventHandler<HTMLInputElement> {
+): preact.JSX.InputEventHandler<HTMLInputElement | HTMLTextAreaElement> {
   return (ev) => {
     let newVal = ev.currentTarget.value;
     if (/^[0-9]*(\.[0-9]*)?$/.test(newVal)) {
@@ -34,4 +34,12 @@ export function bindInputNum(
       }
     }
   };
+}
+
+export function ellipsizeMiddle(
+  s: string,
+  startChars: number,
+  endChars: number,
+): string {
+  return s.slice(0, startChars) + "..." + s.slice(s.length - endChars);
 }

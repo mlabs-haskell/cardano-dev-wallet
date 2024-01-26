@@ -1,27 +1,47 @@
 import { render } from "preact";
 import { useState } from "preact/hooks";
 
+import { NetworkName } from "../../lib/CIP30";
 import * as State from "./State";
 
 import OverviewPage from "./pages/Overview";
-import { NetworkName } from "../../lib/CIP30";
+import AccountsPage from "./pages/Accounts";
+import NetworkPage from "./pages/Network";
+
+const BODY_CLASSES = "column gap-xxl gap-no-propagate align-stretch";
+document.body.className = BODY_CLASSES;
+render(<App />, document.body);
 
 function App() {
   let [navActive, setNavActive] = useState("Overview");
 
-  const pages = {
-    Overview: OverviewPage,
-    Accounts: "Accounts",
-    Network: "Network",
+  const pages = [
+    ["Overview", <OverviewPage />],
+    ["Accounts", <AccountsPage />],
+    ["Network", <NetworkPage />],
+  ] as const;
+
+  const navItems = pages.map(([name, _]) => name);
+
+  const pageStyle = {
+    class: "column",
   };
 
-  let navItems = Object.keys(pages);
-
-  let activePage = pages[navActive];
   return (
     <>
-      <Header navItems={navItems} navActive={navActive} />
-      {activePage()}
+      <Header
+        navItems={navItems}
+        navActive={navActive}
+        navigate={setNavActive}
+      />
+      {pages.map((item) => {
+        let [name, page] = item;
+        let pageStyle_ = { ...pageStyle };
+        if (navActive != name) {
+          pageStyle_.class += " display-none";
+        }
+        return <div {...pageStyle_}>{page}</div>;
+      })}
     </>
   );
 }
@@ -29,63 +49,61 @@ function App() {
 function Header({
   navItems,
   navActive,
+  navigate,
 }: {
   navItems: string[];
   navActive: string;
+  navigate: (arg: string) => void;
 }) {
-  return (
-    <div class="header">
-      <HeaderLeft />
-      <HeaderNav navItems={navItems} navActive={navActive} />
-    </div>
-  );
-}
-
-function HeaderLeft() {
   let networkActive = State.networkActive.value;
-  return (
-    <div class="header-left">
-      <div class="logo">
-        <img src="static/logo.png" />
-        <div class="logo-text-box">
-          <div class="logo-title">Cardano</div>
-          <div class="logo-subtitle">
-            <span class="color-action">Dev</span> Wallet
-          </div>
+
+  const logo = (
+    <div class="row gap-m">
+      <img src="static/logo.png" height="64" />
+      <div class="column gap-none color-accent">
+        <div class="L2">Cardano</div>
+        <div class="row gap-s L4 caps" style={{ letterSpacing: "0.18ch" }}>
+          <span class="color-action">Dev</span> Wallet
         </div>
       </div>
-      <div class="network-selector">
-        {[NetworkName.Mainnet, NetworkName.Preprod, NetworkName.Preview].map(
-          (network) => (
-            <button
-              class={
-                "button L4" + (network == networkActive ? "" : " -secondary")
-              }
-              onClick={() => State.networkActiveSet(network)}
-            >
-              {network}
-            </button>
-          ),
-        )}
+    </div>
+  );
+
+  const networkSelector = (
+    <div class="column gap-none">
+      {[NetworkName.Mainnet, NetworkName.Preprod, NetworkName.Preview].map(
+        (network) => (
+          <button
+            class={
+              "button" + (network == networkActive ? "" : " -secondary")
+            }
+            onClick={() => State.networkActiveSet(network)}
+          >
+            {network}
+          </button>
+        ),
+      )}
+    </div>
+  );
+
+  const nav = <nav class="row gap-xl align-center">
+    {navItems.map((nav) => (
+      <a
+        class={"nav-item " + (navActive == nav ? "-active" : "")}
+        onClick={() => navigate(nav)}
+      >
+        {nav}
+      </a>
+    ))}
+  </nav>;
+
+  return (
+    <div class="row justify-space align-center">
+      <div class="row align-center gap-l">
+        {logo}
+        {networkSelector}
       </div>
+      {nav}
     </div>
   );
 }
-
-function HeaderNav({
-  navItems,
-  navActive,
-}: {
-  navItems: string[];
-  navActive: string;
-}) {
-  return (
-    <nav class="header-nav">
-      {navItems.map((nav) => (
-        <a class={"nav-item " + (navActive == nav ? "-active" : "")}>{nav}</a>
-      ))}
-    </nav>
-  );
-}
-
-render(<App />, document.getElementById("app")!);

@@ -240,12 +240,8 @@ async function backendsAdd(backend: BackendDef) {
   internalState.value.backends.value = await STATE.backendsGet(networkActive);
 }
 
-async function backendsRename(backendId: string, name: string) {
+async function backendsUpdate(backendId: string, backend: BackendDef) {
   let networkActive = internalState.value.networkActive.value;
-  let backends = await STATE.backendsGet(networkActive);
-
-  let backend = backends[backendId];
-  backend.name = name;
 
   await STATE.backendsUpdate(networkActive, backendId, backend);
 
@@ -353,7 +349,7 @@ export {
   accountsActiveSet,
   // Backends
   backends,
-  backendsRename,
+  backendsUpdate,
   backendsAdd,
   backendsDelete,
   backendsActiveId,

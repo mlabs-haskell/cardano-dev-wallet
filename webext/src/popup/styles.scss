@@ -29,7 +29,7 @@
 $color-action: #ad002a;
 $color-accent: #0033ad;
 $color-text: #000000;
-$color-secondary: rgb(0, 0, 0, 0.5);
+$color-secondary: rgb(0, 0, 0, 0.6);
 $color-background: #ffffff;
 
 * {
@@ -42,6 +42,17 @@ $color-background: #ffffff;
   font-size: inherit;
   color: inherit;
   background: transparent;
+  transition:
+    background-color 0.2s ease-out,
+    color 0.2s,
+    opacity 0.05s ease-out;
+
+  gap: var(--gap);
+  flex-direction: var(--flex-direction);
+}
+
+div {
+  display: flex;
 }
 
 h1,
@@ -61,59 +72,111 @@ body {
 
   font-family: "Inter", sans-serif;
 
-  display: flex;
-  flex-direction: column;
-  gap: 64px;
+  --flex-direction: column;
 }
 
 .mono {
   font-family: "JetBrainsMono", monospace;
 }
 
-.superrow {
-  display: flex;
-  flex-direction: row;
-  justify-content: stretch;
-  align-items: start;
-  gap: 32px;
-}
+// Flex ////////////////////////////////////////////////////////////////////////
 
-.superrow>* {
-  flex-grow: 1;
-  width: 0;
+.column {
+  display: flex;
+  --flex-direction: column;
+
+  justify-content: start;
+  align-items: stretch;
 }
 
 .row {
   display: flex;
-  flex-direction: row;
-  justify-content: start;
-  align-items: end;
-  gap: 32px;
-}
+  --flex-direction: row;
 
-.column {
-  display: flex;
-  flex-direction: column;
   justify-content: start;
   align-items: start;
-  gap: 32px;
 }
 
-.item {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.column .expand-child {
+  padding-top: calc(var(--gap) / 2);
+  padding-bottom: calc(var(--gap) / 2);
+  margin-top: calc(-1 * var(--gap) / 2);
+  margin-bottom: calc(-1 * var(--gap) / 2);
 }
 
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-
-  .heading {
-    font-weight: bold;
-  }
+.row .expand-child {
+  padding-left: calc(var(--gap) / 2);
+  padding-right: calc(var(--gap) / 2);
+  margin-left: calc(-1 * var(--gap) / 2);
+  margin-right: calc(-1 * var(--gap) / 2);
 }
+
+.equalize-children>* {
+  flex-grow: 1;
+  width: 0;
+}
+
+.gap-none {
+  --gap: 0px;
+}
+
+.gap-s {
+  --gap: 8px;
+}
+
+.gap-m {
+  --gap: 16px;
+}
+
+.gap-l {
+  --gap: 28px;
+}
+
+.gap-xl {
+  --gap: 32px;
+}
+
+.gap-xxl {
+  --gap: 64px;
+}
+
+.align-start {
+  align-items: start;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.align-end {
+  align-items: end;
+}
+
+.align-stretch {
+  align-items: stretch;
+}
+
+.justify-start {
+  justify-content: start;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-end {
+  justify-content: end;
+}
+
+.justify-stretch {
+  justify-content: stretch;
+}
+
+.justify-space {
+  justify-content: space-between;
+}
+
+//
 
 .button {
   @extend %focus-outline;
@@ -132,7 +195,7 @@ body {
 
   display: flex;
   flex-direction: row;
-  gap: 5px;
+  --gap: 5px;
 
   .icon {
     height: 17px;
@@ -188,14 +251,14 @@ body {
 .header-left {
   display: flex;
   flex-direction: row;
-  gap: 32px;
+  --gap: 32px;
   align-items: center;
 }
 
 .logo {
   display: flex;
   flex-direction: row;
-  gap: 18px;
+  --gap: 18px;
 
   img {
     height: 64px;
@@ -225,7 +288,7 @@ body {
 .header-nav {
   display: flex;
   flex-direction: row;
-  gap: 32px;
+  --gap: 32px;
   align-items: center;
 }
 
@@ -263,6 +326,10 @@ body {
   color: $color-secondary;
 }
 
+label {
+  @extend .column, .gap-s;
+}
+
 .label {
   font-size: 17px;
   font-weight: bold;
@@ -296,7 +363,7 @@ body {
 .currency {
   display: flex;
   flex-direction: row;
-  gap: 8px;
+  --gap: 8px;
 
   align-items: baseline;
 
@@ -347,19 +414,32 @@ body {
 
 .L4 {
   font-weight: bold;
+  font-size: 17px;
+}
+
+.L5 {
+  font-weight: bold;
   font-size: 15px;
 }
 
 .icon {
-  @each $icon in "edit", "close", "save", "add", "visible", "hidden", "expand-left", "expand-right", "expand-up", "expand-down" {
+  @each $icon in "edit", "close", "save", "add", "delete", "visible", "hidden",
+  "expand-left", "expand-right", "expand-up", "expand-down"
+
+    {
     &.-#{$icon} {
       mask-image: url("static/icons/#{$icon}.svg");
     }
   }
 }
 
+input,
+textarea {
+  font-size: 16px;
+  font-weight: normal;
+}
+
 input {
-  width: fit-content;
   padding-bottom: 4px;
   border-bottom: dashed 2px color.scale($color-action, $alpha: -80%);
 
@@ -374,11 +454,30 @@ input {
   }
 }
 
+textarea {
+  padding-bottom: 4px;
+  border: dashed 2px color.scale($color-action, $alpha: -80%);
+
+  &:hover,
+  &:focus {
+    border: dashed 2px $color-action;
+    outline: none;
+  }
+
+  &:read-only {
+    border: solid 2px transparent;
+  }
+}
+
 .buttons {
   display: flex;
   flex-direction: column;
   align-items: start;
-  gap: 12px;
+  --gap: 8px;
+}
+
+.display-none {
+  display: none;
 }
 
 .hidden {
@@ -387,4 +486,25 @@ input {
 
 .faded {
   opacity: 50%;
+}
+
+.auto-hide {
+  opacity: 0%;
+}
+
+.auto-hide,
+article:hover article:not(:hover) .auto-hide {
+  opacity: 10%;
+}
+
+article:hover .auto-hide {
+  opacity: 100%;
+}
+
+.caps {
+  text-transform: uppercase;
+}
+
+.uncaps {
+  text-transform: unset;
 }
