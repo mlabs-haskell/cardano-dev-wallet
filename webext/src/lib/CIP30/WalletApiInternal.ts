@@ -153,15 +153,13 @@ class WalletApiInternal {
   async signTx(
     tx: CSL.Transaction,
     partialSign: boolean,
-  ): Promise<CSL.Transaction> {
-    tx = cloneTx(tx);
-
+  ): Promise<CSL.TransactionWitnessSet> {
     let txBody = tx.body();
     let txHash = CSL.hash_transaction(txBody);
 
     let account = this.account;
     let paymentKeyHash = account.paymentKey.to_public().hash();
-    let stakingKeyHash = account.paymentKey.to_public().hash();
+    let stakingKeyHash = account.stakingKey.to_public().hash();
 
     let requiredKeyHashes = await Utils.getRequiredKeyHashes(
       tx,
@@ -173,10 +171,10 @@ class WalletApiInternal {
 
     let witnesses: CSL.Vkeywitness[] = [];
     for (let keyhash of requiredKeyHashesSet) {
-      if (keyhash == paymentKeyHash) {
+      if (keyhash.to_hex() == paymentKeyHash.to_hex()) {
         let witness = CSL.make_vkey_witness(txHash, account.paymentKey);
         witnesses.push(witness);
-      } else if (keyhash == stakingKeyHash) {
+      } else if (keyhash.to_hex() == stakingKeyHash.to_hex()) {
         let witness = CSL.make_vkey_witness(txHash, account.stakingKey);
         witnesses.push(witness);
       } else {
@@ -189,16 +187,17 @@ class WalletApiInternal {
       }
     }
 
-    if (witnesses.length > 0) {
-      if (tx.witness_set().vkeys() == null) {
-        tx.witness_set().set_vkeys(CSL.Vkeywitnesses.new());
-      }
-      for (let witness of witnesses) {
-        tx.witness_set().vkeys()!.add(witness);
-      }
+    let witness_set = tx.witness_set();
+    let vkeys = witness_set.vkeys();
+    if (vkeys == null) {
+      vkeys = CSL.Vkeywitnesses.new();
     }
+    for (let witness of witnesses) {
+      vkeys.add(witness);
+    }
+    witness_set.set_vkeys(vkeys);
 
-    return tx;
+    return witness_set;
   }
 
   async signData(addr: CSL.Address, payload: HexStr): Promise<DataSignature> {

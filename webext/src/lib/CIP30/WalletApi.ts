@@ -179,10 +179,10 @@ class WalletApi {
     tx: CborHexStr,
     partialSign: boolean = false,
   ): Promise<CborHexStr> {
-    return this.wrapCall("signTx", this.api.signTx, [
+    return await this.wrapCall("signTx", this.api.signTx, [
       CSL.Transaction.from_hex(tx),
       partialSign,
-    ]).then((signedTx) => signedTx.to_hex());
+    ]).then((witnessSet) => witnessSet.to_hex())
   }
 
   async signData(
