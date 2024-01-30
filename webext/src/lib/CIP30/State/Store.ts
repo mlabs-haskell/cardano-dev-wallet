@@ -34,7 +34,7 @@ class WebextStorage implements Store {
   }
 
   async get(key: string): Promise<any> {
-    return await chrome.storage.local.get(key);
+    return (await chrome.storage.local.get(key))[key];
   }
 }
 
