@@ -147,7 +147,7 @@ class WalletApiInternal {
   }
 
   async getRewardAddresses(): Promise<CSL.Address[]> {
-    return [];
+    return [this._getAddress()];
   }
 
   async signTx(
