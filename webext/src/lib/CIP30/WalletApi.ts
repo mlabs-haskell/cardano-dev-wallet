@@ -68,20 +68,20 @@ class WalletApi {
     let log =
       fn +
       "(" +
-      params.map((p) => JSON.stringify(p, jsonReplacerCSL)).join(", ") +
+      params.map((p) => JSON.stringify(p, jsonReplacerCSL), 2).join(", ") +
       ")";
     return this.state.callLogsPush(networkActive, null, log);
   }
 
   async logReturn(idx: number, value: any) {
     let networkActive = await this.state.networkActiveGet();
-    let log = "=> " + JSON.stringify(value, jsonReplacerCSL);
+    let log = "=> " + JSON.stringify(value, jsonReplacerCSL, 2);
     await this.state.callLogsPush(networkActive, idx, log);
   }
 
   async logError(idx: number, error: any) {
     let networkActive = await this.state.networkActiveGet();
-    let log = "=> " + JSON.stringify(error, jsonReplacerCSL);
+    let log = "=> " + JSON.stringify(error, jsonReplacerCSL, 2);
     await this.state.callLogsPush(networkActive, idx, log);
   }
 
