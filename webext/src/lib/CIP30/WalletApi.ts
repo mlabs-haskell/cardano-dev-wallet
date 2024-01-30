@@ -17,8 +17,10 @@ import {
 import { State } from "./State";
 
 function jsonReplacerCSL(_key: string, value: any) {
-  if (value.to_json != undefined) {
-    return value.to_json();
+  if (value != null && value.to_js_value != null) {
+    return value.to_js_value();
+  } else if (value instanceof Map) {
+    return Object.fromEntries(value.entries())
   }
   return value;
 }
