@@ -11,7 +11,7 @@ import { WalletApi } from "./WalletApi";
 
 import WalletIcon from "./Icon";
 import { WalletApiInternal } from "./WalletApiInternal";
-import { State } from "./State";
+import { HeirarchialStore, State, Store, WebStorage, WebextStorage } from "./State";
 import { APIError, APIErrorCode } from "./ErrorTypes";
 import { networkNameToId } from "./Network";
 import { BlockFrostBackend } from "./Backends/Blockfrost";
@@ -79,11 +79,26 @@ class CIP30Entrypoint {
     }
 
     // Construct api
-    let apiInternal = new WalletApiInternal(account, backend, networkId, this.state);
+    let apiInternal = new WalletApiInternal(account, backend, networkId, this.state, true);
+    console.log("I");
     let api = new WalletApi(apiInternal, this.state, accountId, networkName);
 
     return api;
   }
 }
 
-export { CIP30Entrypoint };
+function makeStore(): Store {
+  let store;
+  if (window.chrome?.storage?.local != null) {
+    store = new WebextStorage();
+  } else {
+    store = new WebStorage();
+  }
+  return store;
+}
+
+function getState(): State {
+  return new State(new HeirarchialStore(makeStore()));
+}
+
+export { CIP30Entrypoint, makeStore, getState };

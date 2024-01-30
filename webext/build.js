@@ -16,6 +16,8 @@ let config = {
   },
   typescript: {
     "src/popup/lib/Index.tsx": "popup/bundle",
+    "src/content-script/trampoline.ts": "content-script/trampoline",
+    "src/content-script/index.ts": "content-script/index",
   },
 };
 

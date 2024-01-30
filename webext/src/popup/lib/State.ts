@@ -3,6 +3,7 @@ import * as InternalState from "../../lib/CIP30/State";
 import {
   NetworkName,
   WalletApiInternal,
+  getState,
   networkNameToId,
 } from "../../lib/CIP30";
 import { Wallet, Account } from "../../lib/Wallet";
@@ -10,10 +11,7 @@ import { BlockFrostBackend } from "../../lib/CIP30/Backends/Blockfrost";
 import { OgmiosKupoBackend } from "../../lib/CIP30/Backends/OgmiosKupo";
 import { Big } from "big.js";
 
-const STORE = new InternalState.HeirarchialStore(
-  new InternalState.WebStorage(),
-);
-const STATE = new InternalState.State(STORE);
+const STATE = getState();
 
 async function loadInternalState() {
   const networkActive = signal(await STATE.networkActiveGet());

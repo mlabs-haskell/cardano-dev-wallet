@@ -50,4 +50,94 @@ class WebStorage implements Store {
   }
 }
 
-export { HeirarchialStore, type Store, WebStorage, WebextStorage }
+class WebextRemoteStorage implements Store {
+  id: string;
+
+  promisesGet: { [key: string]: (val: string) => void }
+  promisesSet: { [key: string]: () => void }
+
+  constructor(id: string) {
+    this.id = id;
+    this.promisesGet = {};
+    this.promisesSet = {};
+  }
+
+  initClient() {
+    window.addEventListener('message', (ev) => {
+      let data = ev.data;
+      if (data.id != this.id) { return; }
+      if (data.type != 'response') { return; }
+      if (data.method == 'get') {
+        let key = data.key;
+        let value = data.value;
+        let resolve = this.promisesGet[key];
+        if (!resolve) return;
+        resolve(value);
+      } else if (data.method == 'set') {
+        let key = data.key;
+        let resolve = this.promisesSet[key];
+        if (!resolve) return;
+        resolve();
+      }
+    });
+  }
+
+  static initServer(id: string, base: Store) {
+    window.addEventListener('message', async (ev) => {
+      let data = ev.data;
+      if (data.id != id) { return; }
+      if (data.type != 'request') { return; }
+      if (data.method == 'get') {
+        let key = data.key;
+        let value = await base.get(key);
+        ev.source?.postMessage({
+          id,
+          type: 'response',
+          method: 'get',
+          key,
+          value,
+        });
+      } else if (data.method == 'set') {
+        let key = data.key;
+        let value = data.value;
+        await base.set(key, value);
+        ev.source?.postMessage({
+          id,
+          type: 'response',
+          method: 'set',
+          key,
+          value,
+        });
+      }
+    });
+  }
+
+  async set(key: string, value: any): Promise<void> {
+    let p = new Promise<void>((resolve) => {
+      this.promisesSet[key] = resolve;
+    });
+    window.postMessage({
+      id: this.id,
+      type: 'request',
+      method: 'set',
+      key,
+      value
+    });
+    return p;
+  }
+
+  async get(key: string): Promise<any> {
+    let p = new Promise<string>((resolve) => {
+      this.promisesGet[key] = resolve;
+    });
+    window.postMessage({
+      id: this.id,
+      type: 'request',
+      method: 'get',
+      key,
+    });
+    return p;
+  }
+}
+
+export { HeirarchialStore, type Store, WebStorage, WebextStorage, WebextRemoteStorage }
