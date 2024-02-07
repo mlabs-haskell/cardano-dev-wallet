@@ -232,11 +232,11 @@ class WalletApiInternal {
       );
     }
 
-    let addressKeyhash = addressStakeCred.to_keyhash()!;
+    let addressKeyhash = addressStakeCred.to_keyhash()!.to_hex();
 
-    if (addressKeyhash == paymentKey.to_public().hash()) {
+    if (addressKeyhash == paymentKey.to_public().hash().to_hex()) {
       keyToSign = paymentKey;
-    } else if (addressKeyhash == stakingKey.to_public().hash()) {
+    } else if (addressKeyhash == stakingKey.to_public().hash().to_hex()) {
       keyToSign = stakingKey;
     } else {
       let err: TxSignError = {
