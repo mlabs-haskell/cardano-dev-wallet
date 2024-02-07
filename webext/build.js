@@ -96,7 +96,7 @@ async function watchTypescript(entryPoints, outdir) {
         },
       }),
       wasmLoader({
-        mode: "deferred",
+        mode: "embedded",
       }),
     ],
     bundle: true,
