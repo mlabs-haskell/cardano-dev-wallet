@@ -94,7 +94,7 @@ class WalletApi {
     try {
       await this.ensureAccountNotChanged();
 
-      let ret = await fn(...args);
+      let ret = await fn.call(this.api, ...args);
       this.logReturn(idx, ret);
       return ret;
     } catch (e) {
