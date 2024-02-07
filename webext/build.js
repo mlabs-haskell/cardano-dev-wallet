@@ -8,6 +8,8 @@ import * as sass from "sass";
 let config = {
   buildDir: "build-dev",
   copy: {
+    "src/popup/trampoline.html": "popup/trampoline.html",
+    "src/popup/trampoline.js": "popup/trampoline.js",
     "src/popup/index.html": "popup/index.html",
     "src/popup/static": "popup/static",
   },

@@ -26,7 +26,7 @@
   },
   "action": {
     "default_area": "navbar",
-    "default_popup": "./popup/index.html",
+    "default_popup": "./popup/trampoline.html",
     "default_title": "Open the popup",
     "default_icon": "public/icon-72x72.png"
   },
