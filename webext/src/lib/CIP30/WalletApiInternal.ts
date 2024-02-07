@@ -258,7 +258,7 @@ class WalletApiInternal {
 
     let protectedHeaders = CMS.HeaderMap.new();
     protectedHeaders.set_algorithm_id(
-      CMS.Label.from_algorithm_id(-8), // CMS.AlgorithmId.EdDSA
+      CMS.Label.from_algorithm_id(CMS.AlgorithmId.EdDSA),
     );
     protectedHeaders.set_header(
       CMS.Label.new_text("address"),
@@ -282,7 +282,7 @@ class WalletApiInternal {
 
     let coseKey = CMS.COSEKey.new(CMS.Label.from_key_type(CMS.KeyType.OKP));
     coseKey.set_algorithm_id(
-      CMS.Label.from_algorithm_id(-8), // CMS.AlgorithmId.EdDSA
+      CMS.Label.from_algorithm_id(CMS.AlgorithmId.EdDSA),
     );
     coseKey.set_header(
       CMS.Label.new_int(CMS.Int.new_negative(CMS.BigNum.from_str("1"))),
