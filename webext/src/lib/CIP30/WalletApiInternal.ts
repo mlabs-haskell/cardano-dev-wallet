@@ -10,6 +10,8 @@ import {
   TxSignErrorCode,
   Backend,
   NetworkId,
+  DataSignError,
+  DataSignErrorCode,
 } from ".";
 
 import { paginateClientSide } from "./Utils";
@@ -239,9 +241,9 @@ class WalletApiInternal {
     } else if (addressKeyhash == stakingKey.to_public().hash().to_hex()) {
       keyToSign = stakingKey;
     } else {
-      let err: TxSignError = {
-        code: TxSignErrorCode.ProofGeneration,
-        info: "We don't own the keyhash: " + addressKeyhash.to_hex(),
+      let err: DataSignError = {
+        code: DataSignErrorCode.ProofGeneration,
+        info: "We don't own the keyhash: " + addressKeyhash,
       };
       throw err;
     }
