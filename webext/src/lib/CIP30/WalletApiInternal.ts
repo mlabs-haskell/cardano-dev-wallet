@@ -207,13 +207,13 @@ class WalletApiInternal {
     let keyToSign: CSL.PrivateKey;
 
     let paymentAddressFns = [
-      CSL.BaseAddress,
-      CSL.EnterpriseAddress,
-      CSL.PointerAddress,
-    ];
+      ["BaseAddress", CSL.BaseAddress],
+      ["EnterpriseAddress", CSL.EnterpriseAddress],
+      ["PointerAddress", CSL.PointerAddress],
+    ] as const;
 
     let addressStakeCred: CSL.StakeCredential | null = null;
-    for (let fn of paymentAddressFns) {
+    for (let [_name, fn] of paymentAddressFns) {
       let addrDowncasted = fn.from_address(addr);
       if (addrDowncasted != null) {
         addressStakeCred = addrDowncasted.payment_cred();
