@@ -262,7 +262,7 @@ class WalletApiInternal {
     );
     protectedHeaders.set_header(
       CMS.Label.new_text("address"),
-      CMS.CBORValue.from_bytes(addr.to_bytes()),
+      CMS.CBORValue.new_bytes(addr.to_bytes()),
     );
     let protectedHeadersWrapped = CMS.ProtectedHeaderMap.new(protectedHeaders);
 
@@ -290,7 +290,7 @@ class WalletApiInternal {
     ); // crv (-1) set to Ed25519 (6)
     coseKey.set_header(
       CMS.Label.new_int(CMS.Int.new_negative(CMS.BigNum.from_str("2"))),
-      CMS.CBORValue.from_bytes(keyToSign.to_public().as_bytes()),
+      CMS.CBORValue.new_bytes(keyToSign.to_public().as_bytes()),
     ); // x (-2) set to public key
 
     return {
