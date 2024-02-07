@@ -12,6 +12,7 @@ let config = {
     "src/popup/trampoline.js": "popup/trampoline.js",
     "src/popup/index.html": "popup/index.html",
     "src/popup/static": "popup/static",
+    "src/public": "public",
   },
   scss: {
     "src/popup/styles.scss": "popup/styles.css",
