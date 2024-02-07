@@ -86,13 +86,11 @@ class WalletApiInternal {
         try {
           let balance = new Big(overrides.balance);
           balance = balance.mul("1000000");
-          return CSL.Value.new(CSL.BigNum.from_str(balance.toFixed(0, Big.roundDown)));
-        } catch (e) {
-          console.error(
-            "Can't parse balance override",
-            e,
-            overrides.balance,
+          return CSL.Value.new(
+            CSL.BigNum.from_str(balance.toFixed(0, Big.roundDown)),
           );
+        } catch (e) {
+          console.error("Can't parse balance override", e, overrides.balance);
         }
       }
     }
