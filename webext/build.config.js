@@ -1,5 +1,7 @@
 export default {
   buildDir: "build",
+  artefactsDir: "artefacts",
+  chromePrivateKeyFile: "dev-keys/chrome-dev-key.pem",
   copy: {
     "src/popup/trampoline.html": "popup/trampoline.html",
     "src/popup/trampoline.js": "popup/trampoline.js",

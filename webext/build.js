@@ -4,6 +4,7 @@ import { nodeModulesPolyfillPlugin } from "esbuild-plugins-node-modules-polyfill
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as process from "node:process";
+import * as child_process from "node:child_process";
 import * as sass from "sass";
 
 import config from "./build.config.js";
@@ -23,7 +24,18 @@ function printUsage() {
   );
   console.log();
   console.log("  --browser chrome|firefox");
-  console.log("    Set browser. Used to generate manifest.json.");
+  console.log("    Set browser.");
+  console.log(
+    "    Used to generate manifest.json, start browser and bundle the webextension.",
+  );
+  console.log();
+  console.log("  --run");
+  console.log(
+    "    Start the browser and load the webextension. Will auto-reload.",
+  );
+  console.log();
+  console.log("  --bundle");
+  console.log("    Create the webextension bundle.");
   console.log();
   console.log("  --help");
   console.log("    Show usage.");
@@ -35,6 +47,8 @@ async function main() {
   let argsConfig = {
     release: false,
     browser: "chrome",
+    run: false,
+    bundle: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -50,6 +64,15 @@ async function main() {
         process.exit(-1);
       }
       argsConfig.browser = browser;
+    } else if (arg == "--run") {
+      argsConfig.run = true;
+    } else if (arg == "--bundle") {
+      if (argsConfig.run) {
+        console.log("Can't use --run and --bundle together");
+        process.exit(-1);
+      }
+      argsConfig.release = true;
+      argsConfig.bundle = true;
     } else if (arg == "--help") {
       printUsage();
       process.exit(0);
@@ -86,6 +109,14 @@ async function main() {
 
   if (!argsConfig.release) {
     await serveBuildDir(ctx, config);
+  }
+
+  if (argsConfig.run) {
+    run({ config, argsConfig });
+  }
+
+  if (argsConfig.bundle) {
+    bundle({ config, argsConfig });
   }
 }
 
@@ -304,6 +335,38 @@ function fixupManifest(root, prefix) {
   }
 
   return Object.fromEntries(newEntries);
+}
+
+function run({ config, argsConfig }) {
+  let browserType = "";
+  if (argsConfig.browser == "firefox") {
+    browserType = "firefox-desktop";
+  } else if (argsConfig.browser == "chrome") {
+    browserType = "chromium";
+  } else {
+    throw new Error("unreachable");
+  }
+
+  log("Launching browser")
+  child_process.exec(
+    `npx web-ext run -s ${config.buildDir} -t ${browserType} --devtools`,
+  );
+}
+
+function bundle({ config, argsConfig }) {
+  let cmd = "";
+  if (argsConfig.browser == "firefox") {
+    log("Bundling for Firefox");
+    cmd = `npx web-ext build -s ${config.buildDir} -a ${config.artefactsDir}`;
+  } else if (argsConfig.browser == "chrome") {
+    log("Bundling for Chrome");
+    cmd = `npx crx pack ${config.buildDir} -o ${config.artefactsDir}/cardano-dev-wallet.crx --private-key ${config.chromePrivateKeyFile}`;
+  } else {
+    throw new Error("unreachable");
+  }
+
+  child_process.exec(cmd);
+  log("Bundle created");
 }
 
 await main();
