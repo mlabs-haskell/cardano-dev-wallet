@@ -3,29 +3,66 @@ import { wasmLoader } from "esbuild-plugin-wasm";
 import { nodeModulesPolyfillPlugin } from "esbuild-plugins-node-modules-polyfill";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import * as process from "node:process";
 import * as sass from "sass";
 
-let config = {
-  buildDir: "build-dev",
-  copy: {
-    "src/popup/trampoline.html": "popup/trampoline.html",
-    "src/popup/trampoline.js": "popup/trampoline.js",
-    "src/popup/index.html": "popup/index.html",
-    "src/popup/static": "popup/static",
-    "src/public": "public",
-  },
-  scss: {
-    "src/popup/styles.scss": "popup/styles.css",
-  },
-  typescript: {
-    "src/popup/lib/Index.tsx": "popup/bundle",
-    "src/content-script/trampoline.ts": "content-script/trampoline",
-    "src/content-script/index.ts": "content-script/index",
-  },
-};
+import config from "./build.config.js";
+
+function printUsage() {
+  console.log();
+  console.log("build.js [options]");
+  console.log();
+  console.log("Options:");
+  console.log();
+  console.log("  --release");
+  console.log(
+    "    Build in release mode. If not specified, build in dev mode.",
+  );
+  console.log(
+    "    In release mode, dev server is not started and watching is not enabled.",
+  );
+  console.log();
+  console.log("  --browser chrome|firefox");
+  console.log(
+    "    Set browser. Used to generate manifest.json.",
+  );
+  console.log();
+  console.log("  --help");
+  console.log("    Show usage.");
+}
 
 async function main() {
-  for (let category of ["copy", "scss"]) {
+  let args = process.argv.slice(2);
+
+  let argsConfig = {
+    release: false,
+    browser: "chrome",
+  };
+
+  for (let i = 0; i < args.length; i++) {
+    let arg = args[i];
+    if (arg == "--release") {
+      argsConfig.release = true;
+    } else if (arg == "--browser") {
+      let browser = args[i + 1];
+      i += 1;
+      if (browser != "chrome" && browser != "firefox") {
+        console.log("Invalid value for browser:", browser);
+        printUsage();
+        process.exit(-1);
+      }
+      argsConfig.browser = browser;
+    } else if (arg == "--help") {
+      printUsage();
+      process.exit(0);
+    } else {
+      console.log("Unknown argument:", arg);
+      printUsage();
+      process.exit(-1);
+    }
+  }
+
+  for (let category of ["copy", "scss", "manifest"]) {
     for (let key of Object.keys(config[category])) {
       let dst = config[category][key];
       dst = path.join(config.buildDir, dst);
@@ -37,23 +74,36 @@ async function main() {
     in: src,
     out: dst,
   }));
-  let ctx = await watchTypescript(tsEntryPoints, config.buildDir);
 
-  watchOthers(ctx, config);
+  let ctx = await watchTypescript({
+    entryPoints: tsEntryPoints,
+    outdir: config.buildDir,
+    watch: !argsConfig.release,
+  });
 
-  await serveBuildDir(ctx, config);
+  watchOthers({ config, watch: !argsConfig.release, argsConfig });
+
+  if (!argsConfig.release) {
+    await serveBuildDir(ctx, config);
+  }
 }
 
 async function serveBuildDir(ctx, config) {
   let { host, port } = await ctx.serve({ servedir: config.buildDir });
 
-  console.log(`Serving on ${host}:${port}`);
+  log(`Serving on ${host}:${port}`);
 }
 
-function watchOthers(ctx, config) {
+function watchOthers({ config, watch, argsConfig }) {
+  // All files in config.copy and config.scss
+  let filesToWatch = [
+    ...Object.keys(config.copy),
+    ...Object.keys(config.scss),
+    ...Object.keys(config.manifest),
+  ];
+
   let dirsToWatch = {};
 
-  let filesToWatch = [...Object.keys(config.copy), ...Object.keys(config.scss)];
   for (let file of filesToWatch) {
     let dir = path.dirname(file);
     if (dirsToWatch[dir] == null) {
@@ -61,6 +111,7 @@ function watchOthers(ctx, config) {
     }
     dirsToWatch[dir].push(path.basename(file));
   }
+
   for (let file of filesToWatch) {
     if (fs.statSync(file).isDirectory()) {
       let dir = file;
@@ -71,16 +122,23 @@ function watchOthers(ctx, config) {
   }
 
   Object.entries(dirsToWatch).map(([dir, files]) => {
-    fs.watch(dir, {}, (_event, filename) =>
-      onFileChange(path.join(dir, filename), ctx, config),
-    );
+    if (watch) {
+      fs.watch(dir, {}, (_event, filename) =>
+        onFileChange({
+          filename: path.join(dir, filename),
+          config,
+          argsConfig,
+        }),
+      );
+    }
+
     for (let file of files) {
-      onFileChange(path.join(dir, file), null, config);
+      onFileChange({ filename: path.join(dir, file), config, argsConfig });
     }
   });
 }
 
-async function watchTypescript(entryPoints, outdir) {
+async function watchTypescript({ entryPoints, outdir, watch }) {
   let ctx = await esbuild.context({
     entryPoints,
     outdir,
@@ -104,44 +162,86 @@ async function watchTypescript(entryPoints, outdir) {
     platform: "browser",
     format: "esm",
     treeShaking: true,
-    logLevel: "error",
     allowOverwrite: true,
     sourcemap: true,
     color: true,
     logLevel: "info",
   });
-  ctx.watch();
+
+  log(
+    "Building typescript: " +
+    "\n  " +
+    entryPoints.map((entrypoint) => entrypoint.in).join("\n  ") +
+    "\n",
+  );
+  if (watch) {
+    ctx.watch();
+  } else {
+    await ctx.rebuild();
+    ctx.dispose();
+    ctx = null;
+  }
+
   return ctx;
 }
 
-let DEBOUNCE_CACHE = {};
-let DEBOUNCE_TIME_MS = 100;
+const DEBOUNCER = {
+  cache: {},
+  time_ms: 100,
+  debounce(key, fn) {
+    let prevTimer = this.cache[key];
+    if (prevTimer != null) {
+      clearTimeout(prevTimer);
+    }
 
-function onFileChange(filename, ctx, config) {
-  let fn = null;
+    let timer = setTimeout(() => {
+      fn();
+    }, this.time_ms);
+    this.cache[key] = timer;
+  },
+};
+
+function time() {
   let now = new Date();
   let hh = now.getHours();
   let mm = now.getMinutes();
   let ss = now.getSeconds();
-  let time =
+  return (
     hh.toString().padStart(2, "0") +
     ":" +
     mm.toString().padStart(2, "0") +
     ":" +
-    ss.toString().padStart(2, "0");
+    ss.toString().padStart(2, "0")
+  );
+}
+
+function log(msg) {
+  console.log(time(), msg);
+}
+
+function onFileChange({ filename, callback, config, argsConfig }) {
+  let fn = null;
 
   if (filename in config.scss) {
     let dst = config.scss[filename];
     fn = () => {
-      console.log(`[${time}] Compiling SCSS: ${filename}`);
+      log(`Compiling SCSS: ${filename}`);
       compileScss(filename, dst);
     };
+  } else if (filename in config.manifest) {
+    let dst = config.manifest[filename];
+    fn = () => {
+      log(`Compiling Manifest: ${filename}`);
+      compileManifest(filename, dst, argsConfig.browser);
+    };
   } else {
+    // See if the changed file or any of its parents is a dir that's specified
+    // in `config.copy`
     while (filename != "." && filename != "/" && filename != "") {
       if (filename in config.copy) {
         let dst = config.copy[filename];
         fn = () => {
-          console.log(`[${time}] Copying: ${filename}`);
+          log(`Copying: ${filename}`);
           fs.cpSync(filename, dst, { force: true, recursive: true });
         };
         break;
@@ -151,17 +251,10 @@ function onFileChange(filename, ctx, config) {
   }
 
   if (fn != null) {
-    if (filename in DEBOUNCE_CACHE) {
-      let timer = DEBOUNCE_CACHE[filename];
-      clearTimeout(timer);
-    }
-    let timer = setTimeout(() => {
+    DEBOUNCER.debounce(filename, () => {
       fn();
-      if (ctx != null) {
-        ctx.rebuild();
-      }
-    }, DEBOUNCE_TIME_MS);
-    DEBOUNCE_CACHE[filename] = timer;
+      if (callback != null) callback();
+    });
   }
 }
 
@@ -173,6 +266,36 @@ function compileScss(src, dst) {
     output.css + `\n/*# sourceMappingURL=${dstBaseName}.map */`,
   );
   fs.writeFileSync(dst + ".map", JSON.stringify(output.sourceMap));
+}
+
+function compileManifest(src, dst, prefix) {
+  let input = fs.readFileSync(src);
+  let root = JSON.parse(input);
+  let output = fixupManifest(root, prefix);
+
+  fs.writeFileSync(dst, JSON.stringify(output, null, 2));
+}
+
+function fixupManifest(root, prefix) {
+  prefix = "$" + prefix + ":";
+
+  if (!(root instanceof Object && !Array.isArray(root))) return root;
+
+  let newEntries = [];
+  for (let [key, value] of Object.entries(root)) {
+    if (key.startsWith("$")) {
+      if (key.startsWith(prefix)) {
+        key = key.slice(prefix.length);
+      } else {
+        key = null;
+      }
+    }
+    if (key != null) {
+      newEntries.push([key, fixupManifest(value)]);
+    }
+  }
+
+  return Object.fromEntries(newEntries);
 }
 
 await main();

@@ -1,14 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "My Web Extension",
-  "author": "my@email.com",
-  "description": "A cross browser web extension.",
-  "homepage_url": "https://projectUrl.com",
+  "name": "Cardano Dev Wallet",
+  "author": "todo@email.com",
+  "description": "A wallet webextension for Cardano, with features that help development of dApps",
+  "homepage_url": "https://todo.com",
   "version": "0.0.0",
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
   },
-  "id": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArayVRv32WIyJoh5JvH82szKD/nsv5CJh4fEV0ggfzzB7SZAJB4E/kGQZatUGOvJV7jQgOi3LIwKt+rFoL8a46Fl1tgrnYgLRS1pfLJa2uKn2wZusKEDjnSbw53N1bDcrXG+JAQIUO+fGVwom2oXu2UEQL4BjT3dcj3wtjULP07Wt098zgYdXEDeCrCErVbLewhdmOGiv0H78+di8RmUg76dB6dbH4+k22cOogRD7SQYyBJY1DpdhSye3CrHLBFANO4QmW0W4qwB2+SP4N4W/JIolABNDhAV8b+JSihb1OaXQFvNz86AkVTIHx5UlHZxgmLFKYpyhUprleUTnZJsZpwIDAQAB",
   "content_scripts": [
     {
       "matches": [
@@ -16,19 +15,38 @@
       ],
       "run_at": "document_idle",
       "js": [
-        "./content-script/index.js"
+        "./content-script/trampoline.js"
       ]
     }
   ],
-  "background": {
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content-script/index.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "$chrome:background": {
     "service_worker": "./background/background.js",
     "type": "module"
+  },
+  "$firefox:background": {
+    "scripts": [
+      "./background/background.js"
+    ]
   },
   "action": {
     "default_popup": "./popup/trampoline.html",
     "default_title": "Open the popup"
   },
-  "permissions": [],
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "storage"
+  ],
   "icons": {
     "72": "public/icon-72x72.png",
     "96": "public/icon-96x96.png",
