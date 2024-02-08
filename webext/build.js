@@ -76,13 +76,13 @@ async function main() {
     out: dst,
   }));
 
+  watchOthers({ config, watch: !argsConfig.release, argsConfig });
+
   let ctx = await watchTypescript({
     entryPoints: tsEntryPoints,
     outdir: config.buildDir,
     watch: !argsConfig.release,
   });
-
-  watchOthers({ config, watch: !argsConfig.release, argsConfig });
 
   if (!argsConfig.release) {
     await serveBuildDir(ctx, config);
@@ -176,7 +176,7 @@ async function watchTypescript({ entryPoints, outdir, watch }) {
     "\n",
   );
   if (watch) {
-    ctx.watch();
+    await ctx.watch();
   } else {
     await ctx.rebuild();
     ctx.dispose();
@@ -216,8 +216,8 @@ function time() {
   );
 }
 
-function log(msg) {
-  console.log(time(), msg);
+function log(msg, ...args) {
+  console.log(time(), msg, ...args);
 }
 
 function onFileChange({ filename, callback, config, argsConfig }) {
@@ -260,7 +260,14 @@ function onFileChange({ filename, callback, config, argsConfig }) {
 }
 
 function compileScss(src, dst) {
-  let output = sass.compile(src, { sourceMap: true });
+  let output;
+  try {
+    output = sass.compile(src, { sourceMap: true });
+  } catch (e) {
+    log("Error:", e.toString());
+    return;
+  }
+
   let dstBaseName = path.basename(dst);
   fs.writeFileSync(
     dst,
