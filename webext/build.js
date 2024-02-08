@@ -23,9 +23,7 @@ function printUsage() {
   );
   console.log();
   console.log("  --browser chrome|firefox");
-  console.log(
-    "    Set browser. Used to generate manifest.json.",
-  );
+  console.log("    Set browser. Used to generate manifest.json.");
   console.log();
   console.log("  --help");
   console.log("    Show usage.");
@@ -61,6 +59,9 @@ async function main() {
       process.exit(-1);
     }
   }
+
+  fs.rmSync(config.buildDir, { recursive: true, force: true });
+  fs.mkdirSync(config.buildDir);
 
   for (let category of ["copy", "scss", "manifest"]) {
     for (let key of Object.keys(config[category])) {

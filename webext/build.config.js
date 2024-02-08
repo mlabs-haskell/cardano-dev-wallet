@@ -1,5 +1,5 @@
 export default {
-  buildDir: "build-dev",
+  buildDir: "build",
   copy: {
     "src/popup/trampoline.html": "popup/trampoline.html",
     "src/popup/trampoline.js": "popup/trampoline.js",
