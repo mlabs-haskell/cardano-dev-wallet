@@ -37,6 +37,9 @@ function printUsage() {
   console.log("  --bundle");
   console.log("    Create the webextension bundle.");
   console.log();
+  console.log("  --test");
+  console.log("    Run tests.");
+  console.log();
   console.log("  --help");
   console.log("    Show usage.");
 }
@@ -49,6 +52,7 @@ async function main() {
     browser: "chrome",
     run: false,
     bundle: false,
+    test: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -73,6 +77,9 @@ async function main() {
       }
       argsConfig.release = true;
       argsConfig.bundle = true;
+    } else if (arg == "--test") {
+      argsConfig.release = true;
+      argsConfig.test = true;
     } else if (arg == "--help") {
       printUsage();
       process.exit(0);
@@ -99,13 +106,17 @@ async function main() {
     out: dst,
   }));
 
-  watchOthers({ config, watch: !argsConfig.release, argsConfig });
+  await watchOthers({ config, watch: !argsConfig.release, argsConfig });
+
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   let ctx = await watchTypescript({
     entryPoints: tsEntryPoints,
     outdir: config.buildDir,
     watch: !argsConfig.release,
   });
+
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   if (!argsConfig.release) {
     await serveBuildDir(ctx, config);
@@ -118,6 +129,10 @@ async function main() {
   if (argsConfig.bundle) {
     bundle({ config, argsConfig });
   }
+
+  if (argsConfig.test) {
+    runTests({ config, argsConfig });
+  }
 }
 
 async function serveBuildDir(ctx, config) {
@@ -126,7 +141,7 @@ async function serveBuildDir(ctx, config) {
   log(`Serving on ${host}:${port}`);
 }
 
-function watchOthers({ config, watch, argsConfig }) {
+async function watchOthers({ config, watch, argsConfig }) {
   // All files in config.copy and config.scss
   let filesToWatch = [
     ...Object.keys(config.copy),
@@ -348,7 +363,7 @@ function run({ config, argsConfig }) {
   }
 
   log("Launching browser")
-  child_process.exec(
+  exec(
     `npx web-ext run -s ${config.buildDir} -t ${browserType} --devtools`,
   );
 }
@@ -365,8 +380,25 @@ function bundle({ config, argsConfig }) {
     throw new Error("unreachable");
   }
 
-  child_process.exec(cmd);
+  exec(cmd);
   log("Bundle created");
+}
+
+function runTests({ argsConfig }) {
+  log("Starting the test suite");
+  let browser = { "firefox": "firefox", "chrome": "chromium" }[argsConfig.browser];
+  exec(`npx playwright test --browser ${browser}`);
+}
+
+function exec(cmd, opts) {
+  try {
+    child_process.execSync(
+      cmd,
+      opts
+    );
+  } catch (e) {
+    log("Error:", e.stdout.toString('utf8'))
+  }
 }
 
 await main();
