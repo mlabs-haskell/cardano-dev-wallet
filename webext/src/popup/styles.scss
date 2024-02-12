@@ -152,6 +152,10 @@ body {
   align-items: end;
 }
 
+.align-baseline {
+  align-items: baseline;
+}
+
 .align-stretch {
   align-items: stretch;
 }
@@ -507,4 +511,8 @@ textarea {
 
 .uncaps {
   text-transform: unset;
+}
+
+.pre-wrap {
+  white-space: pre-wrap;
 }

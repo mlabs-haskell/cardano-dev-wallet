@@ -7,6 +7,7 @@ import * as State from "./State";
 import OverviewPage from "./pages/Overview";
 import AccountsPage from "./pages/Accounts";
 import NetworkPage from "./pages/Network";
+import LogsPage from "./pages/Logs";
 
 const BODY_CLASSES = "column gap-xxl gap-no-propagate align-stretch";
 document.body.className = BODY_CLASSES;
@@ -19,6 +20,7 @@ function App() {
     ["Overview", <OverviewPage />],
     ["Accounts", <AccountsPage />],
     ["Network", <NetworkPage />],
+    ["Logs", <LogsPage />],
   ] as const;
 
   const navItems = pages.map(([name, _]) => name);

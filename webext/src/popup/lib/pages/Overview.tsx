@@ -54,7 +54,6 @@ function NetworkData({ api }: { api: WalletApiInternal }) {
       <div class="row equalize-children">
         <UTxOs api={api} />
         <Collateral api={api} />
-        <Logs />
       </div>
     </>
   );
@@ -514,32 +513,5 @@ function UtxoToken({
         )}
       </div>
     </div>
-  );
-}
-
-function Logs() {
-  return (
-    <section class="column gap-xl">
-      <div class="row">
-        <h2 class="L3">Logs</h2>
-        <button class="button" onClick={() => State.logsClear()}>
-          Clear <span class="icon -close" />
-        </button>
-      </div>
-      {State.logs.value.map((log) => (
-        <div
-          class="mono color-secondary"
-          style={{
-            whiteSpace: "pre",
-            overflowX: "scroll",
-            overflowY: "visible",
-            paddingRight: "1em",
-            paddingBottom: "1em",
-          }}
-        >
-          {log}
-        </div>
-      ))}
-    </section>
   );
 }
