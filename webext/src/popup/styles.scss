@@ -181,7 +181,7 @@ body {
 .button {
   @extend %focus-outline;
 
-  font-size: 15px;
+  font-size: 1em;
   font-weight: bold;
   cursor: pointer;
 
@@ -198,9 +198,9 @@ body {
   --gap: 5px;
 
   .icon {
-    height: 17px;
-    width: 17px;
-    mask-size: 17px;
+    height: 1em;
+    width: 1em;
+    mask-size: 1em;
 
     background-color: var(--color);
   }
@@ -424,7 +424,7 @@ label {
 
 .icon {
   @each $icon in "edit", "close", "save", "add", "delete", "visible", "hidden",
-  "expand-left", "expand-right", "expand-up", "expand-down"
+  "expand-left", "expand-right", "expand-up", "expand-down", "copy"
 
     {
     &.-#{$icon} {
@@ -493,11 +493,11 @@ textarea {
 }
 
 .auto-hide,
-article:hover article:not(:hover) .auto-hide {
+.auto-hide-parent:hover .auto-hide-parent:not(:hover) .auto-hide {
   opacity: 10%;
 }
 
-article:hover .auto-hide {
+.auto-hide-parent:hover .auto-hide {
   opacity: 100%;
 }
 

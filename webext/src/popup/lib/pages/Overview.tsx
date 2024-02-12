@@ -1,11 +1,12 @@
 import { useEffect, useState } from "preact/hooks";
 import { WalletApiInternal } from "../../../lib/CIP30";
 import * as State from "../State";
-import { bindInputNum, ellipsizeMiddle, lovelaceToAda } from "../utils";
+import { bindInputNum, lovelaceToAda } from "../utils";
 
 import { CSLIterator } from "../../../lib/CSLIterator";
 import * as CSL from "@emurgo/cardano-serialization-lib-browser";
 import { Utxo } from "../../../lib/CIP30/State";
+import { ShortenedLabel } from "./ShortenedLabel";
 
 export default function Page() {
   let activeAccount = State.accountsActive.value;
@@ -32,13 +33,16 @@ function ActiveAccount({ account }: { account: State.ActiveAccountDef }) {
   let accountIdx = account.accountDef.accountIdx;
   let derivation = "m(1852'/1815'/" + accountIdx + "')";
   let address = account.accountDef.account.baseAddress.to_address().to_bech32();
-  let idx1 = address.indexOf("1");
-  address = ellipsizeMiddle(address, idx1 + 6, 6);
   return (
     <article class="column gap-s">
       <h1 class="L3">{account.walletDef.name}</h1>
       <div>{derivation}</div>
-      <div class="label-mono uncaps">{address}</div>
+      <ShortenedLabel
+        classes="label-mono uncaps"
+        text={address}
+        prefixLen={15}
+        suffixLen={6}
+      />
     </article>
   );
 }
@@ -438,8 +442,7 @@ function UtxoList({
             <article class={"column" + (utxo.hidden ? " faded" : "")}>
               <UtxoHeader utxo={utxo} onHide={onHide} onShow={onShow} />
               {utxo.tokens.map((token) => {
-                let policyId = ellipsizeMiddle(token.policyId, 6, 6);
-                return <UtxoToken token={token} policyId={policyId} />;
+                return <UtxoToken token={token} />;
               })}
             </article>
           );
@@ -457,7 +460,6 @@ function UtxoHeader({
   onHide?: (txHash: string, txIdx: number) => void;
   onShow?: (txHash: string, txIdx: number) => void;
 }) {
-  let txHash = ellipsizeMiddle(utxo.txHashHex, 6, 6);
   return (
     <div class="column gap-s">
       {!utxo.hidden ? (
@@ -475,9 +477,12 @@ function UtxoHeader({
           Show <span class="icon -visible" />
         </button>
       )}
-      <div class="label-mono">
-        {txHash} #{utxo.txIdx}
-      </div>
+      <ShortenedLabel
+        classes="label-mono"
+        text={utxo.txHashHex}
+        prefixLen={10}
+        suffixLen={6}
+      />
       <div class="currency -small">
         <h3 class="-amount">{utxo.amount}</h3>
         <h3 class="-unit">{State.adaSymbol.value}</h3>
@@ -488,15 +493,18 @@ function UtxoHeader({
 
 function UtxoToken({
   token,
-  policyId,
 }: {
   token: { policyId: string; assetName: string; amount: string };
-  policyId: string;
 }) {
   return (
     <div class="column gap-s">
       <div>{token.assetName}</div>
-      <label class="label-mono-sub">{policyId}</label>
+      <ShortenedLabel
+        classes="label-mono-sub"
+        text={token.policyId}
+        prefixLen={10}
+        suffixLen={6}
+      />
       <div class="currency -xsmall">
         <h3 class="-amount">{token.amount}</h3>
         {token.amount == "1" ? (
@@ -519,7 +527,18 @@ function Logs() {
         </button>
       </div>
       {State.logs.value.map((log) => (
-        <div class="mono color-secondary">{log}</div>
+        <div
+          class="mono color-secondary"
+          style={{
+            whiteSpace: "pre",
+            overflowX: "scroll",
+            overflowY: "visible",
+            paddingRight: "1em",
+            paddingBottom: "1em",
+          }}
+        >
+          {log}
+        </div>
       ))}
     </section>
   );

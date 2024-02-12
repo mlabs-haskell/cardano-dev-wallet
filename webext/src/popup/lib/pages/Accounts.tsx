@@ -2,8 +2,9 @@ import { useState } from "preact/hooks";
 import * as State from "../State";
 import { networkNameToId } from "../../../lib/CIP30";
 import { Wallet as LibWallet } from "../../../lib/Wallet";
-import { bindInput, bindInputNum, ellipsizeMiddle } from "../utils";
+import { bindInput, bindInputNum } from "../utils";
 import { OptionButtons } from "../OptionButtons";
+import { ShortenedLabel } from "./ShortenedLabel";
 
 const CARD_WIDTH = "15rem";
 
@@ -107,9 +108,6 @@ function Wallet({
 }) {
   let [action, setAction] = useState<"add_account" | "rename" | null>(null);
 
-  let walletKey = wallet.wallet.rootKey.to_bech32();
-  walletKey = ellipsizeMiddle(walletKey, 10, 6);
-
   let accounts = State.accounts.value;
   let ourAccounts = [...accounts].filter(
     ([_acIdx, ac]) => ac.walletId == walletId,
@@ -126,7 +124,6 @@ function Wallet({
     <article class="column gap-xl">
       <WalletHeader
         wallet={wallet}
-        walletKey={walletKey}
         onAddAccount={() => setAction("add_account")}
         onRename={() => setAction("rename")}
         onConfirmDelete={onConfirmDelete}
@@ -156,14 +153,12 @@ function Wallet({
 
 function WalletHeader({
   wallet,
-  walletKey,
   showButtons,
   onAddAccount,
   onRename,
   onConfirmDelete,
 }: {
   wallet: State.WalletDef;
-  walletKey: string;
   showButtons: boolean;
   onAddAccount: () => void;
   onRename: () => void;
@@ -173,7 +168,12 @@ function WalletHeader({
     <div class="row align-start">
       <div class="column gap-s" style={{ width: CARD_WIDTH }}>
         <h2 class="L3">{wallet.name || "Unnamed"}</h2>
-        <div class="label-mono uncaps">{walletKey}</div>
+        <ShortenedLabel
+          classes="label-mono uncaps"
+          text={wallet.wallet.rootKey.to_bech32()}
+          prefixLen={15}
+          suffixLen={6}
+        />
       </div>
 
       {showButtons && (
@@ -291,7 +291,6 @@ function AddAccount({
 function Account({ acId, ac }: { acId: string; ac: State.AccountDef }) {
   let derivation = "m(1852'/1815'/" + ac.accountIdx + "')";
   let address = ac.account.baseAddress.to_address().to_bech32();
-  address = ellipsizeMiddle(address, 15, 6);
 
   const onDeleteConfirm = async () => {
     await State.accountsDelete(acId);
@@ -334,7 +333,12 @@ function Account({ acId, ac }: { acId: string; ac: State.AccountDef }) {
             <span class="L4">{derivation}</span>
             {isActive && <span>Active</span>}
           </div>
-          <div class="label-mono uncaps">{address}</div>
+          <ShortenedLabel
+            classes="label-mono uncaps"
+            text={address}
+            prefixLen={15}
+            suffixLen={6}
+          />
         </div>
         <div class="buttons">
           <OptionButtons buttons={optionButtons} />
