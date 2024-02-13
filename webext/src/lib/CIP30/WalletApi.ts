@@ -22,7 +22,7 @@ function jsonReplacerCSL(_key: string, value: any) {
   if (value.to_js_value != null) {
     return value.to_js_value();
   } else if (value instanceof Map) {
-    return Object.fromEntries(value.entries())
+    return Object.fromEntries(value.entries());
   }
   return value;
 }
@@ -72,36 +72,125 @@ class WalletApi {
     }
   }
 
-  async logCall(fn: string, params: readonly any[] = []): Promise<number> {
+  async logCall(
+    fn: string,
+    argsDecoded: readonly any[] = [],
+    args: readonly any[] = [],
+  ): Promise<number> {
+    if (args.length == 0) {
+      args = argsDecoded;
+      argsDecoded = [];
+    }
+
     let log =
       fn +
       "(" +
-      params.map((p) => JSON.stringify(p, jsonReplacerCSL), 2).join(", ") +
+      args
+        .map((p) =>
+          JSON.stringify(
+            p,
+            (_k, v) => {
+              if (v == null) return null; // undefined|null -> null
+              return v;
+            },
+            2,
+          ),
+        )
+        .join(", ") +
       ")";
-    return this.logger.log(null, log);
+
+    let idx = await this.logger.log(null, log);
+    if (argsDecoded.length > 0) {
+      log =
+        "Decoded: " +
+        fn +
+        "(" +
+        argsDecoded
+          .map((p) => JSON.stringify(p, jsonReplacerCSL, 2))
+          .join(", ") +
+        ")";
+      await this.logger.log(idx, log);
+    }
+
+    return idx;
   }
 
-  async logReturn(idx: number, value: any) {
-    let log = "=> " + JSON.stringify(value, jsonReplacerCSL, 2);
+  async logReturn(idx: number, value: any, valueDecoded?: any) {
+    let log = "return " + JSON.stringify(value, jsonReplacerCSL, 2);
     await this.logger.log(idx, log);
+
+    if (valueDecoded != null) {
+      log =
+        "Decoded: return " + JSON.stringify(valueDecoded, jsonReplacerCSL, 2);
+      await this.logger.log(idx, log);
+    }
   }
 
   async logError(idx: number, error: any) {
-    let log = "=> " + JSON.stringify(error, jsonReplacerCSL, 2);
+    let log = "error " + JSON.stringify(error, jsonReplacerCSL, 2);
     await this.logger.log(idx, log);
   }
 
   async wrapCall<T extends unknown[], U>(
     fnName: string,
-    fn: (...args: T) => Promise<U>,
-    args: T = [] as unknown[] as T,
-  ) {
-    let idx = await this.logCall(fnName, args);
+    fn: () => Promise<U>,
+  ): Promise<U>;
+
+  async wrapCall<T extends unknown[], U, V>(
+    fnName: string,
+    fn: () => Promise<U>,
+    opts: {
+      returnEncoder: (value: U) => V;
+    },
+  ): Promise<V>;
+
+  async wrapCall<T extends unknown[], U>(
+    fnName: string,
+    fn: (...argsDecoded: T) => Promise<U>,
+    opts: {
+      argsDecoded: T;
+      args?: any[];
+    },
+  ): Promise<U>;
+
+  async wrapCall<T extends unknown[], U, V>(
+    fnName: string,
+    fn: (...argsDecoded: T) => Promise<U>,
+    opts: {
+      returnEncoder: (value: U) => V;
+      argsDecoded: T;
+      args?: any[];
+    },
+  ): Promise<V>;
+
+  async wrapCall<T extends unknown[], U, V>(
+    fnName: string,
+    fn: (...argsDecoded: T) => Promise<U>,
+    opts: {
+      argsDecoded?: T;
+      args?: T | any[];
+      returnEncoder?: (value: U) => V;
+    } = {},
+  ): Promise<U | V> {
+    let { argsDecoded, args, returnEncoder } = opts;
+
+    let idx = await this.logCall(fnName, argsDecoded, args);
     try {
       await this.ensureAccountNotChanged();
 
-      let ret = await fn.call(this.api, ...args);
-      this.logReturn(idx, ret);
+      if (argsDecoded == null) {
+        argsDecoded = [] as unknown[] as T;
+      }
+      let ret: U | V = await fn.call(this.api, ...argsDecoded);
+      let retDecoded = null;
+
+      if (returnEncoder != null) {
+        retDecoded = ret;
+        ret = returnEncoder(retDecoded);
+      }
+
+      await this.logReturn(idx, ret, retDecoded);
+
       return ret;
     } catch (e) {
       this.logError(idx, e);
@@ -121,74 +210,94 @@ class WalletApi {
     amount?: CborHexStr,
     paginate?: Paginate,
   ): Promise<CborHexStr[] | null> {
-    let params: [CSL.Value | undefined, Paginate | undefined] = [
-      amount == null ? amount : CSL.Value.from_hex(amount),
-      paginate,
-    ];
-    let utxos = await this.wrapCall("getUtxos", this.api.getUtxos, params);
-    if (utxos == null) return null;
-    return utxos.map((utxo) => utxo.to_hex());
+    let args = [];
+
+    let argsDecoded: [] | [CSL.Value] | [CSL.Value, Paginate] = [];
+
+    if (amount !== undefined) {
+      args.push(amount);
+      argsDecoded = [CSL.Value.from_hex(amount)];
+
+      if (paginate != undefined) {
+        args.push(paginate);
+        argsDecoded = [...argsDecoded, paginate];
+      }
+    }
+
+    return await this.wrapCall("getUtxos", this.api.getUtxos, {
+      argsDecoded,
+      args,
+      returnEncoder: (utxos: CSL.TransactionUnspentOutput[] | null) => {
+        if (utxos == null) return null;
+        return utxos.map((utxo) => utxo.to_hex());
+      },
+    });
   }
 
   async getBalance(): Promise<CborHexStr> {
-    let balance = await this.wrapCall("getBalance", this.api.getBalance);
-    return balance.to_hex();
+    return this.wrapCall("getBalance", this.api.getBalance, {
+      returnEncoder: (balance) => balance.to_hex(),
+    });
   }
 
-  async getCollateral(params?: {
+  async getCollateral(options?: {
     amount: CborHexStr;
   }): Promise<CborHexStr[] | null> {
-    let paramsTyped: [params?: { amount: CSL.BigNum; }] = [];
-    if (params != null) {
-      let amount = CSL.BigNum.from_hex(params.amount);
+    let argsDecoded: [params?: { amount: CSL.BigNum }] = [];
+    if (options != null) {
+      let amount = CSL.BigNum.from_hex(options.amount);
 
-      paramsTyped.push({
+      argsDecoded.push({
         amount,
       });
     }
 
-    let collaterals = await this.wrapCall(
-      "getCollateral",
-      this.api.getCollateral,
-      paramsTyped,
-    );
-    return collaterals == null ? null : collaterals.map((c) => c.to_hex());
+    return this.wrapCall("getCollateral", this.api.getCollateral, {
+      argsDecoded,
+      args: [options],
+      returnEncoder: (collaterals: CSL.TransactionUnspentOutput[] | null) =>
+        collaterals == null ? null : collaterals.map((c) => c.to_hex()),
+    });
   }
 
   async getUsedAddresses(paginate?: Paginate): Promise<AddressHexStr[]> {
-    return this.wrapCall("getUsedAddresses", this.api.getUsedAddresses, [
-      paginate,
-    ]).then((addresses) => addresses.map((address) => address.to_hex()));
+    return this.wrapCall("getUsedAddresses", this.api.getUsedAddresses, {
+      argsDecoded: [paginate],
+      returnEncoder: (addresses: CSL.Address[]) =>
+        addresses.map((address) => address.to_hex()),
+    });
   }
 
   async getUnusedAddresses(): Promise<AddressHexStr[]> {
-    return this.wrapCall(
-      "getUnusedAddresses",
-      this.api.getUnusedAddresses,
-    ).then((addresses) => addresses.map((address) => address.to_hex()));
+    return this.wrapCall("getUnusedAddresses", this.api.getUnusedAddresses, {
+      returnEncoder: (addresses: CSL.Address[]) =>
+        addresses.map((address) => address.to_hex()),
+    });
   }
 
   async getChangeAddress(): Promise<AddressHexStr> {
-    return this.wrapCall("getChangeAddress", this.api.getChangeAddress).then(
-      (address) => address.to_hex(),
-    );
+    return this.wrapCall("getChangeAddress", this.api.getChangeAddress, {
+      returnEncoder: (address) => address.to_hex(),
+    });
   }
 
   async getRewardAddresses(): Promise<AddressHexStr[]> {
-    return this.wrapCall(
-      "getRewardAddresses",
-      this.api.getRewardAddresses,
-    ).then((addresses) => addresses.map((address) => address.to_hex()));
+    return this.wrapCall("getRewardAddresses", this.api.getRewardAddresses, {
+      returnEncoder: (addresses) =>
+        addresses.map((address) => address.to_hex()),
+    });
   }
 
   async signTx(
     tx: CborHexStr,
     partialSign: boolean = false,
   ): Promise<CborHexStr> {
-    return await this.wrapCall("signTx", this.api.signTx, [
-      CSL.Transaction.from_hex(tx),
-      partialSign,
-    ]).then((witnessSet) => witnessSet.to_hex())
+    return await this.wrapCall("signTx", this.api.signTx, {
+      argsDecoded: [CSL.Transaction.from_hex(tx), partialSign],
+      args: [tx, partialSign],
+      returnEncoder: (witnessSet: CSL.TransactionWitnessSet) =>
+        witnessSet.to_hex(),
+    });
   }
 
   async signData(
@@ -204,11 +313,14 @@ class WalletApi {
     if (addrParsed == null) {
       addrParsed = CSL.Address.from_hex(addr);
     }
-    return this.wrapCall("signData", this.api.signData, [addrParsed, payload]);
+    return this.wrapCall("signData", this.api.signData, {
+      argsDecoded: [addrParsed, payload],
+      args: [addr, payload],
+    });
   }
 
   async submitTx(tx: CborHexStr): Promise<string> {
-    return this.wrapCall("submitTx", this.api.submitTx, [tx]);
+    return this.wrapCall("submitTx", this.api.submitTx, { argsDecoded: [tx] });
   }
 }
 
