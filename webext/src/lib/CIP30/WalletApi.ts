@@ -17,7 +17,9 @@ import {
 import { State } from "./State";
 
 function jsonReplacerCSL(_key: string, value: any) {
-  if (value != null && value.to_js_value != null) {
+  if (value == null) return null;
+
+  if (value.to_js_value != null) {
     return value.to_js_value();
   } else if (value instanceof Map) {
     return Object.fromEntries(value.entries())
@@ -25,20 +27,27 @@ function jsonReplacerCSL(_key: string, value: any) {
   return value;
 }
 
+interface Logger {
+  log(idx: number | null, log: string): Promise<number>;
+}
+
 class WalletApi {
   api: WalletApiInternal;
   state: State;
+  logger: Logger;
   network: NetworkName;
   accountId: string;
 
   constructor(
     api: WalletApiInternal,
     state: State,
+    logger: Logger,
     accountId: string,
     network: NetworkName,
   ) {
     this.api = api;
     this.state = state;
+    this.logger = logger;
     this.network = network;
     this.accountId = accountId;
   }
@@ -64,25 +73,22 @@ class WalletApi {
   }
 
   async logCall(fn: string, params: readonly any[] = []): Promise<number> {
-    let networkActive = await this.state.networkActiveGet();
     let log =
       fn +
       "(" +
       params.map((p) => JSON.stringify(p, jsonReplacerCSL), 2).join(", ") +
       ")";
-    return this.state.callLogsPush(networkActive, null, log);
+    return this.logger.log(null, log);
   }
 
   async logReturn(idx: number, value: any) {
-    let networkActive = await this.state.networkActiveGet();
     let log = "=> " + JSON.stringify(value, jsonReplacerCSL, 2);
-    await this.state.callLogsPush(networkActive, idx, log);
+    await this.logger.log(idx, log);
   }
 
   async logError(idx: number, error: any) {
-    let networkActive = await this.state.networkActiveGet();
     let log = "=> " + JSON.stringify(error, jsonReplacerCSL, 2);
-    await this.state.callLogsPush(networkActive, idx, log);
+    await this.logger.log(idx, log);
   }
 
   async wrapCall<T extends unknown[], U>(
@@ -206,4 +212,4 @@ class WalletApi {
   }
 }
 
-export { WalletApi };
+export { WalletApi, type Logger };

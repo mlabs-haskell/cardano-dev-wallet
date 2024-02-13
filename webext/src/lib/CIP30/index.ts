@@ -7,11 +7,11 @@ export * from "./WalletApiInternal";
 
 import { Wallet } from "../Wallet";
 import { Backend } from "./Backend";
-import { WalletApi } from "./WalletApi";
+import { WalletApi, Logger } from "./WalletApi";
 
 import WalletIcon from "./Icon";
 import { WalletApiInternal } from "./WalletApiInternal";
-import { HeirarchialStore, State, Store, WebStorage, WebextStorage } from "./State";
+import { State, Store } from "./State";
 import { APIError, APIErrorCode } from "./ErrorTypes";
 import { networkNameToId } from "./Network";
 import { BlockFrostBackend } from "./Backends/Blockfrost";
@@ -27,9 +27,11 @@ class CIP30Entrypoint {
   icon: string = WalletIcon;
 
   state: State;
+  logger: Logger;
 
-  constructor(state: State) {
-    this.state = state;
+  constructor(store: Store, logger: Logger) {
+    this.state = new State(store);
+    this.logger = logger;
   }
 
   async isEnabled(): Promise<boolean> {
@@ -67,6 +69,7 @@ class CIP30Entrypoint {
       };
       throw err;
     }
+
     let backends = await this.state.backendsGet(networkName);
     let backendInfo = backends[backendId];
     let backend: Backend;
@@ -79,26 +82,23 @@ class CIP30Entrypoint {
     }
 
     // Construct api
-    let apiInternal = new WalletApiInternal(account, backend, networkId, this.state, true);
-    console.log("I");
-    let api = new WalletApi(apiInternal, this.state, accountId, networkName);
+    let apiInternal = new WalletApiInternal(
+      account,
+      backend,
+      networkId,
+      this.state,
+      true,
+    );
+    let api = new WalletApi(
+      apiInternal,
+      this.state,
+      this.logger,
+      accountId,
+      networkName,
+    );
 
     return api;
   }
 }
 
-function makeStore(): Store {
-  let store;
-  if (window.chrome?.storage?.local != null) {
-    store = new WebextStorage();
-  } else {
-    store = new WebStorage();
-  }
-  return store;
-}
-
-function getState(): State {
-  return new State(new HeirarchialStore(makeStore()));
-}
-
-export { CIP30Entrypoint, makeStore, getState };
+export { CIP30Entrypoint };

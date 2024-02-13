@@ -1,5 +1,7 @@
 import * as CIP30 from "../lib/CIP30";
-import { HeirarchialStore, State, WebextRemoteStorage } from "../lib/CIP30/State";
+import { RemoteLogger } from "../lib/Web/Logger";
+import { WebextRemoteStorage } from "../lib/Web/Storage";
+import { WebextBridgeClient } from "../lib/Web/WebextBridge";
 
 declare global {
   interface Window {
@@ -11,11 +13,13 @@ if (window.cardano == null) {
   window.cardano = {};
 }
 
-let store = new WebextRemoteStorage("cdw.storage");
-store.initClient();
+let bridge = new WebextBridgeClient("cdw-contentscript-bridge");
+bridge.start()
 
-let state = new State(new HeirarchialStore(store));
+let store = new WebextRemoteStorage(bridge);
 
-window.cardano.DevWallet = new CIP30.CIP30Entrypoint(state);
-window.cardano.nami = new CIP30.CIP30Entrypoint(state);
+let logger = new RemoteLogger(bridge);
+
+window.cardano.DevWallet = new CIP30.CIP30Entrypoint(store, logger);
+window.cardano.nami = new CIP30.CIP30Entrypoint(store, logger);
 console.log("Injected into nami and DevWallet", window.cardano)

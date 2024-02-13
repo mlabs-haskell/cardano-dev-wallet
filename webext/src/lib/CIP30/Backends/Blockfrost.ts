@@ -99,7 +99,7 @@ async function addressesUtxos(
   projectId: string,
   address: string,
   params: { page: number; count: number; order: "asc" | "desc" },
-): Promise<AddressUtxosResponse> {
+): Promise<AddressUtxosResponse | null> {
   let url = new URL(
     urlFromProjectId(projectId) + "/addresses/" + address + "/utxos",
   );
@@ -112,6 +112,9 @@ async function addressesUtxos(
     headers: { project_id: projectId },
   });
   if (resp.status != 200) {
+    if (resp.status == 404) {
+      return null;
+    }
     let text = await resp.text();
     throw new Error("Request failed: " + url.toString() + "\nMessage: " + text);
   }
@@ -128,6 +131,7 @@ async function addressesUtxosAll(
   let order = "asc" as const;
   while (true) {
     let resp = await addressesUtxos(projectId, address, { page, count, order });
+    if (resp == null) break;
     result.push(...resp);
     if (resp.length < count) break;
     page += 1;

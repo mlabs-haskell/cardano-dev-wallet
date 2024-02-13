@@ -1,10 +1,17 @@
-import { WebextRemoteStorage, WebextStorage } from "../lib/CIP30/State";
+import { RemoteLoggerServer } from "../lib/Web/Logger";
+import { WebextRemoteStorage, WebextStorage } from "../lib/Web/Storage";
+import { WebextBridgeServer } from "../lib/Web/WebextBridge";
 
 let url = chrome.runtime.getURL("content-script/index.js");
 let script = document.createElement("script");
 script.src = url;
 script.type = "module";
 
-WebextRemoteStorage.initServer("cdw.storage", new WebextStorage());
+let bridge = new WebextBridgeServer("cdw-contentscript-bridge");
+bridge.start()
+
+WebextRemoteStorage.initServer(bridge, new WebextStorage());
+
+new RemoteLoggerServer(bridge).start();
 
 document.body.appendChild(script);

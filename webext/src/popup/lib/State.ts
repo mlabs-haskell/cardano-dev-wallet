@@ -3,15 +3,25 @@ import * as InternalState from "../../lib/CIP30/State";
 import {
   NetworkName,
   WalletApiInternal,
-  getState,
   networkNameToId,
 } from "../../lib/CIP30";
 import { Wallet, Account } from "../../lib/Wallet";
 import { BlockFrostBackend } from "../../lib/CIP30/Backends/Blockfrost";
 import { OgmiosKupoBackend } from "../../lib/CIP30/Backends/OgmiosKupo";
 import { Big } from "big.js";
+import { WebStorage, WebextStorage } from "../../lib/Web/Storage";
 
-const STATE = getState();
+function makeStore(): InternalState.Store {
+  let store;
+  if (window.chrome?.storage?.local != null) {
+    store = new WebextStorage();
+  } else {
+    store = new WebStorage();
+  }
+  return store;
+}
+
+const STATE = new InternalState.State(makeStore());
 
 async function loadInternalState() {
   const networkActive = signal(await STATE.networkActiveGet());
@@ -25,7 +35,6 @@ async function loadInternalState() {
     await STATE.backendsActiveGet(networkActive.value),
   );
 
-  const logs = signal(await STATE.callLogsGet(networkActive.value));
   const overrides = signal(await STATE.overridesGet(networkActive.value));
 
   return {
@@ -35,7 +44,6 @@ async function loadInternalState() {
     accountsActiveId,
     backends,
     backendsActiveId,
-    logs,
     overrides,
   };
 }
@@ -263,29 +271,6 @@ async function backendsActiveSet(backendId: string) {
   internalState.value.backendsActiveId.value = backendId;
 }
 
-const logs = computed(() => internalState.value.logs.value);
-
-async function logsClear() {
-  await STATE.callLogsClear(networkActive.value);
-  internalState.value.logs.value = await STATE.callLogsGet(networkActive.value);
-}
-
-logs.subscribe(async (logs) => {
-  // TODO: Remove me
-  if (logs.length == 0) {
-    // return
-    let idx = await STATE.callLogsPush(networkActive.value, null, "fn()");
-    await STATE.callLogsPush(networkActive.value, idx, "<= return 1");
-    idx = await STATE.callLogsPush(networkActive.value, null, "fn()");
-    await STATE.callLogsPush(networkActive.value, idx, "<= return null");
-    idx = await STATE.callLogsPush(networkActive.value, null, "fn2()");
-    idx = await STATE.callLogsPush(networkActive.value, null, "fn3()");
-    internalState.value.logs.value = await STATE.callLogsGet(
-      networkActive.value,
-    );
-  }
-});
-
 const overrides = computed(() => internalState.value.overrides.value);
 
 const overrideBalance = computed(() => {
@@ -352,8 +337,6 @@ export {
   backendsDelete,
   backendsActiveId,
   backendsActiveSet,
-  logs,
-  logsClear,
   overrides,
   overrideBalance,
   overridesSet,
