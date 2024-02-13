@@ -46,7 +46,7 @@ export function getUtxosAddingUpToTarget(
   for (let utxo of utxos) {
     let value = utxo.output().amount();
     ret.push(utxo);
-    sum.checked_add(value);
+    sum = sum.checked_add(value);
 
     if (sum.coin().less_than(target.coin())) {
       continue;
