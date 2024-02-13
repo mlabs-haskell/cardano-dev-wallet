@@ -147,7 +147,7 @@ class State {
 
   async overridesGet(network: NetworkName): Promise<Overrides> {
     let store = await this._getNetworkSubStore(network);
-    let overrides = store.get("overrides");
+    let overrides = await store.get("overrides");
     if (overrides == null)
       return {
         balance: null,
