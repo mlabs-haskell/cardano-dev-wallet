@@ -3,7 +3,7 @@ import * as State from "../State";
 import { bindInput } from "../utils";
 import { OptionButton, OptionButtons } from "../OptionButtons";
 
-const CARD_WIDTH = "15rem";
+const CARD_WIDTH = "20rem";
 
 export default function Page() {
   let backends = State.backends.value;

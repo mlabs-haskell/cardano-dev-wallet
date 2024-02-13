@@ -6,7 +6,7 @@ import { bindInput, bindInputNum } from "../utils";
 import { OptionButtons } from "../OptionButtons";
 import { ShortenedLabel } from "./ShortenedLabel";
 
-const CARD_WIDTH = "15rem";
+const CARD_WIDTH = "20rem";
 
 export default function Page() {
   let wallets = State.wallets.value;
