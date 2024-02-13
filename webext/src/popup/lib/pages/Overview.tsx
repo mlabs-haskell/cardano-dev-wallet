@@ -8,6 +8,8 @@ import * as CSL from "@emurgo/cardano-serialization-lib-browser";
 import { Utxo } from "../../../lib/CIP30/State";
 import { ShortenedLabel } from "./ShortenedLabel";
 
+const CARD_WIDTH = "20rem";
+
 export default function Page() {
   let activeAccount = State.accountsActive.value;
 
@@ -51,7 +53,7 @@ function NetworkData({ api }: { api: WalletApiInternal }) {
   return (
     <>
       <Balance api={api} />
-      <div class="row equalize-children">
+      <div class="row">
         <UTxOs api={api} />
         <Collateral api={api} />
       </div>
@@ -432,7 +434,7 @@ function UtxoList({
   onShow?: (txHash: string, txIdx: number) => void;
 }) {
   return (
-    <section class="column gap-xl">
+    <section class="column gap-xl" style={{ width: CARD_WIDTH }}>
       <h2 class="L3">{title}</h2>
       {utxos == null && <div class="L2">...</div>}
       {utxos != null &&

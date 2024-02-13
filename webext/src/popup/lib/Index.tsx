@@ -100,7 +100,7 @@ function Header({
   </nav>;
 
   return (
-    <div class="row justify-space align-center">
+    <div class="row gap-xl justify-space align-center">
       <div class="row align-center gap-l">
         {logo}
         {networkSelector}
