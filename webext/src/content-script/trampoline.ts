@@ -14,4 +14,4 @@ WebextRemoteStorage.initServer(bridge, new WebextStorage());
 
 new RemoteLoggerServer(bridge).start();
 
-document.body.appendChild(script);
+document.head.appendChild(script);
