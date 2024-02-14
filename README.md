@@ -2,17 +2,26 @@
 
 ## Workflow
 
-- Setup: `just setup`
-- Run: `just run [browser]`
-- Development with auto-reload:
-  - Run `just dev [browser]` in background for auto-recompiling.
-  - Run `just run [browser]` to launch the extension.
-- Bundle: `just bundle [browser]`
-- Test: `just test [browser]`
+`cd webext` before issuing any of the commands below.
 
-Note:
-`[browser]`, if omitted, defaults to `firefox`.
-Allowed values: `firefox`, `chrome`.
+### Develop UI
+- Run: `node build.js`
+- Open `http://localhost:8000/` in the browser.
+- This will run the extension as a simple webpage.
+  - No webextension features will be available, like connecting to a dApp.
+  - Just for faster feedback cycles when tweaking the UI.
+
+### Develop WebExtension
+- Run: `node build.js --run`
+- Chrome will launch with the extension loaded.
+- Configure the network and accounts to start developing.
+- Any changes to the source code will auto build & reload the extension.
+
+### Bundling
+- Run: `node build.js --bundle`
+
+### More Options
+- Run: `node build.js --help` to see all the available options.
 
 ## Devloper Notes
 

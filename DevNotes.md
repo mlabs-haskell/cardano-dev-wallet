@@ -1,29 +1,5 @@
 # Developer Notes
 
-### Development Workflow
-
-**Tools Required**:
-
-- `just`: https://github.com/casey/just \
-  We use `just` as our task runner as opposed to `package.json` scripts for readability. \
-  The tasks are described in `webext/justfile` and `wallet-lib/justfile`.
-- `entr`: https://eradman.com/entrproject/ \
-  For watching files for changes.
-
-Both of these tools are very common and should be available in your distro's repo or homebrew if you're on MacOS.
-
-**Development**
-
-Run `just run {browser}` and `just dev {browser}` in two different terminals and have it running in the background. \
-`just dev` will recompile the extension if the sources change. \
-`just run` will launch Firefox and will reload the extension if the files in build dir change.
-
-`{browser}` can be `firefox` or `chrome`. If omitted, `firefox` is assumed.
-
-**Bundling**
-
-Run `just bundle {browser}` to create the extension package (crx/xpi).
-
 ### Node Polyfills for ESBuild
 
 **History**
@@ -85,7 +61,7 @@ Run `just bundle {browser}` to create the extension package (crx/xpi).
   This will also make the build process much simpler, and reduce the barrier
   for entry for future contributors.
 
-### Extension loading during development
+### Manual extension loading for development
 
 - Chrome:
   - Go to extensions page, and turn the `Developer Mode` switch on.
