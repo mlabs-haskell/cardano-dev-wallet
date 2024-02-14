@@ -277,13 +277,13 @@ function AddAccount({
           </button>
         </div>
       </div>
-      <label class="L5 uncaps">m(1852'/1815'/_)</label>
-      <input
-        placeholder="Unnamed"
-        style={{ width: "30ch" }}
-        value={idx}
-        onInput={bindInputNum(idx, setIdx)}
-      />
+      <label class="L5 uncaps">m(1852'/1815'/_)
+        <input
+          placeholder="Unnamed"
+          style={{ width: "30ch" }}
+          value={idx}
+          onInput={bindInputNum(idx, setIdx)}
+        /></label>
     </article>
   );
 }
