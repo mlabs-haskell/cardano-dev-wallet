@@ -8,13 +8,19 @@ import { NetworkName } from "../Network";
 import * as CSL from "@emurgo/cardano-serialization-lib-browser";
 import { TxSendError, TxSendErrorCode } from "../ErrorTypes";
 
+function fixUrl(url: string) {
+  if (url.startsWith("http://")) return url;
+  if (url.startsWith("https://")) return url;
+  return "https://" + url;
+}
+
 class OgmiosKupoBackend implements Backend {
   kupoUrl: string;
   ogmiosUrl: string;
 
   constructor({ kupoUrl, ogmiosUrl }: { kupoUrl: string, ogmiosUrl: string }) {
-    this.kupoUrl = kupoUrl;
-    this.ogmiosUrl = ogmiosUrl;
+    this.kupoUrl = fixUrl(kupoUrl);
+    this.ogmiosUrl = fixUrl(ogmiosUrl);
   }
 
   async getUtxos(address: Address): Promise<TransactionUnspentOutput[]> {
@@ -132,10 +138,11 @@ function parseValue(value: {
   for (let [policyIdAssetName, amount] of Object.entries(value.assets)) {
     // policyId is always 28 bytes, which when hex encoded is 56 characters.
     let policyId = policyIdAssetName.slice(0, 56);
-    let assetName = policyIdAssetName.slice(56);
+    // skip the dot at 56
+    let assetName = policyIdAssetName.slice(57);
 
     let policyIdWasm = CSL.ScriptHash.from_hex(policyId);
-    let assetNameWasm = CSL.AssetName.from_hex(assetName);
+    let assetNameWasm = CSL.AssetName.from_json('"' + assetName + '"');
 
     let multiasset = cslValue.multiasset();
 
