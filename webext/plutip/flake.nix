@@ -37,6 +37,7 @@
         jqBin = "${pkgs.jq}/bin/jq";
 
         scriptCommon = ''
+          set -euo pipefail
           sleep 1;
 
           echo -e "Waiting for cluster info ..";
@@ -53,6 +54,22 @@
           echo "Socket found: " $socket "       "
 
           config=''${socket/node.socket/node.config}
+
+
+            if [ -f .env ]; then
+              source ./.env
+            else
+              echo "Create a .env file to configure this script."
+              echo "See env.example to see available options".
+            fi;
+
+            if [ -z ''${OGMIOS_PORT+x} ]; then
+              OGMIOS_PORT=9001
+            fi;
+
+            if [ -z ''${KUPO_PORT+x} ]; then
+              KUPO_PORT=9002
+            fi;
         '';
       in
       {
@@ -65,7 +82,8 @@
             --match '*' \
             --since origin \
             --in-memory \
-            --host 0.0.0.0
+            --host 0.0.0.0 \
+            --port $KUPO_PORT
         '';
         packages.startOgmios = pkgs.writeScript "startOgmios" ''
           ${scriptCommon}
@@ -73,15 +91,58 @@
           ${ogmiosBin} \
             --node-socket $socket \
             --node-config $config \
-            --host 0.0.0.0
+            --host 0.0.0.0 \
+            --port $OGMIOS_PORT
         '';
         packages.startPlutip = pkgs.writeScript "startPlutip" ''
           rm local-cluster-info.json
           rm -rf wallets
           ${plutipBin} --wallet-dir wallets
         '';
+        packages.showInfo = pkgs.writeScript "showInfo" ''
+          ${scriptCommon}
+          echo
+          echo Ogmios listening on port $OGMIOS_PORT
+          echo
+          echo Kupo listening on port $KUPO_PORT
+          echo
+        '';
         packages.fundAda = pkgs.writeScript "fundAda" ''
           ${scriptCommon}
+          export CARDANO_NODE_SOCKET_PATH=$socket
+
+          mkdir -p ./txns
+
+          if [ -z ''${ADDRESS_TO_FUND+x} ]; then
+            echo "Please set ADDRESS_TO_FUND in .env"
+            exit -1;
+          fi;
+
+          if [ -z ''${FUND_ADA+x} ]; then
+            echo "Please set FUND_ADA in .env"
+            exit -1;
+          fi;
+
+          if [ -z ''${CARDANO_NETWORK+x} ]; then
+            echo "Please set CARDANO_NETWORK in .env"
+            exit -1;
+          fi;
+
+          case $CARDANO_NETWORK in
+            mainnet)
+              export CARDANO_NODE_NETWORK_ID=mainnet;
+              ;;
+            preprod)
+              export CARDANO_NODE_NETWORK_ID=1;
+              ;;
+            preview)
+              export CARDANO_NODE_NETWORK_ID=2;
+              ;;
+            *)
+              echo "CARDANO_NETWORK is set to an invalid value:" $CARDANO_NETWORK
+              echo "Allowed values: mainnet, preprod, preview";
+              exit -1;
+          esac;
 
           while [ ! -d wallets ]; do sleep 1; done
 
@@ -92,7 +153,6 @@
             sleep 1;
           done;
 
-          export CARDANO_NODE_SOCKET_PATH=$socket
           address=$( \
               ${cardanoCliBin} latest \
               address \
@@ -102,7 +162,8 @@
               --mainnet \
           )
 
-          echo Address: $address
+          echo
+          echo Source Address: $address
 
           txn=$( \
             ${cardanoCliBin} \
@@ -113,13 +174,44 @@
             | head -n 3 | tail -n 1 \
           )
 
-          echo $txn
-          txHash=$(echo "$txn" | cut -d' ' -f 1)
-          txIdx=$(echo "$txn" | cut -d' ' -f 2)
+          txHash=$(echo $txn | cut -d' ' -f 1)
+          txIdx=$(echo $txn | cut -d' ' -f 2)
 
-          echo Txnhash: $txHash
-          echo Txnidx: $txIdx
+          echo Source UTxO: "$txHash#$txIdx"
 
+
+          fundAddress=$ADDRESS_TO_FUND
+          fundLovelace=$(echo "$FUND_ADA*1000000"|bc)
+
+          echo
+          echo "Sending $FUND_ADA ADA to $ADDRESS_TO_FUND"
+          echo
+
+          ${cardanoCliBin} \
+            latest \
+            transaction \
+            build \
+            --mainnet \
+            --tx-in "$txHash#$txIdx" \
+            --tx-out $fundAddress+$fundLovelace \
+            --change-address $address \
+            --out-file ./txns/txn-fund-ada.json;
+
+          ${cardanoCliBin} \
+            latest \
+            transaction \
+            sign \
+            --tx-file ./txns/txn-fund-ada.json \
+            --signing-key-file ./wallets/signing-key*.skey \
+            --mainnet \
+            --out-file ./txns/txn-fund-ada-signed.json;
+
+          ${cardanoCliBin} \
+            latest \
+            transaction \
+            submit \
+            --tx-file txns/txn-fund-ada-signed.json \
+            --mainnet;
         '';
         packages.mprocsCfg = pkgs.writeText "mprocs.yaml" ''
           procs:
@@ -131,6 +223,8 @@
               cmd: ["${self.packages.${system}.startKupo}"]
             fundAda:
               cmd: ["${self.packages.${system}.fundAda}"]
+            info:
+              cmd: ["${self.packages.${system}.showInfo}"]
         '';
         packages.cardano-cli = cardano-cli.packages.${system}.cardano-cli;
         packages.default = pkgs.writeScript "startAll" ''
