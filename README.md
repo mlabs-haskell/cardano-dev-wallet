@@ -1,5 +1,8 @@
 # Cardano Dev Wallet
 
+## User Guide
+See [guide/Readme.md](guide/Readme.md)
+
 ## Workflow
 
 `cd webext` before issuing any of the commands below.
