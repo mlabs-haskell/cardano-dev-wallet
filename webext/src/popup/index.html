@@ -1,36 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <title>Cardano Dev Wallet</title>
-    <link rel="stylesheet" href="normalize.css" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body id="extension-root" class="row align-center">
-    <script type="module" src="popup.js"></script>
-    <div class="surface pad w-30">
-      <div class="column gap-l">
-        <h1 class="h3 weight-normal">Dev Wallet</h1>
-        <div class="column">
-          <label class="weight-medium">
-            Mnemonic/Root Private Key
-            <textarea
-              id="mnemonicOrPk"
-              data-testid="mnemonicOrPk"
-              placeholder="Mnemonic or Private Key"
-            ></textarea>
-          </label>
-          <div class="row">
-            <button id="btn">Convert</button>
-            <button id="btn-regen" class="secondary">Random</button>
-          </div>
-        </div>
-        <div class="column force-wrap gap-s">
-          <h5 class="weight-medium">Output</h5>
-          <div class="column" id="output">
-            <div class="alert">Output will be displayed here</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </body>
+
+<head>
+  <title>Cardano Dev Wallet</title>
+  <link rel="stylesheet" href="static/normalize.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+
+<body id="app">
+  <script type="module" src="bundle.js"></script>
+  <script>
+    new EventSource("/esbuild").addEventListener("change", () =>
+      location.reload(),
+    );
+  </script>
+</body>
+
 </html>

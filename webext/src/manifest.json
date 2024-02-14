@@ -1,0 +1,57 @@
+{
+  "manifest_version": 3,
+  "name": "Cardano Dev Wallet",
+  "author": "todo@email.com",
+  "description": "A wallet webextension for Cardano, with features that help development of dApps",
+  "homepage_url": "https://todo.com",
+  "version": "0.0.0",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "run_at": "document_end",
+      "js": [
+        "./content-script/trampoline.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content-script/index.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "$chrome:background": {
+    "service_worker": "./background/background.js",
+    "type": "module"
+  },
+  "$firefox:background": {
+    "scripts": [
+      "./background/background.js"
+    ]
+  },
+  "action": {
+    "default_popup": "./popup/trampoline.html",
+    "default_title": "Open the popup"
+  },
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "storage"
+  ],
+  "icons": {
+    "72": "public/icon-72x72.png",
+    "96": "public/icon-96x96.png",
+    "128": "public/icon-128x128.png",
+    "256": "public/icon-256x256.png",
+    "512": "public/icon-512x512.png"
+  }
+}
