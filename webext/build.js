@@ -362,10 +362,8 @@ function run({ config, argsConfig }) {
     throw new Error("unreachable");
   }
 
-  log("Launching browser")
-  exec(
-    `npx web-ext run -s ${config.buildDir} -t ${browserType} --devtools`,
-  );
+  log("Launching browser");
+  exec(`npx web-ext run -s ${config.buildDir} -t ${browserType} --devtools`);
 }
 
 function bundle({ config, argsConfig }) {
@@ -386,18 +384,18 @@ function bundle({ config, argsConfig }) {
 
 function runTests({ argsConfig }) {
   log("Starting the test suite");
-  let browser = { "firefox": "firefox", "chrome": "chromium" }[argsConfig.browser];
-  exec(`npx playwright test --browser ${browser}`);
+  let browser = { firefox: "firefox", chrome: "chromium" }[argsConfig.browser];
+  exec(`npx playwright test --browser ${browser}`, { stdio: "inherit" });
 }
 
 function exec(cmd, opts) {
   try {
-    child_process.execSync(
-      cmd,
-      opts
-    );
+    child_process.execSync(cmd, opts);
   } catch (e) {
-    log("Error:", e.stdout.toString('utf8'))
+    if (e.stdout != null)
+      log("Error:", e.stdout.toString("utf8"));
+    else
+      log("Process failed");
   }
 }
 
