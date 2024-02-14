@@ -20,31 +20,33 @@ import { OgmiosKupoBackend } from "./Backends/OgmiosKupo";
 /**
  * CIP30 Entrypoint.
  */
-class CIP30Entrypoint {
-  apiVersion: string = "1";
-  supportedExtensions = [];
-  name: string = "Cardano Dev Wallet";
-  icon: string = WalletIcon;
+const CIP30Entrypoint = {
+  apiVersion: "1",
+  supportedExtensions: [],
+  name: "Cardano Dev Wallet",
+  icon: WalletIcon,
 
-  state: State;
-  logger: Logger;
+  state: null as State | null,
+  logger: null as Logger | null,
 
-  constructor(store: Store, logger: Logger) {
-    this.state = new State(store);
-    this.logger = logger;
-  }
+  init(store: Store, logger: Logger) {
+    CIP30Entrypoint.state = new State(store);
+    CIP30Entrypoint.logger = logger;
+  },
 
-  async isEnabled(): Promise<boolean> {
+  isEnabled: async () => {
     return true;
-  }
+  },
 
-  async enable(): Promise<WalletApi> {
+  enable: async () => {
+    let state = CIP30Entrypoint.state!;
+    let logger = CIP30Entrypoint.logger!;
     // Fetch active network
-    let networkName = await this.state.networkActiveGet();
+    let networkName = await state.networkActiveGet();
     let networkId = networkNameToId(networkName);
 
     // Fetch active account
-    let accountId = await this.state.accountsActiveGet(networkName);
+    let accountId = await state.accountsActiveGet(networkName);
     if (accountId == null) {
       let err: APIError = {
         code: APIErrorCode.Refused,
@@ -52,16 +54,17 @@ class CIP30Entrypoint {
       };
       throw err;
     }
-    let accounts = await this.state.accountsGet(networkName);
+
+    let accounts = await state.accountsGet(networkName);
     let accountInfo = accounts[accountId];
-    let keys = await this.state.rootKeysGet(networkName);
+    let keys = await state.rootKeysGet(networkName);
     let keyInfo = keys[accountInfo.keyId];
 
     let wallet = new Wallet({ networkId, privateKey: keyInfo.keyBech32 });
     let account = wallet.account(accountInfo.accountIdx, 0);
 
     // Fetch active backend
-    let backendId = await this.state.backendsActiveGet(networkName);
+    let backendId = await state.backendsActiveGet(networkName);
     if (backendId == null) {
       let err: APIError = {
         code: APIErrorCode.Refused,
@@ -70,7 +73,7 @@ class CIP30Entrypoint {
       throw err;
     }
 
-    let backends = await this.state.backendsGet(networkName);
+    let backends = await state.backendsGet(networkName);
     let backendInfo = backends[backendId];
     let backend: Backend;
     if (backendInfo.type == "blockfrost") {
@@ -86,17 +89,17 @@ class CIP30Entrypoint {
       account,
       backend,
       networkId,
-      this.state,
+      state,
       true,
     );
+
     let api = new WalletApi(
       apiInternal,
-      this.state,
-      this.logger,
+      state,
+      logger,
       accountId,
       networkName,
     );
-
     return api;
   }
 }

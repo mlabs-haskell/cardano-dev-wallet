@@ -19,7 +19,12 @@ bridge.start()
 let store = new WebextRemoteStorage(bridge);
 
 let logger = new RemoteLogger(bridge);
+CIP30.CIP30Entrypoint.init(store, logger);
 
-window.cardano.DevWallet = new CIP30.CIP30Entrypoint(store, logger);
-window.cardano.nami = new CIP30.CIP30Entrypoint(store, logger);
+let entryPoint = CIP30.CIP30Entrypoint;
+
+window.cardano.DevWallet = entryPoint;
+window.cardano.nami = entryPoint;
+
+
 console.log("Injected into nami and DevWallet", window.cardano)
