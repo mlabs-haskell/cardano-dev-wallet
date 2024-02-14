@@ -26,6 +26,10 @@ See [guide/Readme.md](guide/Readme.md)
 ### More Options
 - Run: `node build.js --help` to see all the available options.
 
+## Plutip
+
+See [plutip/README.md](plutip/README.md) to see how to configure Plutip for use with the extension.
+
 ## Devloper Notes
 
 See [DevNotes.md](DevNotes.md)
