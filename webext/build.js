@@ -101,6 +101,20 @@ async function main() {
     }
   }
 
+  // Fix config paths to work in windows
+  if (path.sep != "/") {
+    for (let category of ["copy", "scss", "manifest"]) {
+      let catObj = config[category];
+      let newObj = {};
+      for (let key of Object.keys(catObj)) {
+        let keyFixed = key.replaceAll("/", path.sep);
+        let valFixed = catObj[key].replaceAll("/", path.sep);
+        newObj[keyFixed] = valFixed;
+      }
+      config[category] = newObj;
+    }
+  }
+
   let tsEntryPoints = Object.entries(config.typescript).map(([src, dst]) => ({
     in: src,
     out: dst,
@@ -376,6 +390,10 @@ function bundle({ config, argsConfig }) {
     cmd = `npx crx pack ${config.buildDir} -o ${config.artefactsDir}/cardano-dev-wallet.crx --private-key ${config.chromePrivateKeyFile}`;
   } else {
     throw new Error("unreachable");
+  }
+
+  if (!fs.existsSync(config.artefactsDir)) {
+    fs.mkdirSync(config.artefactsDir, { recursive: true });
   }
 
   exec(cmd);
