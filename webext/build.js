@@ -378,6 +378,10 @@ function bundle({ config, argsConfig }) {
     throw new Error("unreachable");
   }
 
+  if (!fs.existsSync(config.artefactsDir)) {
+    fs.mkdirSync(config.artefactsDir, { recursive: true });
+  }
+
   exec(cmd);
   log("Bundle created");
 }
