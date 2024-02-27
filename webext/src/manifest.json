@@ -43,8 +43,6 @@
     "default_title": "Open the popup"
   },
   "permissions": [
-    "activeTab",
-    "contextMenus",
     "storage"
   ],
   "icons": {
