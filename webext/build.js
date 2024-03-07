@@ -384,7 +384,7 @@ function bundle({ config, argsConfig }) {
   let cmd = "";
   if (argsConfig.browser == "firefox") {
     log("Bundling for Firefox");
-    cmd = `npx web-ext build -s ${config.buildDir} -a ${config.artefactsDir}`;
+    cmd = `npx web-ext build -s ${config.buildDir} -a ${config.artefactsDir} --overwrite-dest`;
   } else if (argsConfig.browser == "chrome") {
     log("Bundling for Chrome");
     cmd = `npx crx pack ${config.buildDir} -o ${config.artefactsDir}/cardano-dev-wallet.crx --private-key ${config.chromePrivateKeyFile}`;
