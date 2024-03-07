@@ -1,1 +1,1 @@
-chrome.tabs.create({ url: "popup/index.html" })
+chrome.tabs.create({ url: "/popup/index.html" })
