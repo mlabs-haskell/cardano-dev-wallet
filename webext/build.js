@@ -1,5 +1,5 @@
 import * as esbuild from "esbuild";
-import { wasmLoader } from "esbuild-plugin-wasm";
+import { wasmLoader } from "./wasmLoader.js";
 import { nodeModulesPolyfillPlugin } from "esbuild-plugins-node-modules-polyfill";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -215,9 +215,7 @@ async function watchTypescript({ entryPoints, outdir, watch }) {
           buffer: true,
         },
       }),
-      wasmLoader({
-        mode: "embedded",
-      }),
+      wasmLoader(),
     ],
     bundle: true,
     platform: "browser",

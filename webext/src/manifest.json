@@ -22,7 +22,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "content-script/index.js"
+        "content-script/index.js",
+        "/*.wasm"
       ],
       "matches": [
         "<all_urls>"
