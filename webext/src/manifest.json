@@ -51,5 +51,11 @@
     "128": "public/icon-128x128.png",
     "256": "public/icon-256x256.png",
     "512": "public/icon-512x512.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "cardano-dev-wallet@mlabs.city",
+      "strict_min_version": "109.0"
+    }
   }
 }
