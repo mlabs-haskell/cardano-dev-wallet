@@ -23,6 +23,9 @@ function jsonReplacerCSL(_key: string, value: any) {
     return value.to_js_value();
   } else if (value instanceof Map) {
     return Object.fromEntries(value.entries());
+  } else if (value instanceof Error) {
+    console.error("Error: ", value);
+    return value.name + ": " + value.message;
   }
   return value;
 }
