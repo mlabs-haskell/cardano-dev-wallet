@@ -31,7 +31,7 @@ class OgmiosKupoBackend implements Backend {
       let value = parseValue(match.value);
       const txIn = CSL.TransactionInput.new(
         CSL.TransactionHash.from_hex(match.transaction_id),
-        match.transaction_index
+        match.output_index,
       );
       const txOut = CSL.TransactionOutput.new(
         CSL.Address.from_bech32(match.address),
