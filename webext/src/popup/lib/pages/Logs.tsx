@@ -13,7 +13,6 @@ export default function Page() {
     if (message.method == "popup/log") {
       let id = message.id as number;
       let log = message.log as string;
-      console.log("POST RCV", id, log);
       pushLog({ id, log });
     }
   };
