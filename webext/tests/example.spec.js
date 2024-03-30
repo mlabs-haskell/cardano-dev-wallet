@@ -14,10 +14,11 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const POPUP_PAGE = "popup/index.html";
 
-const BLOCKFROST_PROJECTID = "preview78FY83hxBjCnSF8zpQv8nwyMUPrOjz6R";
-const OGMIOS_URL = "ogmios.preview.ctl-runtime.staging.mlabs.city"
-const KUPO_URL = "kupo.preview.ctl-runtime.staging.mlabs.city"
 const CTL_TEST_SUCCESS_MARKER = "[CTL TEST SUCCESS]";
+const OGMIOS_URL = process.env.OGMIOS_URL || "http://localhost:9001"
+const KUPO_URL = process.env.KUPO_URL || "http://localhost:9002"
+const CTL_TEST_URL = process.env.CTL_TEST_URL || "http://localhost:4008";
+const CTL_TEST_WALLET = process.env.CTL_TEST_WALLET || "nami-mainnet";
 const WALLET_ROOT_KEY =
   "adult buyer hover fetch affair moon arctic hidden doll gasp object dumb royal kite brave robust thumb speed shine nerve token budget blame welcome";
 
@@ -56,24 +57,13 @@ test("Open popup", async ({ extensionId, page, context }) => {
   extPage.goto("chrome-extension://" + extensionId + "/" + POPUP_PAGE);
 
   await extPage.bringToFront();
-  await extPage.getByText("preview").click();
+  await extPage.getByText("mainnet").click();
 
   // Setup Network
   {
     await extPage.getByText("Network", { exact: true }).click();
 
     await extPage.getByText("Add", { exact: true }).click();
-
-    // await extPage.getByLabel("Name", { exact: true }).fill("Blockfrost");
-    // await extPage
-    //   .locator("label", { hasText: "Type" })
-    //   .locator("button", { hasText: "Blockfrost" })
-    //   .click();
-    //
-    // await extPage
-    //   .getByLabel("ProjectId", { exact: true })
-    //   .fill(BLOCKFROST_PROJECTID);
-
 
     await extPage.getByLabel("Name", { exact: true }).fill("Ogmios/Kupo");
     await extPage
@@ -90,11 +80,6 @@ test("Open popup", async ({ extensionId, page, context }) => {
       .fill(KUPO_URL);
 
     await extPage.getByText("Save", { exact: true }).click();
-
-    let backend = extPage.locator("article", { hasText: "Ogmios/Kupo" });
-
-    await backend.getByText("Options").click();
-    await backend.getByText("Set Active").click();
   }
 
   // Setup Accounts
@@ -115,14 +100,6 @@ test("Open popup", async ({ extensionId, page, context }) => {
 
     await extPage.getByText("Save", { exact: true }).click();
 
-    let account = extPage.locator("article", {
-      hasText: "m(1852'/1815'/0')",
-      hasNot: extPage.locator("article"),
-    });
-
-    await account.getByText("Options", { exact: true }).click();
-
-    await account.getByText("Set Active", { exact: true }).click();
   }
 
   await extPage.getByText("Overview", { exact: true }).click();
@@ -135,25 +112,13 @@ test("Open popup", async ({ extensionId, page, context }) => {
     .locator("input");
 
   // Wait for page to load
-  await expect(balance).toHaveValue("...");
   await expect(balance).not.toHaveValue("...", { timeout: 100000 });
 
   {
     let page = await context.newPage();
     await page.bringToFront();
 
-    await page.goto("http://localhost:4008");
-
-    page.on("dialog", (dialog) => {
-      dialog.accept(BLOCKFROST_PROJECTID);
-    });
-    page.getByText("Set Blockfrost API Key").click();
-    await page.getByText("Blockfrost key is set").waitFor();
-
-    // await page
-    //   .locator(":has-text('Environment') + select")
-    //   .selectOption("nami");
-    // .selectOption("blockfrost-nami-preview");
+    await page.goto(CTL_TEST_URL);
 
     await page
       .locator(":has-text('Example') + select").waitFor()
@@ -199,7 +164,7 @@ test("Open popup", async ({ extensionId, page, context }) => {
         setup();
 
         await page.goto(
-          "http://localhost:4008?blockfrost-nami-preview:" + testName,
+          CTL_TEST_URL + "?" + CTL_TEST_WALLET + ":" + testName,
           { waitUntil: "load" },
         );
       });
