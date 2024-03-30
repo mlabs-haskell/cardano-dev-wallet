@@ -15,13 +15,10 @@ export class WebextBridgeClient {
   }
 
   start() {
-    console.debug("Bridge client started");
     window.addEventListener("message", (ev) => {
       let data = ev.data;
       if (data.bridgeId != this.id) return;
       if (data.type != "response") return;
-
-      console.debug("Bridge client message", ev.data);
 
       let reqId = data.reqId as number | null | undefined;
       if (reqId == null) return;
@@ -72,14 +69,11 @@ export class WebextBridgeServer {
   }
 
   start() {
-    console.debug("Bridge server started");
     window.addEventListener("message", async (ev) => {
       let data = ev.data;
       if (data.bridgeId != this.id) return;
 
       if (data.type != "request") return;
-
-      console.debug("Bridge server message", ev.data);
 
       let reqId = data.reqId;
 
