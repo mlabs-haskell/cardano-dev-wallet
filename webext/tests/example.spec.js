@@ -17,10 +17,9 @@ const POPUP_PAGE = "popup/index.html";
 const BLOCKFROST_PROJECTID = "preview78FY83hxBjCnSF8zpQv8nwyMUPrOjz6R";
 const OGMIOS_URL = "ogmios.preview.ctl-runtime.staging.mlabs.city"
 const KUPO_URL = "kupo.preview.ctl-runtime.staging.mlabs.city"
+const CTL_TEST_SUCCESS_MARKER = "[CTL TEST SUCCESS]";
 const WALLET_ROOT_KEY =
   "adult buyer hover fetch affair moon arctic hidden doll gasp object dumb royal kite brave robust thumb speed shine nerve token budget blame welcome";
-
-const TEST_CONSOLE_TIMEOUT = 10000;
 
 const test = base.test.extend({
   context: async ({ browserName }, use) => {
@@ -169,17 +168,17 @@ test("Open popup", async ({ extensionId, page, context }) => {
     const runTest = async (testName) => {
 
       let testDone = new Promise(async (resolve, reject) => {
-        let timer;
         let exited = false;
 
-        const onConsole = (_msg) => {
-          timer.refresh();
+        const onConsole = (msg) => {
+          if (msg.text().includes(CTL_TEST_SUCCESS_MARKER)) {
+            resolve()
+          }
         }
         const onError = (error) => {
           if (!exited) {
-            clearTimeout(timer);
             cleanup();
-            reject(`[${testName}]: Error thrown by test: ` + error.message);
+            reject(`[${testName}]: Error thrown by test: ` + JSON.stringify(error.message));
             exited = true;
             return;
           } else {
@@ -188,10 +187,6 @@ test("Open popup", async ({ extensionId, page, context }) => {
         }
 
         const setup = () => {
-          timer = setTimeout(() => {
-            cleanup();
-            resolve();
-          }, TEST_CONSOLE_TIMEOUT);
           page.on('console', onConsole);
           page.on('pageerror', onError);
         };
