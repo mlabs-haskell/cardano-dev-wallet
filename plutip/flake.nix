@@ -73,7 +73,7 @@
         '';
       in
       {
-        packages.startKupo = pkgs.writeScript "startKupo" ''
+        packages.startKupo = pkgs.writeShellScript "startKupo" ''
           ${scriptCommon}
 
           ${kupoBin} \
@@ -85,7 +85,7 @@
             --host 0.0.0.0 \
             --port $KUPO_PORT
         '';
-        packages.startOgmios = pkgs.writeScript "startOgmios" ''
+        packages.startOgmios = pkgs.writeShellScript "startOgmios" ''
           ${scriptCommon}
 
           ${ogmiosBin} \
@@ -94,12 +94,12 @@
             --host 0.0.0.0 \
             --port $OGMIOS_PORT
         '';
-        packages.startPlutip = pkgs.writeScript "startPlutip" ''
+        packages.startPlutip = pkgs.writeShellScript "startPlutip" ''
           rm local-cluster-info.json
           rm -rf wallets
           ${plutipBin} --wallet-dir wallets
         '';
-        packages.showInfo = pkgs.writeScript "showInfo" ''
+        packages.showInfo = pkgs.writeShellScript "showInfo" ''
           ${scriptCommon}
           echo
           echo Ogmios listening on port $OGMIOS_PORT
@@ -107,7 +107,7 @@
           echo Kupo listening on port $KUPO_PORT
           echo
         '';
-        packages.fundAda = pkgs.writeScript "fundAda" ''
+        packages.fundAda = pkgs.writeShellScript "fundAda" ''
           ${scriptCommon}
           export CARDANO_NODE_SOCKET_PATH=$socket
 
@@ -227,7 +227,7 @@
               cmd: ["${self.packages.${system}.showInfo}"]
         '';
         packages.cardano-cli = cardano-cli.packages.${system}.cardano-cli;
-        packages.default = pkgs.writeScript "startAll" ''
+        packages.default = pkgs.writeShellScript "startAll" ''
           ${mprocsBin} --config ${self.packages.${system}.mprocsCfg}
         '';
         apps.default = {
