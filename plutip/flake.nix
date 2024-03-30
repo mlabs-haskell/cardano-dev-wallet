@@ -102,9 +102,13 @@
         packages.showInfo = pkgs.writeShellScript "showInfo" ''
           ${scriptCommon}
           echo
-          echo Ogmios listening on port $OGMIOS_PORT
+          echo Ogmios:
+          ${ogmiosBin} --version
+          echo Listening on port $OGMIOS_PORT
           echo
-          echo Kupo listening on port $KUPO_PORT
+          echo Kupo:
+          ${kupoBin} --version
+          echo Listening on port $KUPO_PORT
           echo
         '';
         packages.fundAda = pkgs.writeShellScript "fundAda" ''
