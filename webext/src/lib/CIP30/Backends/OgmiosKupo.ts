@@ -135,6 +135,7 @@ function parseValue(value: {
   };
 }): CSL.Value {
   let cslValue = CSL.Value.new(CSL.BigNum.from_str(value.coins.toString()));
+  let multiasset = CSL.MultiAsset.new();
   for (let [policyIdAssetName, amount] of Object.entries(value.assets)) {
     // policyId is always 28 bytes, which when hex encoded is 56 characters.
     let policyId = policyIdAssetName.slice(0, 56);
@@ -144,19 +145,13 @@ function parseValue(value: {
     let policyIdWasm = CSL.ScriptHash.from_hex(policyId);
     let assetNameWasm = CSL.AssetName.from_json('"' + assetName + '"');
 
-    let multiasset = cslValue.multiasset();
-
-    if (multiasset == null) {
-      multiasset = CSL.MultiAsset.new();
-      cslValue.set_multiasset(multiasset);
-    }
-
     multiasset.set_asset(
       policyIdWasm,
       assetNameWasm,
-      CSL.BigNum.from_str(amount.toString())
+      CSL.BigNum.from_str(amount.toString()),
     );
   }
+  cslValue.set_multiasset(multiasset);
   return cslValue;
 }
 
