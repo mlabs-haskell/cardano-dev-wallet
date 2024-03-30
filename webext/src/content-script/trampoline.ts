@@ -14,4 +14,9 @@ WebextRemoteStorage.initServer(bridge, new WebextStorage());
 
 new RemoteLoggerServer(bridge).start();
 
-document.head.appendChild(script);
+let loaded = false;
+document.addEventListener("readystatechange", (event) => {
+  if (!loaded && event?.target?.readyState !== "loading") {
+    document.head.appendChild(script);
+  }
+});
