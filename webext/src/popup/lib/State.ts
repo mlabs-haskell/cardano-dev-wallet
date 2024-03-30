@@ -156,12 +156,17 @@ interface AccountNew {
 async function accountsAdd({ walletId, name, accountIdx }: AccountNew) {
   let networkActive = internalState.value.networkActive.value;
 
+
   let account: InternalState.Account = {
     keyId: walletId,
     name,
     accountIdx: accountIdx,
   };
-  await STATE.accountsAdd(networkActive, account);
+  let id = await STATE.accountsAdd(networkActive, account);
+
+  if (internalState.value.accountsActiveId.value == null) {
+    await accountsActiveSet(id);
+  }
 
   internalState.value.accounts.value = await STATE.accountsGet(networkActive);
 }
@@ -242,7 +247,10 @@ const backends = computed(() => internalState.value.backends.value);
 
 async function backendsAdd(backend: BackendDef) {
   let networkActive = internalState.value.networkActive.value;
-  await STATE.backendsAdd(networkActive, backend);
+  let id = await STATE.backendsAdd(networkActive, backend);
+  if (internalState.value.backendsActiveId.value == null) {
+    await backendsActiveSet(id);
+  }
   internalState.value.backends.value = await STATE.backendsGet(networkActive);
 }
 
