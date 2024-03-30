@@ -80,6 +80,7 @@
             --node-socket $socket \
             --node-config $config \
             --match '*' \
+            --match '*/*' \
             --since origin \
             --in-memory \
             --host 0.0.0.0 \
