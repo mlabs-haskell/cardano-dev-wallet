@@ -72,7 +72,7 @@
             fi;
         '';
       in
-      {
+      rec {
         packages.startKupo = pkgs.writeShellScript "startKupo" ''
           ${scriptCommon}
 
@@ -112,6 +112,21 @@
           echo
         '';
         packages.fundAda = pkgs.writeShellScript "fundAda" ''
+          echo
+          echo "Funding UTxO #1"
+          ${packages.fundAdaBase}
+          echo
+          echo
+          echo "Funding UTxO #2"
+          ${packages.fundAdaBase}
+          echo
+          echo
+          echo "Funding UTxO #3"
+          ${packages.fundAdaBase}
+          echo
+          echo
+        '';
+        packages.fundAdaBase = pkgs.writeShellScript "fundAdaBase" ''
           ${scriptCommon}
           export CARDANO_NODE_SOCKET_PATH=$socket
 
