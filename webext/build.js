@@ -234,7 +234,7 @@ async function watchTypescript({ entryPoints, outdir, watch }) {
     "\n",
   );
   if (watch) {
-    await ctx.watch();
+    ctx.watch();
   } else {
     await ctx.rebuild();
     ctx.dispose();
@@ -394,17 +394,28 @@ function bundle({ config, argsConfig }) {
     fs.mkdirSync(config.artefactsDir, { recursive: true });
   }
 
-  exec(cmd);
+  execSync(cmd);
   log("Bundle created");
 }
 
 function runTests({ argsConfig }) {
   log("Starting the test suite");
   let browser = { firefox: "firefox", chrome: "chromium" }[argsConfig.browser];
-  exec(`npx playwright test --browser ${browser}`, { stdio: "inherit" });
+  execSync(`npx playwright test --browser ${browser}`, { stdio: "inherit" });
 }
 
 function exec(cmd, opts) {
+  try {
+    child_process.exec(cmd, opts);
+  } catch (e) {
+    if (e.stdout != null)
+      log("Error:", e.stdout.toString("utf8"));
+    else
+      log("Process failed");
+  }
+}
+
+function execSync(cmd, opts) {
   try {
     child_process.execSync(cmd, opts);
   } catch (e) {
