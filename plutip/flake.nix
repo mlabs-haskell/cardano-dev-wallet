@@ -8,7 +8,7 @@
       url = "github:mlabs-haskell/ogmios-nixos/78e829e9ebd50c5891024dcd1004c2ac51facd80";
     };
     kupo-nixos = {
-      url = "github:mlabs-haskell/kupo-nixos/6f89cbcc359893a2aea14dd380f9a45e04c6aa67";
+      url = "github:mlabs-haskell/kupo-nixos/df5aaccfcec63016e3d9e10b70ef8152026d7bc3";
     };
     cardano-cli.url = "github:intersectmbo/cardano-node/8.7.3";
   };
