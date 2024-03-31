@@ -64,11 +64,11 @@
             fi;
 
             if [ -z ''${OGMIOS_PORT+x} ]; then
-              OGMIOS_PORT=9001
+              OGMIOS_PORT=1337
             fi;
 
             if [ -z ''${KUPO_PORT+x} ]; then
-              KUPO_PORT=9002
+              KUPO_PORT=1442
             fi;
         '';
       in
