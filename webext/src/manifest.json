@@ -4,7 +4,7 @@
   "author": "chrome-web-store@mlabs.city",
   "description": "A wallet webextension for Cardano, with features that help development of dApps",
   "homepage_url": "https://github.com/mlabs-haskell/cardano-dev-wallet/",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
   },
