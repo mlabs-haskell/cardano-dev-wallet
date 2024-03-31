@@ -14,12 +14,15 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const POPUP_PAGE = "popup/index.html";
 
-const CTL_TEST_SUCCESS_MARKER = "[CTL TEST SUCCESS]";
 const OGMIOS_URL = process.env.OGMIOS_URL || "http://localhost:1337"
 const KUPO_URL = process.env.KUPO_URL || "http://localhost:1442"
 
 const CTL_TEST_URL = process.env.CTL_TEST_URL || "http://localhost:4008";
 const CTL_TEST_WALLET = process.env.CTL_TEST_WALLET || "nami-mainnet";
+const CTL_TEST_SUCCESS_MARKER = "[CTL TEST SUCCESS]";
+
+const WALLET_NETWORK = 'mainnet';
+
 const WALLET_ROOT_KEY =
   "adult buyer hover fetch affair moon arctic hidden doll gasp object dumb royal kite brave robust thumb speed shine nerve token budget blame welcome";
 
@@ -58,7 +61,7 @@ test("Open popup", async ({ extensionId, page, context }) => {
   extPage.goto("chrome-extension://" + extensionId + "/" + POPUP_PAGE);
 
   await extPage.bringToFront();
-  await extPage.getByText("mainnet").click();
+  await extPage.getByText(WALLET_NETWORK).click();
 
   // Setup Network
   {
@@ -144,7 +147,7 @@ test("Open popup", async ({ extensionId, page, context }) => {
         const onError = (error) => {
           if (!exited) {
             cleanup();
-            reject(`[${testName}]: Error thrown by test: ` + JSON.stringify(error.message));
+            reject(`[${testName}]: Error thrown by test: ` + error.message);
             exited = true;
             return;
           } else {
