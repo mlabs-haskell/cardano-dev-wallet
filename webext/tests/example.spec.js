@@ -1,4 +1,5 @@
 import * as base from "@playwright/test";
+import assert from "node:assert";
 import * as path from "node:path";
 import * as url from "node:url";
 
@@ -25,6 +26,13 @@ const WALLET_NETWORK = 'mainnet';
 
 const WALLET_ROOT_KEY =
   "adult buyer hover fetch affair moon arctic hidden doll gasp object dumb royal kite brave robust thumb speed shine nerve token budget blame welcome";
+
+const BROKEN_TESTS = [
+  "ReferenceInputsAndScripts",
+  "TxChaining",
+  "SendsToken",
+  "Utxos",
+];
 
 const test = base.test.extend({
   context: async ({ browserName }, use) => {
@@ -196,8 +204,14 @@ test("Open popup", async ({ extensionId, page, context }) => {
       await sleep(2000);
     }
 
+    let failedExclBroken = failedTests.filter(x => !BROKEN_TESTS.includes(x));
+
     console.log("Passed", passedTests.length, passedTests);
     console.log("Failed", failedTests.length, failedTests);
+    if (failedTests.length > 0)
+      console.log("Failed (excl. broken)", failedExclBroken.length, failedExclBroken);
+
+    assert(failedExclBroken.length == 0, "Tests failed");
   }
 });
 
