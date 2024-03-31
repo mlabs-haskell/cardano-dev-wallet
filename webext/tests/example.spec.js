@@ -15,8 +15,9 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const POPUP_PAGE = "popup/index.html";
 
 const CTL_TEST_SUCCESS_MARKER = "[CTL TEST SUCCESS]";
-const OGMIOS_URL = process.env.OGMIOS_URL || "http://localhost:9001"
-const KUPO_URL = process.env.KUPO_URL || "http://localhost:9002"
+const OGMIOS_URL = process.env.OGMIOS_URL || "http://localhost:1337"
+const KUPO_URL = process.env.KUPO_URL || "http://localhost:1442"
+
 const CTL_TEST_URL = process.env.CTL_TEST_URL || "http://localhost:4008";
 const CTL_TEST_WALLET = process.env.CTL_TEST_WALLET || "nami-mainnet";
 const WALLET_ROOT_KEY =
