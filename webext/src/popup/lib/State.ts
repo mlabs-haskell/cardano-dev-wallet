@@ -309,7 +309,7 @@ const API = computed(() => {
   if (backendDef == null) return "NO_BACKEND";
   let backend;
   if (backendDef.type == "blockfrost") {
-    backend = new BlockFrostBackend(backendDef.projectId);
+    backend = new BlockFrostBackend(backendDef.projectId, backendDef.url);
   } else if (backendDef.type == "ogmios_kupo") {
     backend = new OgmiosKupoBackend(backendDef);
   } else {

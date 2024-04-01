@@ -62,6 +62,7 @@ function BackendForm({
     name: "",
     type: "blockfrost" as State.BackendDef["type"],
     projectId: "",
+    blockfrostUrl: undefined as (string | undefined),
     ogmiosUrl: "",
     kupoUrl: "",
   };
@@ -70,6 +71,7 @@ function BackendForm({
     originalBackend.type = backend.type;
     if (backend.type == "blockfrost") {
       originalBackend.projectId = backend.projectId;
+      originalBackend.blockfrostUrl = backend.url || undefined;
     } else if (backend.type == "ogmios_kupo") {
       originalBackend.ogmiosUrl = backend.ogmiosUrl;
       originalBackend.kupoUrl = backend.kupoUrl;
@@ -80,6 +82,7 @@ function BackendForm({
 
   let [name, setName] = useState(originalBackend.name);
   let [projectId, setProjectId] = useState(originalBackend.projectId);
+  let [blockfrostUrl, setBlockfrostUrl] = useState(originalBackend.blockfrostUrl);
   let [ogmiosUrl, setOgmiosUrl] = useState(originalBackend.ogmiosUrl);
   let [kupoUrl, setKupoUrl] = useState(originalBackend.kupoUrl);
 
@@ -88,7 +91,7 @@ function BackendForm({
   const onSubmit = async () => {
     let backend;
     if (type == "blockfrost") {
-      backend = { type, name, projectId };
+      backend = { type, name, projectId, url: blockfrostUrl };
     } else if (type == "ogmios_kupo") {
       backend = { type, name, ogmiosUrl, kupoUrl };
     } else {
@@ -123,10 +126,16 @@ function BackendForm({
       <label class="label-sub">
         Type
         <div class="row gap-m">
-          <button class={"button" + (type != "blockfrost" ? " -secondary" : "")} onClick={() => setType("blockfrost")}>
+          <button
+            class={"button" + (type != "blockfrost" ? " -secondary" : "")}
+            onClick={() => setType("blockfrost")}
+          >
             Blockfrost
           </button>
-          <button class={"button" + (type != "ogmios_kupo" ? " -secondary" : "")} onClick={() => setType("ogmios_kupo")}>
+          <button
+            class={"button" + (type != "ogmios_kupo" ? " -secondary" : "")}
+            onClick={() => setType("ogmios_kupo")}
+          >
             Ogmios/Kupo
           </button>
         </div>
@@ -141,6 +150,15 @@ function BackendForm({
               style={{ width: "30ch" }}
               value={projectId}
               onInput={bindInput(setProjectId)}
+            />
+          </label>
+          <label class="label-sub">
+            Endpoint (optional)
+            <input
+              placeholder="(default)"
+              style={{ width: "30ch" }}
+              value={blockfrostUrl}
+              onInput={bindInput(setBlockfrostUrl)}
             />
           </label>
         </>
@@ -266,6 +284,10 @@ function BackendView({
           <div class="gap-s">
             <label class="color-secondary">Project ID</label>
             <div>{backend.projectId}</div>
+          </div>
+          <div class="gap-s">
+            <label class="color-secondary">Endpoint</label>
+            <div>{backend.url || "(default)"}</div>
           </div>
         </>
       )}

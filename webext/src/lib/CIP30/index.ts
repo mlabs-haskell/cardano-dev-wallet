@@ -77,7 +77,7 @@ const CIP30Entrypoint = {
     let backendInfo = backends[backendId];
     let backend: Backend;
     if (backendInfo.type == "blockfrost") {
-      backend = new BlockFrostBackend(backendInfo.projectId);
+      backend = new BlockFrostBackend(backendInfo.projectId, backendInfo.url);
     } else if (backendInfo.type == "ogmios_kupo") {
       backend = new OgmiosKupoBackend(backendInfo);
     } else {

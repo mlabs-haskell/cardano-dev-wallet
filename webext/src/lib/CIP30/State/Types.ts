@@ -3,6 +3,7 @@ type Backend =
     type: "blockfrost";
     name: string,
     projectId: string;
+    url?: string;
   }
   | {
     type: "ogmios_kupo";
