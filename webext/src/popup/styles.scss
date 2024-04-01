@@ -181,6 +181,13 @@ body {
   justify-content: space-between;
 }
 
+.column hr {
+  height: 1px;
+  border-top: solid 1px color.scale($color-secondary, $alpha: -80%);
+  margin-top: calc(-1 * var(--gap) / 2);
+  margin-bottom: calc(-1 * var(--gap) / 2);
+}
+
 //
 
 .button {
