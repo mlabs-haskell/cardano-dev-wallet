@@ -29,7 +29,10 @@ export default function Page() {
       </div>
 
       {[...wallets].map(([walletId, wallet]) => (
-        <Wallet key={walletId} walletId={walletId} wallet={wallet} />
+        <>
+          <Wallet key={walletId} walletId={walletId} wallet={wallet} />
+          <hr />
+        </>
       ))}
     </>
   );
