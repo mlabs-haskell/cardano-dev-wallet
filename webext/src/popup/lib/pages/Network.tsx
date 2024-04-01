@@ -236,45 +236,29 @@ function BackendView({
   else if (backend.type == "ogmios_kupo") backendType = "Ogmios/Kupo";
 
   let setActiveButton: OptionButton[] = [];
-  if (!isActive) setActiveButton = [
-    { text: "Set Active", onClick: setActive },
-  ];
+  if (!isActive) setActiveButton = [{ text: "Set Active", onClick: setActive }];
 
   return (
     <article class="column gap-l">
       <div class="row align-start">
-        <div class="column gap-s" style={{ width: CARD_WIDTH }}>
-          <h2 class={"L3 " + (isActive ? " color-action" : "")}>{backend.name || "Unnamed"}</h2>
+        <div class="column gap-s">
+          <div class="row align-center">
+            <h2 class={"L3 " + (isActive ? " color-action" : "")}
+              style={{ width: CARD_WIDTH }}
+            >
+              {backend.name || "Unnamed"}
+            </h2>
+            {showButtons && (
+              <BackendOptionButtons
+                setActiveButton={setActiveButton}
+                onEdit={onEdit}
+                onConfirmDelete={onConfirmDelete}
+              />
+            )}
+          </div>
           <div class="label-mono uncaps">{backendType}</div>
-          <div class="color-action">
-            {isActive ? "Active" : ""}
-          </div>
+          <div class="color-action">{isActive ? "Active" : ""}</div>
         </div>
-
-        {showButtons && (
-          <div class="buttons">
-            <OptionButtons
-              buttons={[
-                ...setActiveButton,
-                { text: "Edit", icon: "edit", onClick: onEdit },
-                {
-                  text: "Delete",
-                  icon: "delete",
-                  expand: {
-                    backText: "Cancel",
-                    buttons: [
-                      {
-                        text: "Confirm Delete",
-                        icon: "delete",
-                        onClick: onConfirmDelete,
-                      },
-                    ],
-                  },
-                },
-              ]}
-            />
-          </div>
-        )}
       </div>
 
       {backend.type == "blockfrost" && (
@@ -300,5 +284,39 @@ function BackendView({
         </>
       )}
     </article>
+  );
+}
+function BackendOptionButtons({
+  setActiveButton,
+  onEdit,
+  onConfirmDelete,
+}: {
+  setActiveButton: OptionButton[];
+  onEdit: () => void;
+  onConfirmDelete: () => Promise<void>;
+}) {
+  return (
+    <div class="buttons">
+      <OptionButtons
+        buttons={[
+          ...setActiveButton,
+          { text: "Edit", icon: "edit", onClick: onEdit },
+          {
+            text: "Delete",
+            icon: "delete",
+            expand: {
+              backText: "Cancel",
+              buttons: [
+                {
+                  text: "Confirm Delete",
+                  icon: "delete",
+                  onClick: onConfirmDelete,
+                },
+              ],
+            },
+          },
+        ]}
+      />
+    </div>
   );
 }
