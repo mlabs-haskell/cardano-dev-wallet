@@ -3,9 +3,14 @@ import * as CSL from "@emurgo/cardano-serialization-lib-browser";
 
 class BlockFrostBackend implements CIP30.Backend {
   projectId: string;
+  url: string;
 
-  constructor(projectId: string) {
+  constructor(projectId: string, url?: string) {
     this.projectId = projectId;
+    if (url != null) {
+      url = url.trim();
+    }
+    this.url = url || urlFromProjectId(projectId)
   }
 
   static getNetworkNameFromProjectId(
@@ -25,7 +30,7 @@ class BlockFrostBackend implements CIP30.Backend {
   async getUtxos(
     address: CSL.Address,
   ): Promise<CSL.TransactionUnspentOutput[]> {
-    let utxos = await addressesUtxosAll(this.projectId, address.to_bech32());
+    let utxos = await addressesUtxosAll(this.url, this.projectId, address.to_bech32());
     let values: CSL.TransactionUnspentOutput[] = [];
     for (let utxo of utxos) {
       let value = amountToValue(utxo.amount);
@@ -44,7 +49,7 @@ class BlockFrostBackend implements CIP30.Backend {
   }
 
   async submitTx(tx: string): Promise<string> {
-    return await txSubmit(this.projectId, tx);
+    return await txSubmit(this.url, this.projectId, tx);
   }
 }
 
@@ -96,12 +101,13 @@ interface AddressUtxosResponseItem {
 type AddressUtxosResponse = AddressUtxosResponseItem[];
 
 async function addressesUtxos(
+  baseUrl: string,
   projectId: string,
   address: string,
   params: { page: number; count: number; order: "asc" | "desc" },
 ): Promise<AddressUtxosResponse | null> {
   let url = new URL(
-    urlFromProjectId(projectId) + "/addresses/" + address + "/utxos",
+    baseUrl + "/api/v0/addresses/" + address + "/utxos",
   );
   url.searchParams.append("page", params.page.toString());
   url.searchParams.append("count", params.count.toString());
@@ -122,6 +128,7 @@ async function addressesUtxos(
 }
 
 async function addressesUtxosAll(
+  baseUrl: string,
   projectId: string,
   address: string,
 ): Promise<AddressUtxosResponse> {
@@ -130,7 +137,7 @@ async function addressesUtxosAll(
   let count = 100;
   let order = "asc" as const;
   while (true) {
-    let resp = await addressesUtxos(projectId, address, { page, count, order });
+    let resp = await addressesUtxos(baseUrl, projectId, address, { page, count, order });
     if (resp == null) break;
     result.push(...resp);
     if (resp.length < count) break;
@@ -141,10 +148,10 @@ async function addressesUtxosAll(
 
 type SubmitTxResponse = string;
 
-async function txSubmit(projectId: string, tx: string): Promise<SubmitTxResponse> {
+async function txSubmit(baseUrl: string, projectId: string, tx: string): Promise<SubmitTxResponse> {
   let txBinary = Buffer.from(tx, "hex");
 
-  let url = new URL(urlFromProjectId(projectId) + "/tx/submit");
+  let url = new URL(baseUrl + "/api/v0/tx/submit");
   let resp = await fetch(url, {
     method: "POST",
     headers: { project_id: projectId, "Content-Type": "application/cbor" },
@@ -169,7 +176,7 @@ function urlFromProjectId(projectId: string) {
     throw new Error("Invalid project id: " + projectId);
   }
 
-  return "https://cardano-" + prefix + ".blockfrost.io/api/v0";
+  return "https://cardano-" + prefix + ".blockfrost.io";
 }
 
 export { BlockFrostBackend };
