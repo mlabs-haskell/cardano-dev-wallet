@@ -38,7 +38,10 @@ export default function Page() {
       </div>
 
       {Object.entries(backends).map(([backendId, backend]) => (
-        <Backend key={backendId} backendId={backendId} backend={backend} />
+        <>
+          <Backend key={backendId} backendId={backendId} backend={backend} />
+          <hr />
+        </>
       ))}
     </>
   );
