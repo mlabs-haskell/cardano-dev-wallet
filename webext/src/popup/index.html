@@ -10,11 +10,13 @@
 
 <body id="app">
   <script type="module" src="bundle.js"></script>
+  <!-- [build.js:if(debug)] -->
   <script>
     new EventSource("/esbuild").addEventListener("change", () =>
       location.reload(),
     );
   </script>
+  <!-- [build.js:endif] -->
 </body>
 
 </html>
