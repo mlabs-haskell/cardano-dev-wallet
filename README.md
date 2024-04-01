@@ -1,11 +1,11 @@
-# Cardano Dev Wallet 
+# Cardano Dev Wallet
 
 <img src="guide/05-home-0.png" width="400" />
 
 A browser extension that implements [CIP-30](https://cips.cardano.org/cip/CIP-30/) Cardano wallet connector with a UI that is more convenient for developers than mainstream user-oriented wallets.
 
 - Uses Blockfrost or Ogmios+Kupo as the backend
-- Works with custom Cardano networks (Kupo+Ogmios only)
+- Works with custom Cardano networks
 - Allows to inspect CIP-30 method logs
 - Allows to override CIP-30 API endpoint responses
 - Allows to load private keys or mnemonics
