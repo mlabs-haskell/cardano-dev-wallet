@@ -81,7 +81,7 @@ export default function Page() {
         })}
         {!logsAvailable &&
           "Unable to connect to the extension runtime. Logs not available."}
-        {logs.length == 0 && "Empty."}
+        {logsAvailable && logs.length == 0 && "Empty."}
       </div>
     </section>
   );
