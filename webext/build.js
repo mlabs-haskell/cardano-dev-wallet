@@ -412,13 +412,18 @@ function run({ config, argsConfig }) {
 }
 
 function bundle({ config, argsConfig }) {
+  let manifestFilePath = Object.keys(config.manifest)[0]
+  let manifestFile = fs.readFileSync(manifestFilePath);
+  let manifest = JSON.parse(manifestFile.toString());
+  let version = manifest.version;
+
   let cmd = "";
   if (argsConfig.browser == "firefox") {
     log("Bundling for Firefox");
-    cmd = `npx web-ext build -s ${config.buildDir} -a ${config.artefactsDir} --overwrite-dest`;
+    cmd = `npx web-ext build -s ${config.buildDir} -a ${config.artefactsDir} -n cardano-dev-wallet-firefox-${version}.zip --overwrite-dest`;
   } else if (argsConfig.browser == "chrome") {
     log("Bundling for Chrome");
-    cmd = `npx crx pack ${config.buildDir} -o ${config.artefactsDir}/cardano-dev-wallet.crx --private-key ${config.chromePrivateKeyFile}`;
+    cmd = `npx web-ext build -s ${config.buildDir} -a ${config.artefactsDir} -n cardano-dev-wallet-chrome-${version}.zip --overwrite-dest`;
   } else {
     throw new Error("unreachable");
   }
