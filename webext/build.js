@@ -44,6 +44,8 @@ function printUsage() {
   console.log("    Show usage.");
 }
 
+let FILE_TYPES = ["copy", "scss", "manifest", "html"];
+
 async function main() {
   let args = process.argv.slice(2);
 
@@ -93,25 +95,26 @@ async function main() {
   fs.rmSync(config.buildDir, { recursive: true, force: true });
   fs.mkdirSync(config.buildDir);
 
-  for (let category of ["copy", "scss", "manifest"]) {
-    for (let key of Object.keys(config[category])) {
-      let dst = config[category][key];
+
+  for (let fileType of FILE_TYPES) {
+    for (let key of Object.keys(config[fileType])) {
+      let dst = config[fileType][key];
       dst = path.join(config.buildDir, dst);
-      config[category][key] = dst;
+      config[fileType][key] = dst;
     }
   }
 
   // Fix config paths to work in windows
   if (path.sep != "/") {
-    for (let category of ["copy", "scss", "manifest"]) {
-      let catObj = config[category];
+    for (let fileType of FILE_TYPES) {
+      let catObj = config[fileType];
       let newObj = {};
       for (let key of Object.keys(catObj)) {
         let keyFixed = key.replaceAll("/", path.sep);
         let valFixed = catObj[key].replaceAll("/", path.sep);
         newObj[keyFixed] = valFixed;
       }
-      config[category] = newObj;
+      config[fileType] = newObj;
     }
   }
 
@@ -156,12 +159,11 @@ async function serveBuildDir(ctx, config) {
 }
 
 async function watchOthers({ config, watch, argsConfig }) {
-  // All files in config.copy and config.scss
-  let filesToWatch = [
-    ...Object.keys(config.copy),
-    ...Object.keys(config.scss),
-    ...Object.keys(config.manifest),
-  ];
+
+  let filesToWatch = [];
+  for (let fileType of FILE_TYPES) {
+    filesToWatch.push(...Object.keys(config[fileType]))
+  }
 
   let dirsToWatch = {};
 
@@ -293,6 +295,12 @@ function onFileChange({ filename, callback, config, argsConfig }) {
       log(`Compiling Manifest: ${filename}`);
       compileManifest(filename, dst, argsConfig.browser);
     };
+  } else if (filename in config.html) {
+    let dst = config.html[filename];
+    fn = () => {
+      log(`Compiling HTML: ${filename}`);
+      compileHtml(filename, dst, argsConfig);
+    };
   } else {
     // See if the changed file or any of its parents is a dir that's specified
     // in `config.copy`
@@ -340,6 +348,31 @@ function compileManifest(src, dst, prefix) {
   let output = fixupManifest(root, prefix);
 
   fs.writeFileSync(dst, JSON.stringify(output, null, 2));
+}
+
+function compileHtml(src, dst, { release }) {
+  let srcContents = fs.readFileSync(src).toString();
+  let lines = srcContents.split("\n");
+  let dstLine = [];
+
+  let inDebugBlock = false;
+  for (let line of lines) {
+    if (!inDebugBlock && line.includes("[build.js:if(debug)]")) {
+      inDebugBlock = true;
+      continue;
+    }
+    if (inDebugBlock && line.includes("[build.js:endif]")) {
+      inDebugBlock = false;
+      continue;
+    }
+
+    if (release && inDebugBlock) continue;
+
+    dstLine.push(line);
+  }
+
+  let dstContents = dstLine.join("\n");
+  fs.writeFileSync(dst, dstContents);
 }
 
 function fixupManifest(root, prefix) {
@@ -408,10 +441,8 @@ function exec(cmd, opts) {
   try {
     child_process.exec(cmd, opts);
   } catch (e) {
-    if (e.stdout != null)
-      log("Error:", e.stdout.toString("utf8"));
-    else
-      log("Process failed");
+    if (e.stdout != null) log("Error:", e.stdout.toString("utf8"));
+    else log("Process failed");
   }
 }
 
@@ -419,10 +450,8 @@ function execSync(cmd, opts) {
   try {
     child_process.execSync(cmd, opts);
   } catch (e) {
-    if (e.stdout != null)
-      log("Error:", e.stdout.toString("utf8"));
-    else
-      log("Process failed");
+    if (e.stdout != null) log("Error:", e.stdout.toString("utf8"));
+    else log("Process failed");
   }
 }
 

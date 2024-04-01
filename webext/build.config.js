@@ -3,9 +3,7 @@ export default {
   artefactsDir: "artefacts",
   chromePrivateKeyFile: "dev-keys/chrome-dev-key.pem",
   copy: {
-    "src/popup/trampoline.html": "popup/trampoline.html",
     "src/popup/trampoline.js": "popup/trampoline.js",
-    "src/popup/index.html": "popup/index.html",
     "src/popup/static": "popup/static",
     "src/background/background.js": "background/background.js",
     "src/public": "public",
@@ -20,5 +18,9 @@ export default {
   },
   manifest: {
     "src/manifest.json": "manifest.json"
-  }
+  },
+  html: {
+    "src/popup/trampoline.html": "popup/trampoline.html",
+    "src/popup/index.html": "popup/index.html",
+  },
 }
