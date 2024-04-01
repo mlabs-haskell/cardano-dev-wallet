@@ -435,20 +435,26 @@ function UtxoList({
 }) {
   return (
     <section class="column gap-xl" style={{ width: CARD_WIDTH }}>
-      <h2 class="L3">{title}</h2>
+      <div class="gap-m">
+        <h2 class="L3">{title}</h2>
+        {utxos?.length == 0 && <div class="color-secondary">(empty)</div>}
+      </div>
       {utxos == null && <div class="L2">...</div>}
       {utxos != null &&
         utxos.map((utxo) => {
           return (
-            <article class={"column" + (utxo.hidden ? " faded" : "")}>
-              <UtxoHeader utxo={utxo} onHide={onHide} onShow={onShow} />
-              {utxo.tokens.map((token) => {
-                return <UtxoToken token={token} />;
-              })}
-            </article>
+            <>
+              <article class={"column" + (utxo.hidden ? " faded" : "")}>
+                <UtxoHeader utxo={utxo} onHide={onHide} onShow={onShow} />
+                {utxo.tokens.map((token) => {
+                  return <UtxoToken token={token} />;
+                })}
+              </article>
+              <hr />
+            </>
           );
         })}
-    </section>
+    </section >
   );
 }
 
