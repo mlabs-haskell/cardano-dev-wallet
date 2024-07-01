@@ -99,6 +99,12 @@ class WalletApiInternal {
 
     let address = this._getAddress();
     let utxos = await this.backend.getUtxos(address);
+
+    let overrides = await this.state.overridesGet(networkActive);
+    if (overrides != null) {
+      utxos = filterUtxos(utxos, overrides.hiddenUtxos);
+    }
+
     return Utils.sumUtxos(utxos);
   }
 
@@ -116,7 +122,8 @@ class WalletApiInternal {
       target = fiveAda;
     }
 
-    let utxos: CSL.TransactionUnspentOutput[] | null = await this.backend.getUtxos(address);
+    let utxos: CSL.TransactionUnspentOutput[] | null =
+      await this.backend.getUtxos(address);
 
     if (this.overridesEnabled) {
       let overrides = await this.state.overridesGet(networkActive);

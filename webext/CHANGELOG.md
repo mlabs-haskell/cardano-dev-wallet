@@ -1,3 +1,10 @@
+# 1.3.0
+* Make UTxO override affect the balance
+  Previously, the utxo list override only affected the `getUtxos()` call and not the
+  `getBalance()` call.
+  The UI only allows overriding the ADA value of the balance.
+  With this change, the users will be able to use the same UI to override the token balance returned by `getBalance()`.
+
 # 1.2.0
 * Fix SundaeSwap hanging (#17)
 
