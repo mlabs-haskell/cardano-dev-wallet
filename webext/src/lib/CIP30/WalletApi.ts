@@ -55,6 +55,49 @@ class WalletApi {
     this.accountId = accountId;
   }
 
+  /* Use this function instead of the constructor.
+   * Although this is not specified in the spec, some dApps seem to be passing
+   * around the WalletApi object like this:
+   *      `let copy = {...wallet}`
+   * which may not work for when wallet is not a plain object.
+   * This function returns a plain object instead.
+   */
+  static getNew(
+    api: WalletApiInternal,
+    state: State,
+    logger: Logger,
+    accountId: string,
+    network: NetworkName,
+  ) {
+    let walletApi = new WalletApi(api, state, logger, accountId, network);
+
+    return {
+      // @ts-ignore
+      getNetworkId: (...args: any[]) => walletApi.getNetworkId(...args),
+      // @ts-ignore
+      getExtensions: (...args: any[]) => walletApi.getExtensions(...args),
+      getUtxos: (...args: any[]) => walletApi.getUtxos(...args),
+      // @ts-ignore
+      getBalance: (...args: any[]) => walletApi.getBalance(...args),
+      getCollateral: (...args: any[]) => walletApi.getCollateral(...args),
+      getUsedAddresses: (...args: any[]) => walletApi.getUsedAddresses(...args),
+      getUnusedAddresses: (...args: any[]) =>
+        // @ts-ignore
+        walletApi.getUnusedAddresses(...args),
+      // @ts-ignore
+      getChangeAddress: (...args: any[]) => walletApi.getChangeAddress(...args),
+      getRewardAddresses: (...args: any[]) =>
+        // @ts-ignore
+        walletApi.getRewardAddresses(...args),
+      // @ts-ignore
+      signTx: (...args: any[]) => walletApi.signTx(...args),
+      // @ts-ignore
+      signData: (...args: any[]) => walletApi.signData(...args),
+      // @ts-ignore
+      submitTx: (...args: any[]) => walletApi.submitTx(...args),
+    } as const;
+  }
+
   async ensureAccountNotChanged() {
     let networkActive = await this.state.networkActiveGet();
     if (networkActive != this.network) {

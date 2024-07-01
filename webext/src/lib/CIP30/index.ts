@@ -93,7 +93,7 @@ const CIP30Entrypoint = {
       true,
     );
 
-    let api = new WalletApi(
+    let api = WalletApi.getNew(
       apiInternal,
       state,
       logger,
@@ -101,7 +101,7 @@ const CIP30Entrypoint = {
       networkName,
     );
     return api;
-  }
-}
+  },
+};
 
 export { CIP30Entrypoint };
