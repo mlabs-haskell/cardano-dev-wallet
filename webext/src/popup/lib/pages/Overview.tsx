@@ -69,7 +69,7 @@ function Balance({ api }: { api: WalletApiInternal }) {
       let balanceAda = lovelaceToAda(balance.coin());
       setBalance(balanceAda.toString());
     });
-  }, [api]);
+  }, [api, State.overrides.value]);
 
   let override = State.overrides.value?.balance;
 
@@ -454,7 +454,7 @@ function UtxoList({
             </>
           );
         })}
-    </section >
+    </section>
   );
 }
 
