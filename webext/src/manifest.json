@@ -4,30 +4,21 @@
   "author": "chrome-web-store@mlabs.city",
   "description": "A wallet webextension for Cardano, with features that help development of dApps",
   "homepage_url": "https://github.com/mlabs-haskell/cardano-dev-wallet/",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
   },
   "content_scripts": [
     {
-      "matches": [
-        "<all_urls>"
-      ],
+      "matches": ["<all_urls>"],
       "run_at": "document_start",
-      "js": [
-        "./content-script/trampoline.js"
-      ]
+      "js": ["./content-script/trampoline.js"]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": [
-        "content-script/index.js",
-        "/*.wasm"
-      ],
-      "matches": [
-        "<all_urls>"
-      ]
+      "resources": ["content-script/index.js", "/*.wasm"],
+      "matches": ["<all_urls>"]
     }
   ],
   "$chrome:background": {
@@ -35,17 +26,13 @@
     "type": "module"
   },
   "$firefox:background": {
-    "scripts": [
-      "./background/background.js"
-    ]
+    "scripts": ["./background/background.js"]
   },
   "action": {
     "default_popup": "./popup/trampoline.html",
     "default_title": "Open the popup"
   },
-  "permissions": [
-    "storage"
-  ],
+  "permissions": ["storage"],
   "icons": {
     "72": "public/icon-72x72.png",
     "96": "public/icon-96x96.png",
