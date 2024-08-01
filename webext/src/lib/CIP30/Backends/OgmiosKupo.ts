@@ -54,7 +54,7 @@ class OgmiosKupoBackend implements Backend {
         method: "POST",
         headers: {
           Accept: "application/json",
-          "Content-Type": "application/json",
+          // "Content-Type": "application/json",
         },
         body: JSON.stringify({
           jsonrpc: "2.0",
