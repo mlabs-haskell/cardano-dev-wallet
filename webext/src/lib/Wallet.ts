@@ -51,8 +51,8 @@ export class Account {
     this.stakingKey = accountKey.derive(2).derive(index).to_raw_key();
     this.baseAddress = CSL.BaseAddress.new(
       this.networkId,
-      CSL.StakeCredential.from_keyhash(this.paymentKey.to_public().hash()),
-      CSL.StakeCredential.from_keyhash(this.stakingKey.to_public().hash()),
+      CSL.Credential.from_keyhash(this.paymentKey.to_public().hash()),
+      CSL.Credential.from_keyhash(this.stakingKey.to_public().hash()),
     );
   }
 }

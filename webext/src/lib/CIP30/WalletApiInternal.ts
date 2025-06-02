@@ -161,8 +161,8 @@ class WalletApiInternal {
     tx: CSL.Transaction,
     partialSign: boolean,
   ): Promise<CSL.TransactionWitnessSet> {
-    let txBody = tx.body();
-    let txHash = CSL.hash_transaction(txBody);
+    let txBodyFixed = CSL.FixedTransaction.from_bytes(tx.to_bytes());
+    let txHash = txBodyFixed.transaction_hash();
 
     let account = this.account;
     let paymentKeyHash = account.paymentKey.to_public().hash();
@@ -219,7 +219,7 @@ class WalletApiInternal {
       ["PointerAddress", CSL.PointerAddress],
     ] as const;
 
-    let addressStakeCred: CSL.StakeCredential | null = null;
+    let addressStakeCred: CSL.Credential | null = null;
     for (let [_name, fn] of paymentAddressFns) {
       let addrDowncasted = fn.from_address(addr);
       if (addrDowncasted != null) {

@@ -1,3 +1,6 @@
+# 1.4.0
+* Update cardano-serialization-lib
+
 # 1.3.0
 * Make UTxO override affect the balance
   Previously, the utxo list override only affected the `getUtxos()` call and not the
