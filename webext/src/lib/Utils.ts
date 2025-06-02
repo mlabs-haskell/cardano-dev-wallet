@@ -117,7 +117,7 @@ export async function getRequiredKeyHashes(
   const rewardAddresses = withdrawals?.keys();
   for (let rewardAddress of new CSLIterator(rewardAddresses)) {
     const credential = rewardAddress.payment_cred();
-    if (credential.kind() === CSL.StakeCredKind.Key) {
+    if (credential.kind() === CSL.CredKind.Key) {
       result.push(credential.to_keyhash()!);
     }
   }
@@ -171,12 +171,12 @@ export function getRequiredKeyHashesFromCertificate(
     // stake registration doesn't required signing
   } else if (cert.kind() === CSL.CertificateKind.StakeDeregistration) {
     const credential = cert.as_stake_deregistration()!.stake_credential();
-    if (credential.kind() === CSL.StakeCredKind.Key) {
+    if (credential.kind() === CSL.CredKind.Key) {
       result.push(credential.to_keyhash()!);
     }
   } else if (cert.kind() === CSL.CertificateKind.StakeDelegation) {
     const credential = cert.as_stake_delegation()!.stake_credential();
-    if (credential.kind() === CSL.StakeCredKind.Key) {
+    if (credential.kind() === CSL.CredKind.Key) {
       result.push(credential.to_keyhash()!);
     }
   } else if (cert.kind() === CSL.CertificateKind.PoolRegistration) {
@@ -195,7 +195,7 @@ export function getRequiredKeyHashesFromCertificate(
       .as_to_stake_creds()!
       .keys();
     for (let credential of new CSLIterator(instant_reward)) {
-      if (credential.kind() === CSL.StakeCredKind.Key) {
+      if (credential.kind() === CSL.CredKind.Key) {
         result.push(credential.to_keyhash()!);
       }
     }
