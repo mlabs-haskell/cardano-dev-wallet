@@ -1,5 +1,6 @@
 # 1.4.0
-* Update cardano-serialization-lib
+* Update cardano-serialization-lib to 14.1.2
+* Update cardano-message-signing-browser to 1.1.0
 
 # 1.3.0
 * Make UTxO override affect the balance
